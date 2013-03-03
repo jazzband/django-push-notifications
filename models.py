@@ -26,6 +26,7 @@ class GCMDevice(models.Model):
 	name = models.CharField(max_length=255, verbose_name=_("Name"), blank=True, null=True)
 	registration_id = models.TextField(verbose_name=_("Registration ID"))
 	active = models.BooleanField(verbose_name=_("Is active"), default=True, help_text=_("Inactive devices will not be sent notifications"))
+	user = models.ForeignKey("auth.User", blank=True, null=True)
 
 	objects = GCMDeviceManager()
 

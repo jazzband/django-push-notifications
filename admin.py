@@ -4,8 +4,8 @@ from .models import GCMDevice
 
 
 class GCMDeviceAdmin(admin.ModelAdmin):
-	list_display = ("__unicode__", "device_id", "active")
-	search_fields = ("name", "device_id")
+	list_display = ("__unicode__", "device_id", "user", "active")
+	search_fields = ("name", "device_id", "user__username")
 	list_filter = ("active", )
 	actions = ("send_message", "send_bulk_message")
 
