@@ -28,7 +28,7 @@ class GCMDevice(models.Model):
 	objects = GCMDeviceManager()
 
 	def __unicode__(self):
-		return self.name or self.device_id
+		return self.name or self.device_id or "GCMDevice for %s" % (self.user or "unknown user")
 
 	def send_message(self, message):
 		from .gcm import gcm_send_message
