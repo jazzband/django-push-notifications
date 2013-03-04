@@ -1,13 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-
-
-class UUIDField(models.CharField):
-	def __init__(self, *args, **kwargs):
-		kwargs["max_length"] = kwargs.get("max_length", 64)
-		kwargs["unique"] = True
-		super(UUIDField, self).__init__(*args, **kwargs)
+from uuidfield import UUIDField
 
 
 class GCMDeviceManager(models.Manager):
@@ -22,7 +16,10 @@ class GCMDeviceQuerySet(models.query.QuerySet):
 
 
 class GCMDevice(models.Model):
-	device_id = UUIDField(verbose_name=_("Device ID"), primary_key=True)
+	# device_id cannot be a reliable primary key as fragmentation between different devices
+	# can make it turn out to be null and such:
+	# http://android-developers.blogspot.co.uk/2011/03/identifying-app-installations.html
+	device_id = UUIDField(verbose_name=_("Device ID"), blank=True, null=True, help_text="ANDROID_ID / TelephonyManager.getDeviceId()")
 	name = models.CharField(max_length=255, verbose_name=_("Name"), blank=True, null=True)
 	registration_id = models.TextField(verbose_name=_("Registration ID"))
 	active = models.BooleanField(verbose_name=_("Is active"), default=True, help_text=_("Inactive devices will not be sent notifications"))
