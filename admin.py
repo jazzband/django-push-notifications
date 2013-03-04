@@ -7,7 +7,7 @@ class GCMDeviceAdmin(admin.ModelAdmin):
 	list_display = ("__unicode__", "device_id", "user", "active")
 	search_fields = ("name", "device_id", "user__username")
 	list_filter = ("active", )
-	actions = ("send_message", "send_bulk_message")
+	actions = ("send_message", "send_bulk_message", "enable", "disable")
 
 	def send_message(self, request, queryset):
 		ret = []
@@ -30,6 +30,14 @@ class GCMDeviceAdmin(admin.ModelAdmin):
 		r = queryset.send_message("Test bulk notification")
 		self.message_user(request, _("All messages were sent: %s" % (r)))
 	send_bulk_message.short_description = _("Send test message in bulk")
+
+	def enable(self, request, queryset):
+		queryset.update(is_active=True)
+	enable.short_description = _("Enable selected devices")
+
+	def disable(self, request, queryset):
+		queryset.update(is_active=False)
+	disable.short_description = _("Disable selected devices")
 
 
 admin.site.register(GCMDevice, GCMDeviceAdmin)
