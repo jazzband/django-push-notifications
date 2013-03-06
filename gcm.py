@@ -1,3 +1,10 @@
+"""
+Google Cloud Messaging
+Previously known as C2DM
+Documentation is available on the Android Developer website:
+https://developer.android.com/google/gcm/index.html
+"""
+
 import urllib2
 from . import NotificationError, PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
