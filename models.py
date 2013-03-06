@@ -37,6 +37,9 @@ class GCMDevice(Device):
 
 	objects = GCMDeviceManager()
 
+	class Meta:
+		verbose_name = _("GCM device")
+
 	def send_message(self, message):
 		from .gcm import gcm_send_message
 		return gcm_send_message(registration_id=self.registration_id, data={"msg": message}, collapse_key="message")
@@ -45,3 +48,6 @@ class GCMDevice(Device):
 class APNSDevice(Device):
 	device_id = UUIDField(verbose_name=_("Device ID"), blank=True, null=True, help_text="UDID / UIDevice.identifierForVendor()")
 	registration_id = models.CharField(max_length=64)
+
+	class Meta:
+		verbose_name = _("APNS device")
