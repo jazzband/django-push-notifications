@@ -7,10 +7,10 @@ class APNSDeviceResource(ModelResource):
 	class Meta:
 		authorization = Authorization()
 		queryset = APNSDevice.objects.all()
-		resource_name = "apnsdevice"
+		resource_name = "device/apns"
 
 class GCMDeviceResource(ModelResource):
 	class Meta:
 		authorization = Authorization()
 		queryset = GCMDevice.objects.all()
-		resource_name = "gcmdevice"
+		resource_name = "device/gcm"
