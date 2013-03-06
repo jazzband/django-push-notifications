@@ -33,7 +33,7 @@ class GCMDevice(Device):
 	# can make it turn out to be null and such:
 	# http://android-developers.blogspot.co.uk/2011/03/identifying-app-installations.html
 	device_id = UUIDField(verbose_name=_("Device ID"), blank=True, null=True, help_text="ANDROID_ID / TelephonyManager.getDeviceId()")
-	registration_id = models.TextField(verbose_name=_("Registration ID"))
+	registration_id = models.TextField(verbose_name=_("Registration ID"), unique=True)
 
 	objects = GCMDeviceManager()
 
@@ -47,7 +47,7 @@ class GCMDevice(Device):
 
 class APNSDevice(Device):
 	device_id = UUIDField(verbose_name=_("Device ID"), blank=True, null=True, help_text="UDID / UIDevice.identifierForVendor()")
-	registration_id = models.CharField(max_length=64)
+	registration_id = models.CharField(max_length=64, unique=True)
 
 	class Meta:
 		verbose_name = _("APNS device")
