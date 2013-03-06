@@ -1,9 +1,9 @@
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-from .models import GCMDevice
+from .models import APNSDevice, GCMDevice
 
 
-class GCMDeviceAdmin(admin.ModelAdmin):
+class DeviceAdmin(admin.ModelAdmin):
 	list_display = ("__unicode__", "device_id", "user", "active")
 	search_fields = ("name", "device_id", "user__username")
 	list_filter = ("active", )
@@ -40,4 +40,5 @@ class GCMDeviceAdmin(admin.ModelAdmin):
 	disable.short_description = _("Disable selected devices")
 
 
-admin.site.register(GCMDevice, GCMDeviceAdmin)
+admin.site.register(APNSDevice, DeviceAdmin)
+admin.site.register(GCMDevice, DeviceAdmin)
