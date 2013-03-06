@@ -1,9 +1,10 @@
 import urllib2
+from . import NotificationError
 
 
 GCM_POST_URL = "https://android.googleapis.com/gcm/send"
 
-class GCMError(Exception):
+class GCMError(NotificationError):
 	pass
 
 def _gcm_send(data, content_type):
