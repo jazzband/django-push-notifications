@@ -1,17 +1,16 @@
 import urllib2
-from . import NotificationError
+from . import NotificationError, PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 
-GCM_POST_URL = "https://android.googleapis.com/gcm/send"
+SETTINGS.setdefault("GCM_POST_URL", "https://android.googleapis.com/gcm/send")
 
 class GCMError(NotificationError):
 	pass
 
 def _gcm_send(data, content_type):
-	from django.conf import settings
 	from django.core.exceptions import ImproperlyConfigured
 
-	key = settings.PUSH_NOTIFICATIONS_SETTINGS.get("GCM_API_KEY")
+	key = SETTINGS.get("GCM_API_KEY")
 	if not key:
 		raise ImproperlyConfigured('You need to set PUSH_NOTIFICATIONS_SETTINGS["GCM_API_KEY"] to send messages through GCM.')
 
@@ -21,7 +20,7 @@ def _gcm_send(data, content_type):
 		"Content-Length": str(len(data)),
 	}
 
-	request = urllib2.Request(GCM_POST_URL, data, headers)
+	request = urllib2.Request(SETTINGS["GCM_POST_URL"], data, headers)
 	response = urllib2.urlopen(request)
 	result = response.read()
 
