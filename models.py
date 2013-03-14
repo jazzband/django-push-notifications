@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from uuidfield import UUIDField
@@ -51,3 +50,7 @@ class APNSDevice(Device):
 
 	class Meta:
 		verbose_name = _("APNS device")
+
+	def send_message(self, message):
+		from .apns import apns_send_message
+		return apns_send_message(registration_id=self.registration_id, data=message)
