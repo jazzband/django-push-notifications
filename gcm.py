@@ -54,7 +54,6 @@ def gcm_send_message(registration_id, data, collapse_key=None):
 		values["data.%s" % (k)] = v.encode("utf-8")
 
 	data = urlencode(values)
-
 	return _gcm_send(data, "application/x-www-form-urlencoded;charset=UTF-8")
 
 def gcm_send_bulk_message(registration_ids, data, collapse_key=None, delay_while_idle=False):
@@ -73,3 +72,6 @@ def gcm_send_bulk_message(registration_ids, data, collapse_key=None, delay_while
 
 	if delay_while_idle:
 		values["delay_while_idle"] = delay_while_idle
+
+	data = json.dumps(values)
+	return _gcm_send(data, "application/json")
