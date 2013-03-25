@@ -15,17 +15,14 @@ class Device(models.Model):
 		return self.name or str(self.device_id or "") or "%s for %s" % (self.__class__.__name__, self.user or "unknown user")
 
 
-
 class GCMDeviceManager(models.Manager):
 	def get_query_set(self):
 		return GCMDeviceQuerySet(self.model)
-
 
 class GCMDeviceQuerySet(models.query.QuerySet):
 	def send_message(self, message):
 		from .gcm import gcm_send_bulk_message
 		return gcm_send_bulk_message(registration_ids=list(self.values_list("registration_id", flat=True)), data={"msg": message}, collapse_key="message")
-
 
 class GCMDevice(Device):
 	# device_id cannot be a reliable primary key as fragmentation between different devices
@@ -44,9 +41,20 @@ class GCMDevice(Device):
 		return gcm_send_message(registration_id=self.registration_id, data={"msg": message}, collapse_key="message")
 
 
+class APNSDeviceManager(models.Manager):
+	def get_query_set(self):
+		return APNSDeviceQuerySet(self.model)
+
+class APNSDeviceQuerySet(models.query.QuerySet):
+	def send_message(self, message):
+		from .apns import apns_send_bulk_message
+		return apns_send_bulk_message(registration_ids=list(self.values_list("registration_id", flat=True)), data=message)
+
 class APNSDevice(Device):
 	device_id = UUIDField(verbose_name=_("Device ID"), blank=True, null=True, help_text="UDID / UIDevice.identifierForVendor()")
 	registration_id = models.CharField(max_length=64, unique=True)
+
+	objects = APNSDeviceManager()
 
 	class Meta:
 		verbose_name = _("APNS device")
