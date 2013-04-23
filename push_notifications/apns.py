@@ -69,8 +69,8 @@ def _apns_send(token, alert, badge=0, sound="chime", content_available=False, cu
 	if content_available:
 		data["content-available"] = 1
 
-	# convert to json, avoiding unnecessary whitespace with sepatators
-	data = json.dumps({"aps": data}, separators=(",",":"))
+	# convert to json, avoiding unnecessary whitespace with separators
+	data = json.dumps({"aps": data}, separators=(",", ":"))
 
 	if len(data) > APNS_MAX_NOTIFICATION_SIZE:
 		raise APNSDataOverflow("Notification body cannot exceed %i bytes" % (APNS_MAX_NOTIFICATION_SIZE))
@@ -96,7 +96,7 @@ def apns_send_message(registration_id, data, **kwargs):
 
 	return _apns_send(registration_id, str(data), **kwargs)
 
-def apns_send_bulk_message(registration_ids, data):
+def apns_send_bulk_message(registration_ids, data, **kwargs):
 	"""
 	Sends an APNS notification to one or more registration_ids.
 	The registration_ids argument needs to be a list.
