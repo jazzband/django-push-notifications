@@ -104,3 +104,5 @@ def apns_send_bulk_message(registration_ids, data, **kwargs):
 	socket = _apns_create_socket()
 	for registration_id in registration_ids:
 		_apns_send(registration_id, str(data), socket=socket, **kwargs)
+
+	socket.close()
