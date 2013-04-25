@@ -46,9 +46,9 @@ class APNSDeviceManager(models.Manager):
 		return APNSDeviceQuerySet(self.model)
 
 class APNSDeviceQuerySet(models.query.QuerySet):
-	def send_message(self, message):
+	def send_message(self, message, **kwargs):
 		from .apns import apns_send_bulk_message
-		return apns_send_bulk_message(registration_ids=list(self.values_list("registration_id", flat=True)), data=message)
+		return apns_send_bulk_message(registration_ids=list(self.values_list("registration_id", flat=True)), data=message, **kwargs)
 
 class APNSDevice(Device):
 	device_id = UUIDField(verbose_name=_("Device ID"), blank=True, null=True, help_text="UDID / UIDevice.identifierForVendor()")
@@ -59,6 +59,6 @@ class APNSDevice(Device):
 	class Meta:
 		verbose_name = _("APNS device")
 
-	def send_message(self, message):
+	def send_message(self, message, **kwargs):
 		from .apns import apns_send_message
-		return apns_send_message(registration_id=self.registration_id, data=message)
+		return apns_send_message(registration_id=self.registration_id, data=message, **kwargs)
