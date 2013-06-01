@@ -10,9 +10,17 @@ from . import NotificationError, PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 
 SETTINGS.setdefault("GCM_POST_URL", "https://android.googleapis.com/gcm/send")
+SETTINGS.setdefault("GCM_MAX_RECIPIENTS", 1000)
 
 class GCMError(NotificationError):
 	pass
+
+def chunks(l, n):
+	"""
+	Yield successive chunks from list \a l with a minimum size \a n
+	"""
+	for i in range(0, len(l), n):
+		yield l[i:i+n]
 
 def _gcm_send(data, content_type):
 	from django.core.exceptions import ImproperlyConfigured
@@ -63,6 +71,14 @@ def gcm_send_bulk_message(registration_ids, data, collapse_key=None, delay_while
 	This will send the notification as json data.
 	"""
 	import json
+
+	# GCM only allows up to 1000 reg ids per bulk message
+	# https://developer.android.com/google/gcm/gcm.html#request
+	if len(registration_ids) > SETTINGS.get("GCM_MAX_RECIPIENTS"):
+		ret = []
+		for chunk in chunks(registration_ids):
+			ret.append(gcm_send_bulk_message(chunk, data, collapse_key, delay_while_idle))
+		return "\n".join(ret)
 
 	values = {
 		"registration_ids": registration_ids,
