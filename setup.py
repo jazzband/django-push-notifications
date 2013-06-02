@@ -20,8 +20,7 @@ VERSION = "0.8"
 
 setup(
 	name = "django-push-notifications",
-	py_modules = ["push_notifications"],
-	package_dir = {"push_notifications": "push_notifications"},
+	packages = ["push_notifications"],
 	author = "Jerome Leclanche",
 	author_email = "jerome.leclanche+pypi@gmail.com",
 	classifiers = CLASSIFIERS,
