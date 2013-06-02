@@ -1,12 +1,16 @@
+from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from uuidfield import UUIDField
 
 
+# Compatibility with custom user models, while keeping backwards-compatibility with <1.5
+AUTH_USER_MODEL = getattr(settings, "AUTH_USER_MODEL", "auth.User")
+
 class Device(models.Model):
 	name = models.CharField(max_length=255, verbose_name=_("Name"), blank=True, null=True)
 	active = models.BooleanField(verbose_name=_("Is active"), default=True, help_text=_("Inactive devices will not be sent notifications"))
-	user = models.ForeignKey("auth.User", blank=True, null=True)
+	user = models.ForeignKey(AUTH_USER_MODEL, blank=True, null=True)
 
 	class Meta:
 		abstract = True
