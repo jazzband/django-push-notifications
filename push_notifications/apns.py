@@ -37,6 +37,13 @@ def _apns_create_socket():
 	if not certfile:
 		raise ImproperlyConfigured('You need to set PUSH_NOTIFICATIONS_SETTINGS["APNS_CERTIFICATE"] to send messages through APNS.')
 
+	try:
+		f = open(certfile, "r")
+		f.read()
+		f.close()
+	except Exception, e:
+		raise ImproperlyConfigured("The APNS certificate file at %r is not readable: %s" % (certfile, e))
+
 	sock = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_SSLv3, certfile=certfile)
 	sock.connect((SETTINGS["APNS_HOST"], SETTINGS["APNS_PORT"]))
 
