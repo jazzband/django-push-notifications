@@ -100,10 +100,10 @@ def apns_send_message(registration_id, data, **kwargs):
 	This will send the notification as form data.
 	If sending multiple notifications, it is more efficient to use
 	apns_send_bulk_message()
-	Note that \a data is sent as a string.
+	Note that \a data should always be a string.
 	"""
 
-	return _apns_send(registration_id, str(data), **kwargs)
+	return _apns_send(registration_id, data, **kwargs)
 
 def apns_send_bulk_message(registration_ids, data, **kwargs):
 	"""
@@ -112,6 +112,6 @@ def apns_send_bulk_message(registration_ids, data, **kwargs):
 	"""
 	socket = _apns_create_socket()
 	for registration_id in registration_ids:
-		_apns_send(registration_id, str(data), socket=socket, **kwargs)
+		_apns_send(registration_id, data, socket=socket, **kwargs)
 
 	socket.close()
