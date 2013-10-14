@@ -82,7 +82,7 @@ Sending messages in bulk
 	devices = GCMDevice.objects.filter(user__first_name="James")
 	devices.send_message({"msg": "Happy name day!"})
 
-Sending messages in bulk makes use of the bulk mechanics offered by GCM and APNS. It is almost always preferrable to send
+Sending messages in bulk makes use of the bulk mechanics offered by GCM and APNS. It is almost always preferable to send
 bulk notifications instead of single ones.
 Note that in GCM, the device will receive data in a different format depending on whether it's been sent in bulk or not.
 
