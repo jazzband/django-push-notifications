@@ -27,7 +27,7 @@ class GCMDeviceQuerySet(models.query.QuerySet):
 	def send_message(self, message):
 		if self:
 			from .gcm import gcm_send_bulk_message
-			return gcm_send_bulk_message(registration_ids=list(self.values_list("registration_id", flat=True)), data={"msg": message}, collapse_key="message")
+			return gcm_send_bulk_message(registration_ids=list(self.values_list("registration_id", flat=True)), data={"message": message}, collapse_key="message")
 
 class GCMDevice(Device):
 	# device_id cannot be a reliable primary key as fragmentation between different devices
@@ -43,7 +43,7 @@ class GCMDevice(Device):
 
 	def send_message(self, message):
 		from .gcm import gcm_send_message
-		return gcm_send_message(registration_id=self.registration_id, data={"msg": message}, collapse_key="message")
+		return gcm_send_message(registration_id=self.registration_id, data={"message": message}, collapse_key="message")
 
 
 class APNSDeviceManager(models.Manager):
