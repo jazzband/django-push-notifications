@@ -74,9 +74,10 @@ def gcm_send_bulk_message(registration_ids, data, collapse_key=None, delay_while
 
 	# GCM only allows up to 1000 reg ids per bulk message
 	# https://developer.android.com/google/gcm/gcm.html#request
-	if len(registration_ids) > SETTINGS.get("GCM_MAX_RECIPIENTS"):
+	max_recipients = SETTINGS.get("GCM_MAX_RECIPIENTS")
+	if len(registration_ids) > max_recipients:
 		ret = []
-		for chunk in chunks(registration_ids):
+		for chunk in chunks(registration_ids, max_recipients):
 			ret.append(gcm_send_bulk_message(chunk, data, collapse_key, delay_while_idle))
 		return "\n".join(ret)
 
