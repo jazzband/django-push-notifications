@@ -3,7 +3,6 @@ from StringIO import StringIO
 
 import os.path
 from distutils.core import setup
-import pep8
 from setuptools.command.test import test as TestCommand
 import sys
 
@@ -24,6 +23,7 @@ VERSION = "0.8"
 
 tests_require = [
     'pytest',
+    'pep8',
 ]
 
 
@@ -79,6 +79,7 @@ class PushNotificationsTest(TestCommand):
         """
         verbose = '--quiet' not in sys.argv
         if verbose:
+            import pep8
             # Hook into stdout.
             old_stdout = sys.stdout
             sys.stdout = mystdout = StringIO()
@@ -105,7 +106,6 @@ class PushNotificationsTest(TestCommand):
     def run(self):
         self.pep8_report()
         TestCommand.run(self)
-
 
 
 setup(

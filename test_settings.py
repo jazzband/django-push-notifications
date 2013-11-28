@@ -3,6 +3,7 @@ import hashlib
 import os
 import socket
 
+DEBUG = True
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 DATABASES = {
@@ -13,10 +14,14 @@ DATABASES = {
 }
 
 INSTALLED_APPS = [
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
+    'django.contrib.sessions',
 
     'push_notifications',
 ]
 
 SECRET_KEY = hashlib.md5(socket.gethostname() + 'f@vn7)!i(shx=8*$cp-e_s&^@kc-3a0$it6ux@5$vb)51#7+p0').hexdigest()
+
+ROOT_URLCONF = 'test_urls'
