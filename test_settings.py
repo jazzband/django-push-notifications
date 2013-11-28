@@ -23,5 +23,3 @@ INSTALLED_APPS = [
 ]
 
 SECRET_KEY = hashlib.md5(socket.gethostname() + 'f@vn7)!i(shx=8*$cp-e_s&^@kc-3a0$it6ux@5$vb)51#7+p0').hexdigest()
-
-ROOT_URLCONF = 'test_urls'

@@ -30,12 +30,8 @@ tests_require = [
 class PushNotificationsTest(TestCommand):
     def finalize_options(self):
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "test_settings")
-        import test_settings
         from django.core.management import call_command
-        db_file = test_settings.DATABASES.get('default').get('NAME')
-        if os.path.exists(db_file):
-            os.unlink(db_file)
-
+        call_command('flush', interactive=False)
         call_command('syncdb', interactive=False)
         TestCommand.finalize_options(self)
         self.test_args = ['tests']
