@@ -28,7 +28,11 @@ class APNSDeviceAuthenticatedResource(APNSDeviceResource):
 
     def obj_create(self, bundle, **kwargs):
         # See https://github.com/toastdriven/django-tastypie/issues/854
-        return super(APNSDeviceAuthenticatedResource, self).obj_create(bundle, user=bundle.request.user, **kwargs)
+        return super(APNSDeviceAuthenticatedResource, self).obj_create(
+            bundle,
+            user=bundle.request.user,
+            **kwargs
+        )
 
 
 class GCMDeviceAuthenticatedResource(GCMDeviceResource):
@@ -40,4 +44,8 @@ class GCMDeviceAuthenticatedResource(GCMDeviceResource):
 
     def obj_create(self, bundle, **kwargs):
         # See https://github.com/toastdriven/django-tastypie/issues/854
-        return super(GCMDeviceAuthenticatedResource, self).obj_create(bundle, user=bundle.request.user, **kwargs)
+        return super(GCMDeviceAuthenticatedResource, self).obj_create(
+            bundle,
+            user=bundle.request.user,
+            **kwargs
+        )

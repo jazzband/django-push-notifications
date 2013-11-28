@@ -31,7 +31,9 @@ def _gcm_send(data, content_type):
     key = SETTINGS.get("GCM_API_KEY")
     if not key:
         raise ImproperlyConfigured(
-            'You need to set PUSH_NOTIFICATIONS_SETTINGS["GCM_API_KEY"] to send messages through GCM.')
+            'You need to set PUSH_NOTIFICATIONS_SETTINGS["GCM_API_KEY"] '
+            'to send messages through GCM.'
+        )
 
     headers = {
         "Content-Type": content_type,
@@ -70,10 +72,11 @@ def gcm_send_message(registration_id, data, collapse_key=None):
     return _gcm_send(data, "application/x-www-form-urlencoded;charset=UTF-8")
 
 
-def gcm_send_bulk_message(registration_ids, data, collapse_key=None, delay_while_idle=False):
+def gcm_send_bulk_message(registration_ids, data,
+                          collapse_key=None, delay_while_idle=False):
     """
-    Sends a GCM notification to one or more registration_ids. The registration_ids
-    needs to be a list.
+    Sends a GCM notification to one or more registration_ids.
+    The registration_ids needs to be a list.
     This will send the notification as json data.
     """
     import json
@@ -84,7 +87,14 @@ def gcm_send_bulk_message(registration_ids, data, collapse_key=None, delay_while
     if len(registration_ids) > max_recipients:
         ret = []
         for chunk in chunks(registration_ids, max_recipients):
-            ret.append(gcm_send_bulk_message(chunk, data, collapse_key, delay_while_idle))
+            ret.append(
+                gcm_send_bulk_message(
+                    chunk,
+                    data,
+                    collapse_key,
+                    delay_while_idle
+                )
+            )
         return "\n".join(ret)
 
     values = {

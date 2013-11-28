@@ -6,7 +6,6 @@ https://developer.apple.com/library/ios/#documentation/NetworkingInternet/Concep
 
 import json
 import struct
-import urllib2
 from binascii import unhexlify
 from django.conf import settings
 from . import NotificationError, PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
@@ -38,16 +37,25 @@ def _apns_create_socket():
     certfile = SETTINGS.get("APNS_CERTIFICATE")
     if not certfile:
         raise ImproperlyConfigured(
-            'You need to set PUSH_NOTIFICATIONS_SETTINGS["APNS_CERTIFICATE"] to send messages through APNS.')
+            'You need to set PUSH_NOTIFICATIONS_SETTINGS["APNS_CERTIFICATE"] '
+            'to send messages through APNS.'
+        )
 
     try:
         f = open(certfile, "r")
         f.read()
         f.close()
     except Exception, e:
-        raise ImproperlyConfigured("The APNS certificate file at %r is not readable: %s" % (certfile, e))
+        raise ImproperlyConfigured(
+            "The APNS certificate file at %r is not readable: %s"
+            % (certfile, e)
+        )
 
-    sock = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_SSLv3, certfile=certfile)
+    sock = ssl.wrap_socket(
+        sock,
+        ssl_version=ssl.PROTOCOL_SSLv3,
+        certfile=certfile
+    )
     sock.connect((SETTINGS["APNS_HOST"], SETTINGS["APNS_PORT"]))
 
     return sock
@@ -58,8 +66,9 @@ def _apns_pack_message(token, data):
     return struct.pack(format, b"\0", 32, unhexlify(token), len(data), data)
 
 
-def _apns_send(token, alert, badge=0, sound="chime", content_available=False, action_loc_key=None, loc_key=None,
-               loc_args=[], extra={}, socket=None):
+def _apns_send(token, alert, badge=0, sound="chime",
+               content_available=False, action_loc_key=None,
+               loc_key=None, loc_args=[], extra={}, socket=None):
     data = {}
 
     if action_loc_key or loc_key or loc_args:
@@ -88,7 +97,8 @@ def _apns_send(token, alert, badge=0, sound="chime", content_available=False, ac
     data = json.dumps({"aps": data}, separators=(",", ":"))
 
     if len(data) > APNS_MAX_NOTIFICATION_SIZE:
-        raise APNSDataOverflow("Notification body cannot exceed %i bytes" % (APNS_MAX_NOTIFICATION_SIZE))
+        raise APNSDataOverflow("Notification body cannot exceed %i bytes"
+                               % APNS_MAX_NOTIFICATION_SIZE)
 
     data = _apns_pack_message(token, data)
 

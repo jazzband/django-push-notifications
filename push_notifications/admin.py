@@ -21,9 +21,14 @@ class DeviceAdmin(admin.ModelAdmin):
             if r:
                 ret.append(r)
         if errors:
-            self.message_user(request, _("Some messages could not be processed: %r" % ("\n".join(errors))))
+            self.message_user(
+                request,
+                _("Some messages could not be processed: %r"
+                  % ("\n".join(errors))))
         if ret:
-            self.message_user(request, _("All messages were sent: %s" % ("\n".join(ret))))
+            self.message_user(
+                request,
+                _("All messages were sent: %s" % ("\n".join(ret))))
 
     send_message.short_description = _("Send test message")
 

@@ -2,3 +2,7 @@
 build
 .idea/
 virtualenv/
+test-database.db
+pep8.txt
+*.egg
+*.egg-info
