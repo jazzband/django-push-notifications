@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from uuidfield import UUIDField
@@ -63,13 +64,20 @@ class GCMDevice(Device):
     )
     registration_id = models.TextField(
         verbose_name=_("Registration ID"),
-        unique=True
+        db_index=True
     )
 
     objects = GCMDeviceManager()
 
     class Meta:
         verbose_name = _("GCM device")
+
+    def save(self, force_insert=False, force_update=False,
+             using=None, update_fields=None):
+        if not self.pk and GCMDevice.objects.filter(registration_id=self.registration_id).exists():
+            raise ValidationError('column registration_id is not unique')
+        else:
+            super(GCMDevice, self).save(force_insert, force_update, using, update_fields)
 
     def send_message(self, message):
         from .gcm import gcm_send_message
