@@ -73,7 +73,8 @@ def gcm_send_message(registration_id, data, collapse_key=None):
 
 
 def gcm_send_bulk_message(registration_ids, data,
-                          collapse_key=None, delay_while_idle=False):
+                          collapse_key=None, delay_while_idle=False,
+                          extra={}):
     """
     Sends a GCM notification to one or more registration_ids.
     The registration_ids needs to be a list.
@@ -102,6 +103,8 @@ def gcm_send_bulk_message(registration_ids, data,
         "collapse_key": collapse_key,
         "data": data,
     }
+
+    values.update(extra)
 
     if delay_while_idle:
         values["delay_while_idle"] = delay_while_idle

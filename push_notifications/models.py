@@ -40,7 +40,7 @@ class GCMDeviceManager(models.Manager):
 
 
 class GCMDeviceQuerySet(models.query.QuerySet):
-    def send_message(self, message):
+    def send_message(self, message, **kwargs):
         if self:
             from .gcm import gcm_send_bulk_message
 
@@ -49,7 +49,8 @@ class GCMDeviceQuerySet(models.query.QuerySet):
                     self.values_list("registration_id", flat=True)
                 ),
                 data={"message": message},
-                collapse_key="message"
+                collapse_key="message",
+                **kwargs
             )
 
 
