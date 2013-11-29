@@ -1,18 +1,15 @@
 # coding: utf-8
+from django.conf import settings
 from django.utils import unittest
 from django.core.exceptions import ValidationError
 from push_notifications.models import GCMDevice, APNSDevice
 
 
 class TestModels(unittest.TestCase):
-    reg_id_android = 'gJ6YMGzkgSlPEkltUxXD9rGeHiNFvEncsKvu' \
-                     'jddDTdf5399FghAv2rr1HH5qUgHTpoNSgSF3' \
-                     'CEaHA3P1HbuhJApL0ZHTe_uFYRoK3hfSoH7v' \
-                     'M0AIcPmNCHnibEUAoIpPonrt62hmISh3xD9O' \
-                     '-S0hQrKJjBbC0RKBrs'
+    reg_id_android = settings.TEST_ID_ANDROID
+    reg_id_ios = settings.TEST_ID_APPLE
 
     def setUp(self):
-        self.reg_id_ios = self.reg_id_android[:64]
         GCMDevice.objects.filter(registration_id=self.reg_id_android).delete()
         APNSDevice.objects.filter(registration_id=self.reg_id_ios).delete()
 

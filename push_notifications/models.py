@@ -1,3 +1,4 @@
+from binascii import unhexlify
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -125,6 +126,13 @@ class APNSDevice(Device):
     registration_id = models.CharField(max_length=64, unique=True)
 
     objects = APNSDeviceManager()
+
+    def save(self, *args, **kwargs):
+        try:
+            unhexlify(self.registration_id)
+        except TypeError, e:
+            raise ValidationError("registration_id: {0}".format(e.message))
+        return super(APNSDevice, self).save(args, kwargs)
 
     class Meta:
         verbose_name = _("APNS device")
