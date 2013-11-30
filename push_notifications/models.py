@@ -90,12 +90,15 @@ class GCMDevice(Device):
                 update_fields
             )
 
-    def send_message(self, message):
+    def send_message(self, message, extra={}):
         from .gcm import gcm_send_message
+
+        data = {"message": message}
+        data.update(extra)
 
         return gcm_send_message(
             registration_id=self.registration_id,
-            data={"message": message},
+            data=data,
             collapse_key="message"
         )
 
