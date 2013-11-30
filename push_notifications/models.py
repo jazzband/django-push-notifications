@@ -40,12 +40,12 @@ class GCMDeviceManager(models.Manager):
 
 
 class GCMDeviceQuerySet(models.query.QuerySet):
-    def send_message(self, message, extra={}):
+    def send_message(self, message, extra=None):
         if self:
             from .gcm import gcm_send_bulk_message
 
             data = {"message": message}
-            data.update(extra)
+            data.update(extra or {})
 
             return gcm_send_bulk_message(
                 registration_ids=list(
@@ -90,11 +90,11 @@ class GCMDevice(Device):
                 update_fields
             )
 
-    def send_message(self, message, extra={}):
+    def send_message(self, message, extra=None):
         from .gcm import gcm_send_message
 
         data = {"message": message}
-        data.update(extra)
+        data.update(extra or {})
 
         return gcm_send_message(
             registration_id=self.registration_id,
