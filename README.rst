@@ -93,15 +93,14 @@ Sending messages with extra data
 	from push_notifications import APNSDevice, GCMDevice
 
 	device = APNSDevice.objects.get(registration_id=apns_token)
-	device.send_message("You've got mail", from="mike@example.com")
+	device.send_message("You've got mail", extra={"from": "mike@example.com"})
 
 	devices = GCMDevice.objects.filter(user__first_name="James")
 	devices.send_message("Happy name day!", extra={"congrats": 9001})
 
 There may be cases in which you need to send more parameters to the phone,
 for example, to show the user a specific view when the message arrives. This
-can be done on APNS through extra keyword parameters, and through the 'extra'
-parameter in GCM.
+can be done through the 'extra' parameter, that expects a dictionary.
 
 
 Exceptions
