@@ -15,6 +15,7 @@ from . import NotificationError, PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 class APNSError(NotificationError):
 	pass
 
+
 class APNSDataOverflow(APNSError):
 	pass
 
@@ -35,7 +36,9 @@ def _apns_create_socket():
 	sock = socket()
 	certfile = SETTINGS.get("APNS_CERTIFICATE")
 	if not certfile:
-		raise ImproperlyConfigured('You need to set PUSH_NOTIFICATIONS_SETTINGS["APNS_CERTIFICATE"] to send messages through APNS.')
+		raise ImproperlyConfigured(
+			'You need to set PUSH_NOTIFICATIONS_SETTINGS["APNS_CERTIFICATE"] to send messages through APNS.'
+		)
 
 	try:
 		f = open(certfile, "r")
@@ -49,9 +52,11 @@ def _apns_create_socket():
 
 	return sock
 
+
 def _apns_pack_message(token, data):
 	format = "!cH32sH%ds" % (len(data))
 	return struct.pack(format, b"\0", 32, unhexlify(token), len(data), data)
+
 
 def _apns_send(token, alert, badge=0, sound="chime", content_available=False, action_loc_key=None, loc_key=None, loc_args=[], extra={}, socket=None):
 	data = {}
@@ -104,6 +109,7 @@ def apns_send_message(registration_id, data, **kwargs):
 	"""
 
 	return _apns_send(registration_id, data, **kwargs)
+
 
 def apns_send_bulk_message(registration_ids, data, **kwargs):
 	"""

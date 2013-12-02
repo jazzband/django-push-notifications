@@ -11,6 +11,7 @@ class APNSDeviceResource(ModelResource):
 		queryset = APNSDevice.objects.all()
 		resource_name = "device/apns"
 
+
 class GCMDeviceResource(ModelResource):
 	class Meta:
 		authorization = Authorization()

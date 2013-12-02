@@ -12,8 +12,10 @@ from . import NotificationError, PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 SETTINGS.setdefault("GCM_POST_URL", "https://android.googleapis.com/gcm/send")
 SETTINGS.setdefault("GCM_MAX_RECIPIENTS", 1000)
 
+
 class GCMError(NotificationError):
 	pass
+
 
 def chunks(l, n):
 	"""
@@ -21,6 +23,7 @@ def chunks(l, n):
 	"""
 	for i in range(0, len(l), n):
 		yield l[i:i+n]
+
 
 def _gcm_send(data, content_type):
 	from django.core.exceptions import ImproperlyConfigured
@@ -44,6 +47,7 @@ def _gcm_send(data, content_type):
 
 	return result
 
+
 def gcm_send_message(registration_id, data, collapse_key=None):
 	"""
 	Sends a GCM notification to a single registration_id.
@@ -63,6 +67,7 @@ def gcm_send_message(registration_id, data, collapse_key=None):
 
 	data = urlencode(values)
 	return _gcm_send(data, "application/x-www-form-urlencoded;charset=UTF-8")
+
 
 def gcm_send_bulk_message(registration_ids, data, collapse_key=None, delay_while_idle=False):
 	"""
