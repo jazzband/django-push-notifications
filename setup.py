@@ -20,7 +20,7 @@ VERSION = "0.8"
 
 setup(
 	name = "django-push-notifications",
-	packages = ["push_notifications"],
+	packages = ["push_notifications", "push_notifications/migrations"],
 	author = "Jerome Leclanche",
 	author_email = "jerome.leclanche+pypi@gmail.com",
 	classifiers = CLASSIFIERS,
