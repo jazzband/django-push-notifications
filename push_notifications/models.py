@@ -10,7 +10,8 @@ AUTH_USER_MODEL = getattr(settings, "AUTH_USER_MODEL", "auth.User")
 
 class Device(models.Model):
 	name = models.CharField(max_length=255, verbose_name=_("Name"), blank=True, null=True)
-	active = models.BooleanField(verbose_name=_("Is active"), default=True, help_text=_("Inactive devices will not be sent notifications"))
+	active = models.BooleanField(verbose_name=_("Is active"), default=True,
+		help_text=_("Inactive devices will not be sent notifications"))
 	user = models.ForeignKey(AUTH_USER_MODEL, blank=True, null=True)
 
 	class Meta:
@@ -29,14 +30,19 @@ class GCMDeviceQuerySet(models.query.QuerySet):
 	def send_message(self, message):
 		if self:
 			from .gcm import gcm_send_bulk_message
-			return gcm_send_bulk_message(registration_ids=list(self.values_list("registration_id", flat=True)), data={"message": message}, collapse_key="message")
+			return gcm_send_bulk_message(
+				registration_ids=list(self.values_list("registration_id", flat=True)),
+				data={"message": message},
+				collapse_key="message"
+			)
 
 
 class GCMDevice(Device):
 	# device_id cannot be a reliable primary key as fragmentation between different devices
 	# can make it turn out to be null and such:
 	# http://android-developers.blogspot.co.uk/2011/03/identifying-app-installations.html
-	device_id = UUIDField(verbose_name=_("Device ID"), blank=True, null=True, help_text="ANDROID_ID / TelephonyManager.getDeviceId()")
+	device_id = UUIDField(verbose_name=_("Device ID"), blank=True, null=True,
+		help_text="ANDROID_ID / TelephonyManager.getDeviceId()")
 	registration_id = models.TextField(verbose_name=_("Registration ID"), unique=True)
 
 	objects = GCMDeviceManager()
@@ -62,7 +68,8 @@ class APNSDeviceQuerySet(models.query.QuerySet):
 
 
 class APNSDevice(Device):
-	device_id = UUIDField(verbose_name=_("Device ID"), blank=True, null=True, help_text="UDID / UIDevice.identifierForVendor()")
+	device_id = UUIDField(verbose_name=_("Device ID"), blank=True, null=True,
+		help_text="UDID / UIDevice.identifierForVendor()")
 	registration_id = models.CharField(max_length=64, unique=True)
 
 	objects = APNSDeviceManager()
