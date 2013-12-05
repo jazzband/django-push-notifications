@@ -6,6 +6,9 @@ https://developer.android.com/google/gcm/index.html
 """
 
 import urllib2
+import json
+from urllib import urlencode
+from django.core.exceptions import ImproperlyConfigured
 from . import NotificationError, PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 
@@ -26,8 +29,6 @@ def chunks(l, n):
 
 
 def _gcm_send(data, content_type):
-	from django.core.exceptions import ImproperlyConfigured
-
 	key = SETTINGS.get("GCM_API_KEY")
 	if not key:
 		raise ImproperlyConfigured('You need to set PUSH_NOTIFICATIONS_SETTINGS["GCM_API_KEY"] to send messages through GCM.')
@@ -55,7 +56,6 @@ def gcm_send_message(registration_id, data, collapse_key=None):
 	If sending multiple notifications, it is more efficient to use
 	gcm_send_bulk_message()
 	"""
-	from urllib import urlencode
 
 	values = {
 		"registration_id": registration_id,
@@ -75,7 +75,6 @@ def gcm_send_bulk_message(registration_ids, data, collapse_key=None, delay_while
 	needs to be a list.
 	This will send the notification as json data.
 	"""
-	import json
 
 	# GCM only allows up to 1000 reg ids per bulk message
 	# https://developer.android.com/google/gcm/gcm.html#request

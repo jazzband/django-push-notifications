@@ -5,10 +5,13 @@ https://developer.apple.com/library/ios/#documentation/NetworkingInternet/Concep
 """
 
 import json
+import ssl
 import struct
 import urllib2
 from binascii import unhexlify
+from socket import socket
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from . import NotificationError, PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 
@@ -29,10 +32,6 @@ APNS_MAX_NOTIFICATION_SIZE = 256
 
 
 def _apns_create_socket():
-	import ssl
-	from socket import socket
-	from django.core.exceptions import ImproperlyConfigured
-
 	sock = socket()
 	certfile = SETTINGS.get("APNS_CERTIFICATE")
 	if not certfile:
