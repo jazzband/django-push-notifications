@@ -15,18 +15,19 @@ from django.core.exceptions import ImproperlyConfigured
 from . import NotificationError, PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 
+SETTINGS.setdefault("APNS_PORT", 2195)
+if settings.DEBUG:
+	SETTINGS.setdefault("APNS_HOST", "gateway.sandbox.push.apple.com")
+else:
+	SETTINGS.setdefault("APNS_HOST", "gateway.push.apple.com")
+
+
 class APNSError(NotificationError):
 	pass
 
 
 class APNSDataOverflow(APNSError):
 	pass
-
-SETTINGS.setdefault("APNS_PORT", 2195)
-if settings.DEBUG:
-	SETTINGS.setdefault("APNS_HOST", "gateway.sandbox.push.apple.com")
-else:
-	SETTINGS.setdefault("APNS_HOST", "gateway.push.apple.com")
 
 APNS_MAX_NOTIFICATION_SIZE = 256
 
