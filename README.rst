@@ -61,7 +61,7 @@ Sending messages
 ----------------
 ::
 
-	from push_notifications import APNSDevice, GCMDevice
+	from push_notifications.models import APNSDevice, GCMDevice
 
 	device = GCMDevice.objects.get(registration_id=gcm_reg_id)
 	device.send_message({"foo": "bar"}) # The message will be sent and received as json.
@@ -77,7 +77,7 @@ Sending messages in bulk
 ------------------------
 ::
 
-	from push_notifications import APNSDevice, GCMDevice
+	from push_notifications.models import APNSDevice, GCMDevice
 
 	devices = GCMDevice.objects.filter(user__first_name="James")
 	devices.send_message({"message": "Happy name day!"})
