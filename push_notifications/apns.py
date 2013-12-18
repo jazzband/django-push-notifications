@@ -12,14 +12,9 @@ from binascii import unhexlify
 from socket import socket
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from . import NotificationError, PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from . import NotificationError
+from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
-
-SETTINGS.setdefault("APNS_PORT", 2195)
-if settings.DEBUG:
-	SETTINGS.setdefault("APNS_HOST", "gateway.sandbox.push.apple.com")
-else:
-	SETTINGS.setdefault("APNS_HOST", "gateway.push.apple.com")
 
 
 class APNSError(NotificationError):

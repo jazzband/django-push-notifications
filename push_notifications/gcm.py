@@ -9,11 +9,9 @@ import urllib2
 import json
 from urllib import urlencode
 from django.core.exceptions import ImproperlyConfigured
-from . import NotificationError, PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from . import NotificationError
+from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
-
-SETTINGS.setdefault("GCM_POST_URL", "https://android.googleapis.com/gcm/send")
-SETTINGS.setdefault("GCM_MAX_RECIPIENTS", 1000)
 
 
 class GCMError(NotificationError):
