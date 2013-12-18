@@ -16,7 +16,6 @@ from . import NotificationError
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 
-
 class APNSError(NotificationError):
 	pass
 
