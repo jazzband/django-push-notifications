@@ -1,2 +1,7 @@
+# python compiled
+__pycache__
 *.pyc
+
+# distutils
+MANIFEST
 build
