@@ -5,9 +5,16 @@ Documentation is available on the Android Developer website:
 https://developer.android.com/google/gcm/index.html
 """
 
-import urllib2
 import json
-from urllib import urlencode
+
+try:
+	from urllib.request import Request, urlopen
+	from urllib.parse import urlencode
+except ImportError:
+	# Python 2 support
+	from urllib2 import Request, urlopen
+	from urllib import urlencode
+
 from django.core.exceptions import ImproperlyConfigured
 from . import NotificationError
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS

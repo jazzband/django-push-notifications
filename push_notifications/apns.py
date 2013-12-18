@@ -7,7 +7,6 @@ https://developer.apple.com/library/ios/documentation/NetworkingInternet/Concept
 import json
 import ssl
 import struct
-import urllib2
 from binascii import unhexlify
 from socket import socket
 from django.conf import settings
@@ -38,7 +37,7 @@ def _apns_create_socket():
 		f = open(certfile, "r")
 		f.read()
 		f.close()
-	except Exception, e:
+	except Exception as e:
 		raise ImproperlyConfigured("The APNS certificate file at %r is not readable: %s" % (certfile, e))
 
 	sock = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_SSLv3, certfile=certfile)

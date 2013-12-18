@@ -16,7 +16,7 @@ class DeviceAdmin(admin.ModelAdmin):
 		for device in queryset:
 			try:
 				r = device.send_message("Test single notification")
-			except Exception, e:
+			except Exception as e:
 				errors.append(str(e))
 			if r:
 				ret.append(r)
