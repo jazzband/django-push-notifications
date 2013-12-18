@@ -28,8 +28,10 @@ Tastypie support should work on Tastypie 0.9.11 and newer.
 Setup
 -----
 ::
+	$ pip install django-push-notifications
 
 	# settings.py
+
 	INSTALLED_APPS = (
 		...
 		"push_notifications"
