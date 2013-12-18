@@ -18,7 +18,7 @@ class GCMError(NotificationError):
 	pass
 
 
-def chunks(l, n):
+def _chunks(l, n):
 	"""
 	Yield successive chunks from list \a l with a minimum size \a n
 	"""
@@ -79,7 +79,7 @@ def gcm_send_bulk_message(registration_ids, data, collapse_key=None, delay_while
 	max_recipients = SETTINGS.get("GCM_MAX_RECIPIENTS")
 	if len(registration_ids) > max_recipients:
 		ret = []
-		for chunk in chunks(registration_ids, max_recipients):
+		for chunk in _chunks(registration_ids, max_recipients):
 			ret.append(gcm_send_bulk_message(chunk, data, collapse_key, delay_while_idle))
 		return "\n".join(ret)
 
