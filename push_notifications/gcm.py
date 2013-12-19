@@ -44,8 +44,8 @@ def _gcm_send(data, content_type):
 		"Content-Length": str(len(data)),
 	}
 
-	request = urllib2.Request(SETTINGS["GCM_POST_URL"], data, headers)
-	response = urllib2.urlopen(request)
+	request = Request(SETTINGS["GCM_POST_URL"], data, headers)
+	response = urlopen(request)
 	result = response.read()
 
 	if result.startswith("Error="):
