@@ -43,7 +43,7 @@ class GCMDevice(Device):
 	# http://android-developers.blogspot.co.uk/2011/03/identifying-app-installations.html
 	device_id = UUIDField(verbose_name=_("Device ID"), blank=True, null=True,
 		help_text="ANDROID_ID / TelephonyManager.getDeviceId()")
-	registration_id = models.TextField(verbose_name=_("Registration ID"), unique=True)
+	registration_id = models.TextField(verbose_name=_("Registration ID"))
 
 	objects = GCMDeviceManager()
 
