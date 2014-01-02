@@ -5,3 +5,10 @@ __pycache__
 # distutils
 MANIFEST
 build
+
+# IDE
+.idea
+*.iml
+
+# virtualenv
+.env
