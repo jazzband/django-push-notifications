@@ -15,7 +15,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.sites',
     'push_notifications',
-    'testapp',
 ]
 
 SITE_ID = 1
