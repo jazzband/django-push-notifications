@@ -69,3 +69,9 @@ class HexIntegerField(with_metaclass(models.SubfieldBase, models.BigIntegerField
 		defaults.update(kwargs)
 		# yes, that super call is right
 		return super(models.IntegerField, self).formfield(**defaults)
+
+try:
+	from south.modelsinspector import add_introspection_rules
+	add_introspection_rules([], ["^push_notifications\.fields\.HexIntegerField"])
+except ImportError:
+	pass
