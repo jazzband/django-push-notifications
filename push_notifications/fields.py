@@ -40,7 +40,7 @@ class HexIntegerField(with_metaclass(models.SubfieldBase, models.BigIntegerField
 		elif engine == "django.db.backends.sqlite":
 			return "UNSIGNED BIG INT"
 		else:
-			return super(UnsignedBigIntegerField, self).db_type(connection)
+			return super(HexIntegerField, self).db_type(connection)
 
 	def get_internal_type(self):
 		return self.__class__.__name__
