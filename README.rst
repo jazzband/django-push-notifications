@@ -116,3 +116,12 @@ the device they register.
 Subclassing the authenticated resources in order to add a SameUserAuthentication and a user ForeignKey is recommended.
 
 When registered, the APIs will show up at <api_root>/device/apns and <api_root>/device/gcm, respectively.
+
+
+Python 3 support
+----------------
+
+django-push-notifications has been tested on Python 3 and should work. However, the django-uuidfield dependency does not
+officially support Python 3. A pull request is pending and can be used for the time being::
+
+	pip install -e git://github.com/dominicrodger/django-uuidfield.git@python3#egg=django_uuidfield
