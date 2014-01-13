@@ -1,6 +1,9 @@
 django-push-notifications
 =========================
 
+.. image:: https://api.travis-ci.org/Adys/django-push-notifications.png
+	:target: https://travis-ci.org/Adys/django-push-notifications
+
 A minimal Django app that implements Device models that can send messages through APNS and GCM.
 
 The app implements two models: GCMDevice and APNSDevice. Those models share the same attributes:
