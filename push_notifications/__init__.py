@@ -1,7 +1,7 @@
 
 __author__ = "Jerome Leclanche"
 __email__ = "jerome.leclanche+pypi@gmail.com"
-__version__ = "0.9.90"
+__version__ = "1.0"
 
 
 class NotificationError(Exception):
