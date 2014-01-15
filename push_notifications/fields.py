@@ -3,8 +3,12 @@ import struct
 from django import forms
 from django.core.validators import RegexValidator
 from django.db import models, connection
-from django.utils.six import with_metaclass
 from django.utils.translation import ugettext_lazy as _
+
+try:
+	from django.utils.six import with_metaclass
+except ImportError:
+	from six import with_metaclass
 
 
 __all__ = ["HexadecimalField", "HexIntegerField"]
