@@ -46,9 +46,6 @@ class HexIntegerField(with_metaclass(models.SubfieldBase, models.BigIntegerField
 		else:
 			return super(HexIntegerField, self).db_type(connection)
 
-	def get_internal_type(self):
-		return self.__class__.__name__
-
 	def get_prep_value(self, value):
 		if value is None or value == "":
 			return None
