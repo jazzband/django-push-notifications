@@ -46,7 +46,7 @@ class HexIntegerField(with_metaclass(models.SubfieldBase, models.BigIntegerField
 		return self.__class__.__name__
 
 	def get_prep_value(self, value):
-		if value is None or value is "":
+		if value is None or value == "":
 			return None
 		value = int(value, 16)
 		# on postgres only, interpret as signed
