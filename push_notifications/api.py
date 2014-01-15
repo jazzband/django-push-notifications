@@ -1,6 +1,5 @@
 from tastypie.authorization import Authorization
 from tastypie.authentication import BasicAuthentication
-from tastypie.fields import ForeignKey
 from tastypie.resources import ModelResource
 from .models import APNSDevice, GCMDevice
 
