@@ -9,7 +9,6 @@ import ssl
 import struct
 from binascii import unhexlify
 from socket import socket
-from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from . import NotificationError
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS

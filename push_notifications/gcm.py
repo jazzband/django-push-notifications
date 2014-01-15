@@ -20,7 +20,6 @@ from . import NotificationError
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 
-
 class GCMError(NotificationError):
 	pass
 
@@ -30,7 +29,7 @@ def _chunks(l, n):
 	Yield successive chunks from list \a l with a minimum size \a n
 	"""
 	for i in range(0, len(l), n):
-		yield l[i:i+n]
+		yield l[i:i + n]
 
 
 def _gcm_send(data, content_type):
