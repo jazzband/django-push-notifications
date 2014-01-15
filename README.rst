@@ -27,6 +27,8 @@ The app also depends on django-uuidfield.
 
 Tastypie support should work on Tastypie 0.9.11 and newer.
 
+Django versions older than 1.5 require 'six' to be installed.
+
 
 Setup
 -----
