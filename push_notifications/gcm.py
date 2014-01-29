@@ -45,7 +45,7 @@ def _gcm_send(data, content_type):
 
 	request = Request(SETTINGS["GCM_POST_URL"], data, headers)
 	response = urlopen(request)
-	result = response.read()
+	result = response.read().decode("utf-8")
 
 	if result.startswith("Error="):
 		raise GCMError(result)
@@ -98,5 +98,5 @@ def gcm_send_bulk_message(registration_ids, data, collapse_key=None, delay_while
 	if delay_while_idle:
 		values["delay_while_idle"] = delay_while_idle
 
-	data = json.dumps(values)
+	data = json.dumps(values).encode("utf-8")
 	return _gcm_send(data, "application/json")
