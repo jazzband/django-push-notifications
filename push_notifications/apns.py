@@ -65,7 +65,8 @@ def _apns_send(token, alert, badge=0, sound="chime", content_available=False, ac
         if loc_args:
             alert["loc-args"] = loc_args
 
-    data["alert"] = alert
+    if alert:
+        data["alert"] = alert
 
     if badge:
         data["badge"] = badge
