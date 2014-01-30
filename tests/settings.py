@@ -1,20 +1,21 @@
 # assert warnings are enabled
 import warnings
+
 warnings.simplefilter("ignore", Warning)
 
 DATABASES = {
-	"default": {
-		"ENGINE": "django.db.backends.sqlite3",
-	}
+"default": {
+"ENGINE": "django.db.backends.sqlite3",
+}
 }
 
 INSTALLED_APPS = [
-	"django.contrib.admin",
-	"django.contrib.auth",
-	"django.contrib.contenttypes",
-	"django.contrib.sessions",
-	"django.contrib.sites",
-	"push_notifications",
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.sites",
+    "push_notifications",
 ]
 
 SITE_ID = 1
