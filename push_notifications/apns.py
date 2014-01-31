@@ -75,7 +75,6 @@ def _apns_send(token, alert, badge=0, sound="chime", content_available=False, ac
 	if content_available:
 		data["content-available"] = 1
 
-
 	data["aps"] = apns_data
 	data.update(extra)
 
