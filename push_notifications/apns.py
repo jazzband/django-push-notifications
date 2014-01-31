@@ -101,7 +101,10 @@ def apns_send_message(registration_id, alert, **kwargs):
 	This will send the notification as form data.
 	If sending multiple notifications, it is more efficient to use
 	apns_send_bulk_message()
-	Note that \a data should always be a string.
+
+	Note that if set alert should always be a string. If it is not set,
+	it won't be included in the notification. You will need to pass None
+	to this for silent notifications.
 	"""
 
 	return _apns_send(registration_id, alert, **kwargs)
@@ -111,6 +114,10 @@ def apns_send_bulk_message(registration_ids, alert, **kwargs):
 	"""
 	Sends an APNS notification to one or more registration_ids.
 	The registration_ids argument needs to be a list.
+
+	Note that if set alert should always be a string. If it is not set,
+	it won't be included in the notification. You will need to pass None
+	to this for silent notifications.
 	"""
 	socket = _apns_create_socket()
 	for registration_id in registration_ids:
