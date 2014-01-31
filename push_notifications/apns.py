@@ -52,6 +52,7 @@ def _apns_pack_message(token, data):
 
 def _apns_send(token, alert, badge=0, sound="chime", content_available=False, action_loc_key=None, loc_key=None, loc_args=[], extra={}, socket=None):
 	data = {}
+	apns_data = {}
 
 	if action_loc_key or loc_key or loc_args:
 		alert = {"body": alert}
@@ -62,7 +63,8 @@ def _apns_send(token, alert, badge=0, sound="chime", content_available=False, ac
 		if loc_args:
 			alert["loc-args"] = loc_args
 
-	data["alert"] = alert
+	if alert is not None:
+		apns_data["alert"] = alert
 
 	if badge:
 		data["badge"] = badge
@@ -73,10 +75,12 @@ def _apns_send(token, alert, badge=0, sound="chime", content_available=False, ac
 	if content_available:
 		data["content-available"] = 1
 
+
+	data["aps"] = apns_data
 	data.update(extra)
 
 	# convert to json, avoiding unnecessary whitespace with separators
-	data = json.dumps({"aps": data}, separators=(",", ":"))
+	apns_data = json.dumps(data, separators=(",", ":"))
 
 	if len(data) > APNS_MAX_NOTIFICATION_SIZE:
 		raise APNSDataOverflow("Notification body cannot exceed %i bytes" % (APNS_MAX_NOTIFICATION_SIZE))
@@ -91,25 +95,32 @@ def _apns_send(token, alert, badge=0, sound="chime", content_available=False, ac
 		socket.close()
 
 
-def apns_send_message(registration_id, data, **kwargs):
+def apns_send_message(registration_id, alert, **kwargs):
 	"""
 	Sends an APNS notification to a single registration_id.
 	This will send the notification as form data.
 	If sending multiple notifications, it is more efficient to use
 	apns_send_bulk_message()
-	Note that \a data should always be a string.
+
+	Note that if set alert should always be a string. If it is not set,
+	it won't be included in the notification. You will need to pass None
+	to this for silent notifications.
 	"""
 
-	return _apns_send(registration_id, data, **kwargs)
+	return _apns_send(registration_id, alert, **kwargs)
 
 
-def apns_send_bulk_message(registration_ids, data, **kwargs):
+def apns_send_bulk_message(registration_ids, alert, **kwargs):
 	"""
 	Sends an APNS notification to one or more registration_ids.
 	The registration_ids argument needs to be a list.
+
+	Note that if set alert should always be a string. If it is not set,
+	it won't be included in the notification. You will need to pass None
+	to this for silent notifications.
 	"""
 	socket = _apns_create_socket()
 	for registration_id in registration_ids:
-		_apns_send(registration_id, data, socket=socket, **kwargs)
+		_apns_send(registration_id, alert, socket=socket, **kwargs)
 
 	socket.close()
