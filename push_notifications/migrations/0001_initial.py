@@ -72,7 +72,7 @@ class Migration(SchemaMigration):
 			"username": ("django.db.models.fields.CharField", [], {"unique": "True", "max_length": "30"})
 		},
 		u"contenttypes.contenttype": {
-			"Meta": {"ordering": "('name',)", "unique_together": "(('app_label', 'model'',)", "object_name": "ContentType", "db_table": "'django_content_type'"},
+			"Meta": {"ordering": "('name',)", "unique_together": "(('app_label', 'model'),)", "object_name": "ContentType", "db_table": "'django_content_type'"},
 			"app_label": ("django.db.models.fields.CharField", [], {"max_length": "100"}),
 			u"id": ("django.db.models.fields.AutoField", [], {"primary_key": "True"}),
 			"model": ("django.db.models.fields.CharField", [], {"max_length": "100"}),
