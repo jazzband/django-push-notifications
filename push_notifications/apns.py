@@ -67,13 +67,13 @@ def _apns_send(token, alert, badge=0, sound="chime", content_available=False, ac
 		apns_data["alert"] = alert
 
 	if badge:
-		data["badge"] = badge
+		apns_data["badge"] = badge
 
 	if sound:
-		data["sound"] = sound
+		apns_data["sound"] = sound
 
 	if content_available:
-		data["content-available"] = 1
+		apns_data["content-available"] = 1
 
 	data["aps"] = apns_data
 	data.update(extra)
