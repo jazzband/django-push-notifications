@@ -8,5 +8,5 @@ class PushPayloadTest(TestCase):
         socket = mock.MagicMock()
         with mock.patch("push_notifications.apns._apns_pack_message") as p:
             _apns_send('123', 'Hello world', badge=1, sound='chime', extra={"custom_data": 12345}, socket=socket)
-            p.assert_called_once_with('123', {'aps': {'alert': 'Hello world', 'badge': 1, 'sound': 'chime'},
-                                              "custom_data": 12345})
+            p.assert_called_once_with('123', '{"aps":{"sound":"chime","badge":1,"alert":"Hello world"},'
+                                             '"custom_data":12345}')
