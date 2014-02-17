@@ -55,7 +55,7 @@ def _apns_send(token, alert, badge=0, sound=None, content_available=False, actio
 	apns_data = {}
 
 	if action_loc_key or loc_key or loc_args:
-		alert = {"body": alert}
+		alert = {"body": alert} if alert else {}
 		if action_loc_key:
 			alert["action-loc-key"] = action_loc_key
 		if loc_key:
