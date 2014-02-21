@@ -8,7 +8,5 @@ install:
   - pip install -r requirements.txt --use-mirrors
   - pip install flake8 --use-mirrors
   - python setup.py -q install
-before_script:
-  - "flake8 push_notifications"
 script:
   - python tests/runtests.py
