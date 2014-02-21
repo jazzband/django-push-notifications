@@ -6,47 +6,52 @@ import django.conf
 
 
 def setup():
-	"""
-	set up test environment
-	"""
+    """
+    set up test environment
+    """
 
-	# add test/src folders to sys path
-	test_folder = os.path.abspath(os.path.dirname(__file__))
-	src_folder = os.path.abspath(os.path.join(test_folder, os.pardir))
-	sys.path.insert(0, test_folder)
-	sys.path.insert(0, src_folder)
+    # add test/src folders to sys path
+    test_folder = os.path.abspath(os.path.dirname(__file__))
+    src_folder = os.path.abspath(os.path.join(test_folder, os.pardir))
+    sys.path.insert(0, test_folder)
+    sys.path.insert(0, src_folder)
 
-	# define settings
-	os.environ[django.conf.ENVIRONMENT_VARIABLE] = "settings"
+    # define settings
+    os.environ[django.conf.ENVIRONMENT_VARIABLE] = "settings"
 
-	# set up environment
-	from django.test.utils import setup_test_environment
-	setup_test_environment()
+    # set up environment
+    from django.test.utils import setup_test_environment
 
-	# set up database
-	from django.db import connection
-	connection.creation.create_test_db()
+    setup_test_environment()
+
+    # set up database
+    from django.db import connection
+
+    connection.creation.create_test_db()
 
 
 def tear_down():
-	"""
-	tear down test environment
-	"""
+    """
+    tear down test environment
+    """
 
-	# destroy test database
-	from django.db import connection
-	connection.creation.destroy_test_db("not_needed")
+    # destroy test database
+    from django.db import connection
 
-	# teardown environment
-	from django.test.utils import teardown_test_environment
-	teardown_test_environment()
+    connection.creation.destroy_test_db("not_needed")
+
+    # teardown environment
+    from django.test.utils import teardown_test_environment
+
+    teardown_test_environment()
 
 
 # fire in the hole!
 if __name__ == "__main__":
-	setup()
+    setup()
 
-	import tests
-	unittest.main(module=tests)
+    import tests
 
-	tear_down()
+    unittest.main(module=tests)
+
+    tear_down()
