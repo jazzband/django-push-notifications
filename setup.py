@@ -30,8 +30,8 @@ setup(
 	author_email=push_notifications.__email__,
 	classifiers=CLASSIFIERS,
 	description="Send push notifications to mobile devices through GCM or APNS in Django.",
-	download_url="https://github.com/Adys/django-push-notifications/tarball/master",
+	download_url="https://github.com/jleclanche/django-push-notifications/tarball/master",
 	long_description=README,
-	url="https://github.com/Adys/django-push-notifications",
+	url="https://github.com/jleclanche/django-push-notifications",
 	version=push_notifications.__version__,
 )
