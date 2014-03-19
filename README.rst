@@ -68,15 +68,24 @@ For APNS, you are required to include APNS_CERTIFICATE.
 
 Sending messages
 ----------------
+GCM and APNS services have slight different semantics. The app tries to offer a common interface for both when using the models.
+
 ::
 
 	from push_notifications.models import APNSDevice, GCMDevice
 
 	device = GCMDevice.objects.get(registration_id=gcm_reg_id)
-	device.send_message({"foo": "bar"}) # The message will be sent and received as json.
+	# The first argument will be sent as "message" to the intent extras Bundle
+	# Retrieve it with intent.getExtras().getString("message")
+	device.send_message("You've got mail")
+	# If you want to customize, send an extra dict and a None message.
+	# the extras dict will be maped into the intent extras Bundle. Remember, GCM converts everything to strings!
+	device.send_message(None, extra={"foo": "bar"}')
 
 	device = APNSDevice.objects.get(registration_id=apns_token)
-	device.send_message("You've got mail") # The message may only be sent as text.
+	device.send_message("You've got mail") # Alert message may only be sent as text.
+	device.send_message(None, badge=5) # No alerts but with badge.
+	device.send_message(None, badge=1, extra={"foo": "bar"}) # Silent message with badge and added custom data.
 
 Note that APNS does not support sending payloads that exceed 256 bytes. The message is only one part of the payload, if
 once constructed the payload exceeds the maximum size, an APNSDataOverflow exception will be raised before anything is sent.
@@ -93,7 +102,6 @@ Sending messages in bulk
 
 Sending messages in bulk makes use of the bulk mechanics offered by GCM and APNS. It is almost always preferable to send
 bulk notifications instead of single ones.
-Note that in GCM, the device will receive data in a different format depending on whether it's been sent in bulk or not.
 
 
 Exceptions
