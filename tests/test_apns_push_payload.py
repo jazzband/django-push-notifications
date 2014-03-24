@@ -1,6 +1,6 @@
 import mock
 from django.test import TestCase
-from push_notifications.apns import _apns_send
+from push_notifications.apns import _apns_send, APNSDataOverflow
 
 
 class APNSPushPayloadTest(TestCase):
@@ -22,3 +22,9 @@ class APNSPushPayloadTest(TestCase):
         with mock.patch("push_notifications.apns._apns_pack_message") as p:
             _apns_send('123', 'sample', extra={"foo": "bar"}, socket=socket)
             p.assert_called_once_with('123', '{"aps":{"alert":"sample"},"foo":"bar"}')
+
+    def test_oversized_payload(self):
+        socket = mock.MagicMock()
+        with mock.patch("push_notifications.apns._apns_pack_message") as p:
+            self.assertRaises(APNSDataOverflow, _apns_send, '123', '_' * 257, socket=socket)
+            p.assert_has_calls([])
