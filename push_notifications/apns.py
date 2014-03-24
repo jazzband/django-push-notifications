@@ -81,7 +81,7 @@ def _apns_send(token, alert, badge=0, sound=None, content_available=False, actio
 	# convert to json, avoiding unnecessary whitespace with separators
 	json_data = json.dumps(data, separators=(",", ":"))
 
-	if len(data) > APNS_MAX_NOTIFICATION_SIZE:
+	if len(json_data) > APNS_MAX_NOTIFICATION_SIZE:
 		raise APNSDataOverflow("Notification body cannot exceed %i bytes" % (APNS_MAX_NOTIFICATION_SIZE))
 
 	data = _apns_pack_message(token, json_data)
