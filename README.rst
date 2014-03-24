@@ -1,8 +1,8 @@
 django-push-notifications
 =========================
 
-.. image:: https://api.travis-ci.org/Adys/django-push-notifications.png
-	:target: https://travis-ci.org/Adys/django-push-notifications
+.. image:: https://api.travis-ci.org/jleclanche/django-push-notifications.png
+	:target: https://travis-ci.org/jleclanche/django-push-notifications
 
 A minimal Django app that implements Device models that can send messages through APNS and GCM.
 
