@@ -14,6 +14,7 @@ class Device(models.Model):
 	active = models.BooleanField(verbose_name=_("Is active"), default=True,
 		help_text=_("Inactive devices will not be sent notifications"))
 	user = models.ForeignKey(AUTH_USER_MODEL, blank=True, null=True)
+	date_created = models.DateTimeField(verbose_name=_("Creation date"), auto_now_add=True, null=True)
 
 	class Meta:
 		abstract = True

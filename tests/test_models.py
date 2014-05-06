@@ -1,20 +1,25 @@
 import mock
 from django.test import TestCase
+from django.utils import timezone
 from push_notifications.models import GCMDevice, APNSDevice
 
 
 class ModelTestCase(TestCase):
 	def test_can_save_gcm_device(self):
 		device = GCMDevice.objects.create(
-			registration_id="a valid registration id",
+			registration_id="a valid registration id"
 		)
 		assert device.id is not None
+		assert device.date_created is not None
+		assert device.date_created.date() == timezone.now().date()
 
 	def test_can_create_save_device(self):
 		device = APNSDevice.objects.create(
-			registration_id="a valid registration id",
+			registration_id="a valid registration id"
 		)
 		assert device.id is not None
+		assert device.date_created is not None
+		assert device.date_created.date() == timezone.now().date()
 
 	def test_gcm_send_message(self):
 		device = GCMDevice.objects.create(

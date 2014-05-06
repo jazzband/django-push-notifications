@@ -4,7 +4,7 @@ from .models import APNSDevice, GCMDevice
 
 
 class DeviceAdmin(admin.ModelAdmin):
-	list_display = ("__unicode__", "device_id", "user", "active")
+	list_display = ("__unicode__", "device_id", "user", "active", "date_created")
 	search_fields = ("name", "device_id", "user__username")
 	list_filter = ("active", )
 	actions = ("send_message", "send_bulk_message", "enable", "disable")
@@ -32,11 +32,11 @@ class DeviceAdmin(admin.ModelAdmin):
 	send_bulk_message.short_description = _("Send test message in bulk")
 
 	def enable(self, request, queryset):
-		queryset.update(is_active=True)
+		queryset.update(active=True)
 	enable.short_description = _("Enable selected devices")
 
 	def disable(self, request, queryset):
-		queryset.update(is_active=False)
+		queryset.update(active=False)
 	disable.short_description = _("Disable selected devices")
 
 
