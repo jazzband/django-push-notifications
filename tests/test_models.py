@@ -41,15 +41,15 @@ class ModelTestCase(TestCase):
 			registration_id="abc",
 		)
 		socket = mock.MagicMock()
-		with mock.patch("push_notifications.apns._apns_pack_message") as p:
-			device.send_message("Hello world", socket=socket)
-			p.assert_called_once_with('abc', '{"aps":{"alert":"Hello world"}}')
+		with mock.patch("push_notifications.apns._apns_pack_frame") as p:
+			device.send_message("Hello world", socket=socket, expiration=1)
+			p.assert_called_once_with('abc', '{"aps":{"alert":"Hello world"}}', 0, 1, 10)
 
 	def test_apns_send_message_extra(self):
 		device = APNSDevice.objects.create(
 			registration_id="abc",
 		)
 		socket = mock.MagicMock()
-		with mock.patch("push_notifications.apns._apns_pack_message") as p:
-			device.send_message("Hello world", extra={"foo": "bar"}, socket=socket)
-			p.assert_called_once_with('abc', '{"aps":{"alert":"Hello world"},"foo":"bar"}')
+		with mock.patch("push_notifications.apns._apns_pack_frame") as p:
+			device.send_message("Hello world", extra={"foo": "bar"}, socket=socket, identifier=1, expiration=2, priority=5)
+			p.assert_called_once_with('abc', '{"aps":{"alert":"Hello world"},"foo":"bar"}', 1, 2, 5)
