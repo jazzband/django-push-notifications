@@ -24,8 +24,9 @@ class Device(models.Model):
 
 
 class GCMDeviceManager(models.Manager):
-	def get_query_set(self):
+	def get_queryset(self):
 		return GCMDeviceQuerySet(self.model)
+	get_query_set = get_queryset  # Django < 1.6 compatiblity
 
 
 class GCMDeviceQuerySet(models.query.QuerySet):
@@ -62,8 +63,9 @@ class GCMDevice(Device):
 
 
 class APNSDeviceManager(models.Manager):
-	def get_query_set(self):
+	def get_queryset(self):
 		return APNSDeviceQuerySet(self.model)
+	get_query_set = get_queryset  # Django < 1.6 compatiblity
 
 
 class APNSDeviceQuerySet(models.query.QuerySet):
