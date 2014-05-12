@@ -1,3 +1,13 @@
+v1.1.0 (2014-05-xx)
+===================
+* BACKWARDS-INCOMPATIBLE: The arguments for device.send_message() have changed. See README.rst for details.
+* Added a date_created field to GCMDevice and APNSDevice. This field keeps track of when the Device was created.
+  This requires a `manage.py migrate`.
+* Updated APNS protocol support
+* Several APNS bugfixes
+* Assorted migrations bugfixes
+* Added a test suite
+
 v1.0.1 (2013-01-16)
 ===================
 * Migrations have been reset. If you were using migrations pre-1.0 you should upgrade to 1.0 instead and only
