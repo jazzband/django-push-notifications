@@ -35,7 +35,6 @@ APNS_MAX_NOTIFICATION_SIZE = 256
 
 
 def _apns_create_socket():
-	sock = socket()
 	certfile = SETTINGS.get("APNS_CERTIFICATE")
 	if not certfile:
 		raise ImproperlyConfigured(
@@ -43,12 +42,12 @@ def _apns_create_socket():
 		)
 
 	try:
-		f = open(certfile, "r")
-		f.read()
-		f.close()
+		with open(certfile, "r") as f:
+			f.read()
 	except Exception as e:
 		raise ImproperlyConfigured("The APNS certificate file at %r is not readable: %s" % (certfile, e))
 
+	sock = socket.socket()
 	sock = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_SSLv3, certfile=certfile)
 	sock.connect((SETTINGS["APNS_HOST"], SETTINGS["APNS_PORT"]))
 
