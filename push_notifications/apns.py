@@ -88,7 +88,7 @@ def _apns_check_errors(sock):
 	except socket.timeout:  # py3
 		pass
 	except ssl.SSLError as e:  # py2
-		if 'timed out' not in e.message:
+		if "timed out" not in e.message:
 			raise
 	finally:
 		sock.settimeout(saved_timeout)

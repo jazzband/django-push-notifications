@@ -80,7 +80,7 @@ GCM and APNS services have slight different semantics. The app tries to offer a 
 	device.send_message("You've got mail")
 	# If you want to customize, send an extra dict and a None message.
 	# the extras dict will be maped into the intent extras Bundle. Remember, GCM converts everything to strings!
-	device.send_message(None, extra={"foo": "bar"}')
+	device.send_message(None, extra={"foo": "bar"})
 
 	device = APNSDevice.objects.get(registration_id=apns_token)
 	device.send_message("You've got mail") # Alert message may only be sent as text.
