@@ -47,7 +47,7 @@ def _gcm_send(data, content_type):
 	response = urlopen(request)
 	result = response.read().decode("utf-8")
 
-	#FIXME: broken for bulk results
+	# FIXME: broken for bulk results
 	if result.startswith("Error="):
 		raise GCMError(result)
 
