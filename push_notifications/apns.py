@@ -97,7 +97,7 @@ def _apns_check_errors(sock):
 def _apns_send(token, alert, badge=0, sound=None, content_available=False, action_loc_key=None, loc_key=None,
 				loc_args=[], extra={}, identifier=0, expiration=None, priority=10, socket=None):
 	data = {}
-	apns_data = {}
+	aps_data = {}
 
 	if action_loc_key or loc_key or loc_args:
 		alert = {"body": alert} if alert else {}
@@ -109,18 +109,18 @@ def _apns_send(token, alert, badge=0, sound=None, content_available=False, actio
 			alert["loc-args"] = loc_args
 
 	if alert is not None:
-		apns_data["alert"] = alert
+		aps_data["alert"] = alert
 
 	if badge:
-		apns_data["badge"] = badge
+		aps_data["badge"] = badge
 
 	if sound:
-		apns_data["sound"] = sound
+		aps_data["sound"] = sound
 
 	if content_available:
-		apns_data["content-available"] = 1
+		aps_data["content-available"] = 1
 
-	data["aps"] = apns_data
+	data["aps"] = aps_data
 	data.update(extra)
 
 	# convert to json, avoiding unnecessary whitespace with separators
