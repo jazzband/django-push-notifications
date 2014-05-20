@@ -33,6 +33,7 @@ setup(
 	description="Send push notifications to mobile devices through GCM or APNS in Django.",
 	download_url="https://github.com/jleclanche/django-push-notifications/tarball/master",
 	long_description=README,
+	install_requires=['Django', 'django-uuidfield'],
 	url="https://github.com/jleclanche/django-push-notifications",
 	version=push_notifications.__version__,
 )
