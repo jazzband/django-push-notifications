@@ -114,7 +114,7 @@ def _apns_send(token, alert, badge=0, sound=None, content_available=False, actio
 	if badge:
 		aps_data["badge"] = badge
 
-	if sound:
+	if sound is not None:
 		aps_data["sound"] = sound
 
 	if content_available:

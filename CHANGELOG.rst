@@ -4,6 +4,7 @@ v1.1.0 (2014-05-xx)
 * Added a date_created field to GCMDevice and APNSDevice. This field keeps track of when the Device was created.
   This requires a `manage.py migrate`.
 * Updated APNS protocol support
+* Allow sending empty sounds on APNS
 * Several APNS bugfixes
 * Assorted migrations bugfixes
 * Added a test suite
