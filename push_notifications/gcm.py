@@ -43,7 +43,6 @@ def _gcm_send(data, content_type):
 		"Content-Length": str(len(data)),
 	}
 
-
 	# convert to bytes to satisfy the requests module
 	# in python3
 	data = data.encode('utf-8')
