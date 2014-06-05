@@ -43,6 +43,10 @@ def _gcm_send(data, content_type):
 		"Content-Length": str(len(data)),
 	}
 
+	# convert to bytes to satisfy the requests module
+	# in python3
+	data = data.encode('utf-8')
+
 	request = Request(SETTINGS["GCM_POST_URL"], data, headers)
 	response = urlopen(request)
 	result = response.read().decode("utf-8")

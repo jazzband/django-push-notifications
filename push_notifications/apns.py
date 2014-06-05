@@ -59,11 +59,13 @@ def _apns_pack_frame(token_hex, payload, identifier, expiration, priority):
 	# |COMMAND|FRAME-LEN|{token}|{payload}|{id:4}|{expiration:4}|{priority:1}
 	frame_len = 3 * 5 + len(token) + len(payload) + 4 + 4 + 1  # 5 items, each 3 bytes prefix, then each item length
 	frame_fmt = "!BIBH%ssBH%ssBHIBHIBHB" % (len(token), len(payload))
+	# convert payload to bytes to satisfy python3 requirement
+	# see https://docs.python.org/3/whatsnew/3.2.html#porting-to-python-3-2
 	frame = struct.pack(
 		frame_fmt,
 		2, frame_len,
 		1, len(token), token,
-		2, len(payload), payload,
+		2, len(payload), payload.encode("utf-8"),
 		3, 4, identifier,
 		4, 4, expiration,
 		5, 1, priority)
