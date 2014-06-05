@@ -70,7 +70,7 @@ def gcm_send_message(registration_id, data, collapse_key=None, delay_while_idle=
 	for k, v in data.items():
 		values["data.%s" % (k)] = v.encode("utf-8")
 
-	data = urlencode(values)
+	data = urlencode(values).encode("utf-8")
 	return _gcm_send(data, "application/x-www-form-urlencoded;charset=UTF-8")
 
 

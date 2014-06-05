@@ -124,7 +124,7 @@ def _apns_send(token, alert, badge=0, sound=None, content_available=False, actio
 	data.update(extra)
 
 	# convert to json, avoiding unnecessary whitespace with separators
-	json_data = json.dumps(data, separators=(",", ":"))
+	json_data = json.dumps(data, separators=(",", ":")).encode("utf-8")
 
 	if len(json_data) > APNS_MAX_NOTIFICATION_SIZE:
 		raise APNSDataOverflow("Notification body cannot exceed %i bytes" % (APNS_MAX_NOTIFICATION_SIZE))
