@@ -94,7 +94,7 @@ def _apns_check_errors(sock):
 		sock.settimeout(saved_timeout)
 
 
-def _apns_send(token, alert, badge=0, sound=None, content_available=False, action_loc_key=None, loc_key=None,
+def _apns_send(token, alert, badge=None, sound=None, content_available=False, action_loc_key=None, loc_key=None,
 				loc_args=[], extra={}, identifier=0, expiration=None, priority=10, socket=None):
 	data = {}
 	aps_data = {}
@@ -111,7 +111,7 @@ def _apns_send(token, alert, badge=0, sound=None, content_available=False, actio
 	if alert is not None:
 		aps_data["alert"] = alert
 
-	if badge:
+	if badge is not None:
 		aps_data["badge"] = badge
 
 	if sound is not None:
