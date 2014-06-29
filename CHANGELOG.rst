@@ -1,4 +1,4 @@
-v1.1.0 (2014-05-xx)
+v1.1.0 (2014-06-29)
 ===================
 * BACKWARDS-INCOMPATIBLE: The arguments for device.send_message() have changed. See README.rst for details.
 * Added a date_created field to GCMDevice and APNSDevice. This field keeps track of when the Device was created.
@@ -6,6 +6,7 @@ v1.1.0 (2014-05-xx)
 * Updated APNS protocol support
 * Allow sending empty sounds on APNS
 * Several APNS bugfixes
+* Fixed BigIntegerField support on PostGIS
 * Assorted migrations bugfixes
 * Added a test suite
 
