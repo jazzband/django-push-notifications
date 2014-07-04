@@ -127,8 +127,8 @@ def _apns_send(token, alert, badge=0, sound=None, content_available=False, actio
 	json_data = json.dumps(data, separators=(",", ":"))
 
 	if(logger is not None):
-		logger.info(json_data)
-		
+		logger.debug(json_data)
+
 	if len(json_data) > APNS_MAX_NOTIFICATION_SIZE:
 		raise APNSDataOverflow("Notification body cannot exceed %i bytes" % (APNS_MAX_NOTIFICATION_SIZE))
 
