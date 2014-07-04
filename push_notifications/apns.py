@@ -95,7 +95,7 @@ def _apns_check_errors(sock):
 
 
 def _apns_send(token, alert, badge=0, sound=None, content_available=False, action_loc_key=None, loc_key=None,
-				loc_args=[], extra={}, identifier=0, expiration=None, priority=10, socket=None):
+				loc_args=[], extra={}, identifier=0, expiration=None, priority=10, socket=None, logger=None):
 	data = {}
 	aps_data = {}
 
@@ -126,6 +126,9 @@ def _apns_send(token, alert, badge=0, sound=None, content_available=False, actio
 	# convert to json, avoiding unnecessary whitespace with separators
 	json_data = json.dumps(data, separators=(",", ":"))
 
+	if(logger is not None):
+		logger.info(json_data)
+		
 	if len(json_data) > APNS_MAX_NOTIFICATION_SIZE:
 		raise APNSDataOverflow("Notification body cannot exceed %i bytes" % (APNS_MAX_NOTIFICATION_SIZE))
 
