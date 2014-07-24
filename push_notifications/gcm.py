@@ -96,7 +96,7 @@ def gcm_send_bulk_message(registration_ids, data, collapse_key=None, delay_while
 		values["data"] = data
 
 	if collapse_key:
-		values["collapse_key"] = collapse_key,
+		values["collapse_key"] = collapse_key
 
 	if delay_while_idle:
 		values["delay_while_idle"] = delay_while_idle
