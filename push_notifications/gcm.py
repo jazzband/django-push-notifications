@@ -73,7 +73,7 @@ def gcm_send_message(registration_id, data, collapse_key=None):
 	return _gcm_send(data, "application/x-www-form-urlencoded;charset=UTF-8")
 
 
-def gcm_send_bulk_message(registration_ids, data, collapse_key=None, delay_while_idle=False):
+def gcm_send_bulk_message(registration_ids, data, collapse_key=None, delay_while_idle=False, time_to_live=None):
 	"""
 	Sends a GCM notification to one or more registration_ids. The registration_ids
 	needs to be a list.
@@ -97,6 +97,9 @@ def gcm_send_bulk_message(registration_ids, data, collapse_key=None, delay_while
 
 	if delay_while_idle:
 		values["delay_while_idle"] = delay_while_idle
+
+	if time_to_live:
+		values["time_to_live"] = time_to_live
 
 	data = json.dumps(values).encode("utf-8")
 	return _gcm_send(data, "application/json")
