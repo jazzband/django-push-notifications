@@ -46,6 +46,7 @@ def _apns_create_socket():
 
 
 def _apns_pack_message(token, data):
+	data = data.encode('utf-8')
 	format = "!cH32sH%ds" % (len(data))
 	return struct.pack(format, b"\0", 32, unhexlify(token), len(data), data)
 
