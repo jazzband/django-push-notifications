@@ -47,14 +47,20 @@ def _gcm_send(data, content_type):
 	response = urlopen(request)
 	result = response.read().decode("utf-8")
 
-	# FIXME: broken for bulk results
-	if result.startswith("Error="):
-		raise GCMError(result)
+	# FIXME: this may or may not still be broken for bulk results
+	try:
+		result = json.loads(result)
+	except ValueError:
+		if result.startswith("Error="):
+			raise GCMError(result)
+	else:
+		if result['failure']:
+			raise GCMError(result)
 
 	return result
 
 
-def gcm_send_message(registration_id, data, collapse_key=None, delay_while_idle=False):
+def _gcm_send_plain(registration_id, data, collapse_key=None, delay_while_idle=False):
 	"""
 	Sends a GCM notification to a single registration_id.
 	This will send the notification as form data.
@@ -74,21 +80,12 @@ def gcm_send_message(registration_id, data, collapse_key=None, delay_while_idle=
 	return _gcm_send(data, "application/x-www-form-urlencoded;charset=UTF-8")
 
 
-def gcm_send_bulk_message(registration_ids, data, collapse_key=None, delay_while_idle=False):
+def _gcm_send_json(registration_ids, data, collapse_key=None, delay_while_idle=False):
 	"""
 	Sends a GCM notification to one or more registration_ids. The registration_ids
 	needs to be a list.
 	This will send the notification as json data.
 	"""
-
-	# GCM only allows up to 1000 reg ids per bulk message
-	# https://developer.android.com/google/gcm/gcm.html#request
-	max_recipients = SETTINGS.get("GCM_MAX_RECIPIENTS")
-	if len(registration_ids) > max_recipients:
-		ret = []
-		for chunk in _chunks(registration_ids, max_recipients):
-			ret.append(gcm_send_bulk_message(chunk, data, collapse_key, delay_while_idle))
-		return "\n".join(ret)
 
 	values = {"registration_ids": registration_ids}
 
@@ -103,3 +100,43 @@ def gcm_send_bulk_message(registration_ids, data, collapse_key=None, delay_while
 
 	data = json.dumps(values, separators=(",", ":")).encode("utf-8")
 	return _gcm_send(data, "application/json")
+
+
+def gcm_send_message(registration_id, data, collapse_key=None, delay_while_idle=False):
+	"""
+	Sends a GCM notification to a single registration_id.
+
+	This will send the notification as form data if possible, otherwise it will
+	fall back to json data.
+
+	If sending multiple notifications, it is more efficient to use
+	gcm_send_bulk_message() with a list of registration_ids
+	"""
+
+	args = data, collapse_key, delay_while_idle
+
+	try:
+		_gcm_send_plain(registration_id, *args)
+	except AttributeError:
+		_gcm_send_json([registration_id], *args)
+
+
+def gcm_send_bulk_message(registration_ids, data, collapse_key=None, delay_while_idle=False):
+	"""
+	Sends a GCM notification to one or more registration_ids. The registration_ids
+	needs to be a list.
+	This will send the notification as json data.
+	"""
+
+	args = data, collapse_key, delay_while_idle
+
+	# GCM only allows up to 1000 reg ids per bulk message
+	# https://developer.android.com/google/gcm/gcm.html#request
+	max_recipients = SETTINGS.get("GCM_MAX_RECIPIENTS")
+	if len(registration_ids) > max_recipients:
+		ret = []
+		for chunk in _chunks(registration_ids, max_recipients):
+			ret.append(_gcm_send_json(chunk, *args))
+		return "\n".join(ret)
+
+	return _gcm_send_json(registration_ids, *args)
