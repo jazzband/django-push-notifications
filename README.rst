@@ -79,7 +79,10 @@ GCM and APNS services have slight different semantics. The app tries to offer a 
 	# Retrieve it with intent.getExtras().getString("message")
 	device.send_message("You've got mail")
 	# If you want to customize, send an extra dict and a None message.
-	# the extras dict will be maped into the intent extras Bundle. Remember, GCM converts everything to strings!
+	# the extras dict will be mapped into the intent extras Bundle.
+	# For dicts where all values are keys this will be sent as url parameters,
+	# but for more complex nested collections the extras dict will be sent via
+	# the bulk message api.
 	device.send_message(None, extra={"foo": "bar"})
 
 	device = APNSDevice.objects.get(registration_id=apns_token)
