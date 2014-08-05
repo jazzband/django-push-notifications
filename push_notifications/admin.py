@@ -1,13 +1,13 @@
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-from .models import APNSDevice, GCMDevice
+from .models import APNSDevice, GCMDevice, get_expired_tokens
 
 
 class DeviceAdmin(admin.ModelAdmin):
 	list_display = ("__unicode__", "device_id", "user", "active", "date_created")
 	search_fields = ("name", "device_id", "user__username")
 	list_filter = ("active", )
-	actions = ("send_message", "send_bulk_message", "enable", "disable")
+	actions = ("send_message", "send_bulk_message", "prune_devices", "enable", "disable")
 
 	def send_message(self, request, queryset):
 		ret = []
@@ -38,6 +38,19 @@ class DeviceAdmin(admin.ModelAdmin):
 	def disable(self, request, queryset):
 		queryset.update(active=False)
 	disable.short_description = _("Disable selected devices")
+
+	def prune_devices(self, request, queryset):
+		# Note that when get_expired_tokens() is called, Apple's
+		# feedback service resets, so, calling it again won't return
+		# the device again (unless a message is sent to it again).  So,
+		# if the user doesn't select all the devices for pruning, we
+		# could very easily leave an expired device as active.  Maybe
+		#  this is just a bad API.
+		expired = get_expired_tokens()
+		devices = queryset.filter(registration_id__in=expired)
+		for d in devices:
+			d.active = False
+			d.save()
 
 
 admin.site.register(APNSDevice, DeviceAdmin)
