@@ -68,7 +68,7 @@ For APNS, you are required to include APNS_CERTIFICATE.
 
 Sending messages
 ----------------
-GCM and APNS services have slight different semantics. The app tries to offer a common interface for both when using the models.
+GCM and APNS services have slightly different semantics. The app tries to offer a common interface for both when using the models.
 
 ::
 
@@ -103,6 +103,22 @@ Sending messages in bulk
 Sending messages in bulk makes use of the bulk mechanics offered by GCM and APNS. It is almost always preferable to send
 bulk notifications instead of single ones.
 
+Administration
+--------------
+APNS devices which are not receiving push notifications can be set to inactive by two methods.  The web admin interface for
+APNS devices has a "prune devices" option.  Any selected devices which are not receiving notifications will be set to inactive(*).
+There is also a management command to prune all devices failing to receive notifications::
+
+	python manage.py prune_devices
+
+This removes all devices which are not receiving notifications.
+
+For more information, please refer to the APNS feedback service_.
+
+.. _service: https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/CommunicatingWIthAPS.html
+
+(*)Any devices which are not selected, but are not receiving notifications will not be deactivated on a subsequent call to "prune devices" unless another
+attempt to send a message to the device fails after the call to the feedback service.
 
 Exceptions
 ----------
