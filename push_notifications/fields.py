@@ -6,9 +6,9 @@ from django.db import models, connection
 from django.utils.translation import ugettext_lazy as _
 
 try:
-	from django.utils.six import with_metaclass
+	from django.utils import six
 except ImportError:
-	from six import with_metaclass
+	import six
 
 
 __all__ = ["HexadecimalField", "HexIntegerField"]
@@ -29,7 +29,7 @@ class HexadecimalField(forms.CharField):
 		super(HexadecimalField, self).__init__(*args, **kwargs)
 
 
-class HexIntegerField(with_metaclass(models.SubfieldBase, models.BigIntegerField)):
+class HexIntegerField(six.with_metaclass(models.SubfieldBase, models.BigIntegerField)):
 	"""
 	This field stores a hexadecimal *string* of up to 64 bits as an unsigned integer
 	on *all* backends including postgres.
@@ -60,7 +60,7 @@ class HexIntegerField(with_metaclass(models.SubfieldBase, models.BigIntegerField
 		return value
 
 	def to_python(self, value):
-		if isinstance(value, str):
+		if isinstance(value, six.string_types):
 			return value
 		if value is None:
 			return ""
