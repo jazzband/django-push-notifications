@@ -30,7 +30,7 @@ setup(
     # Minimum needed for setuptools
     name="django-push-notifications",
     version=push_notifications.__version__,
-    package_dir={'': ['.']},
+    package_dir={'': '.'},
     packages=["push_notifications", "push_notifications/migrations"],
 
     # Other stuff that's done
