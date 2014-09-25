@@ -1,3 +1,5 @@
+import django
+
 from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -23,10 +25,30 @@ class Device(models.Model):
 		return self.name or str(self.device_id or "") or "%s for %s" % (self.__class__.__name__, self.user or "unknown user")
 
 
-class GCMDeviceManager(models.Manager):
+class DjangoCompatibilityManager(models.Manager):
+
+	def get_queryset(self, *args, **kwargs):
+		"""
+		In Django 1.6, a DeprecationWarning appears whenever get_query_set
+		is called, which will be removed in Django 1.8.
+		"""
+		if django.VERSION >= (1, 6):
+			# in 1.6+, get_queryset gets defined by the base manager and complains if it's called.
+			# otherwise, we have to define it ourselves.
+			get_queryset = self.get_queryset
+		else:
+			get_queryset = self.get_query_set
+		return get_queryset(*args, **kwargs)
+
+	if django.VERSION < (1, 6):
+		def get_query_set(self, *args, **kwargs):
+			return self.get_queryset(*args, **kwargs)
+
+
+class GCMDeviceManager(DjangoCompatibilityManager):
+
 	def get_queryset(self):
 		return GCMDeviceQuerySet(self.model)
-	get_query_set = get_queryset  # Django < 1.6 compatiblity
 
 
 class GCMDeviceQuerySet(models.query.QuerySet):
@@ -62,10 +84,10 @@ class GCMDevice(Device):
 		return gcm_send_message(registration_id=self.registration_id, data=data, **kwargs)
 
 
-class APNSDeviceManager(models.Manager):
+class APNSDeviceManager(DjangoCompatibilityManager):
+
 	def get_queryset(self):
 		return APNSDeviceQuerySet(self.model)
-	get_query_set = get_queryset  # Django < 1.6 compatiblity
 
 
 class APNSDeviceQuerySet(models.query.QuerySet):
