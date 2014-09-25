@@ -102,8 +102,9 @@ def _apns_check_errors(sock):
 		sock.settimeout(saved_timeout)
 
 
-def _apns_send(token, alert, badge=None, sound=None, content_available=False, action_loc_key=None, loc_key=None,
-				loc_args=[], extra={}, identifier=0, expiration=None, priority=10, socket=None):
+def _apns_send(token, alert, badge=None, sound=None, category=None, content_available=False,
+	action_loc_key=None, loc_key=None, loc_args=[], extra={}, identifier=0,
+	expiration=None, priority=10, socket=None):
 	data = {}
 	aps_data = {}
 
@@ -124,6 +125,9 @@ def _apns_send(token, alert, badge=None, sound=None, content_available=False, ac
 
 	if sound is not None:
 		aps_data["sound"] = sound
+
+	if category is not None:
+		aps_data["category"] = category
 
 	if content_available:
 		aps_data["content-available"] = 1
