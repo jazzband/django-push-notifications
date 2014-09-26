@@ -3,9 +3,14 @@ from django.utils.translation import ugettext_lazy as _
 from .models import APNSDevice, GCMDevice, get_expired_tokens
 
 
+def _user__username():
+	from django.contrib.auth import get_user_model
+	return "user__%s" % (get_user_model().USERNAME_FIELD)
+
+
 class DeviceAdmin(admin.ModelAdmin):
 	list_display = ("__unicode__", "device_id", "user", "active", "date_created")
-	search_fields = ("name", "device_id", "user__username")
+	search_fields = ("name", "device_id", _user__username())
 	list_filter = ("active", )
 	actions = ("send_message", "send_bulk_message", "prune_devices", "enable", "disable")
 
