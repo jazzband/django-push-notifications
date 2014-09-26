@@ -2,7 +2,6 @@
 import os
 import sys
 import unittest
-import django.conf
 
 
 def setup():
@@ -17,11 +16,17 @@ def setup():
 	sys.path.insert(0, src_folder)
 
 	# define settings
+	import django.conf
 	os.environ[django.conf.ENVIRONMENT_VARIABLE] = "settings"
 
 	# set up environment
 	from django.test.utils import setup_test_environment
 	setup_test_environment()
+
+	# See https://docs.djangoproject.com/en/dev/releases/1.7/#app-loading-changes
+	import django
+	if django.VERSION >= (1, 7, 0):
+		django.setup()
 
 	# set up database
 	from django.db import connection
