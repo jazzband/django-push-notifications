@@ -14,7 +14,7 @@ PUSH_NOTIFICATIONS_SETTINGS.setdefault("APNS_FEEDBACK_PORT", 2196)
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("APNS_ERROR_TIMEOUT", None)
 if settings.DEBUG:
 	PUSH_NOTIFICATIONS_SETTINGS.setdefault("APNS_HOST", "gateway.sandbox.push.apple.com")
-	PUSH_NOTIFICATIONS_SETTINGS.setdefault("APNS_FEEDBACK_HOST", "feedback.push.apple")
+	PUSH_NOTIFICATIONS_SETTINGS.setdefault("APNS_FEEDBACK_HOST", "feedback.push.apple.com")
 else:
 	PUSH_NOTIFICATIONS_SETTINGS.setdefault("APNS_HOST", "gateway.push.apple.com")
-	PUSH_NOTIFICATIONS_SETTINGS.setdefault("APNS_FEEDBACK_HOST", "feedback.sandbox.push.apple")
+	PUSH_NOTIFICATIONS_SETTINGS.setdefault("APNS_FEEDBACK_HOST", "feedback.sandbox.push.apple.com")
