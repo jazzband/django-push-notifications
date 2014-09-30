@@ -150,6 +150,37 @@ Subclassing the authenticated resources in order to add a SameUserAuthentication
 When registered, the APIs will show up at <api_root>/device/apns and <api_root>/device/gcm, respectively.
 
 
+Django REST Framework support
+----------------
+
+The app includes Django REST Framework serializers, views, and routes in push_notifications.django_rest_api. The included
+views allow Django authenticated users to view/add/remove devices associated with their account. These views can be used
+as is or inherited from if you'd like to modify permissions or functionality.
+
+To use the included views, just add the URL routes to your urlpatterns. For example:
+::
+
+	from push_notifications.django_rest_api import gcm_list, apns_list, gcm_detail, apns_detail
+	...
+    # GCM API notifications
+    url(r'^api/devices/gcm/$',
+        gcm_list,
+        name='api_devices_gcm_list'),
+
+    url(r'^api/devices/gcm/(?P<registration_id>[\w-]+)/$',
+        gcm_detail,
+        name='api_devices_gcm_detail'),
+
+    # APNS notifications
+    url(r'^api/devices/apns/$',
+        apns_list,
+        name='api_devices_apns_list'),
+
+    url(r'^api/devices/apns/(?P<registration_id>[\w-]+)/$',
+        apns_detail,
+        name='api_devices_apns_detail'),
+
+
 Python 3 support
 ----------------
 
