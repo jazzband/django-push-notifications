@@ -90,7 +90,8 @@ GCM and APNS services have slightly different semantics. The app tries to offer 
 	device.send_message(None, badge=5) # No alerts but with badge.
 	device.send_message(None, badge=1, extra={"foo": "bar"}) # Silent message with badge and added custom data.
 
-Note that APNS does not support sending payloads that exceed 256 bytes. The message is only one part of the payload, if
+Note that APNS does not support sending payloads that exceed 2048 bytes (increased from 256 in 2014).
+The message is only one part of the payload, if
 once constructed the payload exceeds the maximum size, an APNSDataOverflow exception will be raised before anything is sent.
 
 
