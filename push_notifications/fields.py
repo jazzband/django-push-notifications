@@ -53,7 +53,8 @@ class HexIntegerField(six.with_metaclass(models.SubfieldBase, models.BigIntegerF
 	def get_prep_value(self, value):
 		if value is None or value == "":
 			return None
-		value = int(value, 16)
+		if isinstance(value, six.string_types):
+			value = int(value, 16)
 		# on postgres only, interpret as signed
 		if connection.settings_dict["ENGINE"] in postgres_engines:
 			value = struct.unpack("q", struct.pack("Q", value))[0]
