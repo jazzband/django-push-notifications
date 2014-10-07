@@ -141,6 +141,6 @@ def gcm_send_bulk_message(registration_ids, data, collapse_key=None, delay_while
 		ret = []
 		for chunk in _chunks(registration_ids, max_recipients):
 			ret.append(_gcm_send_json(chunk, *args))
-		return "\n".join(ret)
+		return ret
 
 	return _gcm_send_json(registration_ids, *args)
