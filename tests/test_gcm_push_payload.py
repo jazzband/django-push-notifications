@@ -12,6 +12,13 @@ class GCMPushPayloadTest(TestCase):
 				b"registration_id=abc&data.message=Hello+world",
 				"application/x-www-form-urlencoded;charset=UTF-8")
 
+	def test_push_payload_params(self):
+		with mock.patch("push_notifications.gcm._gcm_send") as p:
+			gcm_send_message("abc", {"message": "Hello world"}, delay_while_idle=True, time_to_live=3600)
+			p.assert_called_once_with(
+				b"delay_while_idle=1&registration_id=abc&time_to_live=3600&data.message=Hello+world",
+				"application/x-www-form-urlencoded;charset=UTF-8")
+
 	def test_push_nested_payload(self):
 		with mock.patch("push_notifications.gcm._gcm_send") as p:
 			payload = {
