@@ -44,20 +44,7 @@ def _gcm_send(data, content_type):
 	}
 
 	request = Request(SETTINGS["GCM_POST_URL"], data, headers)
-	response = urlopen(request)
-	result = response.read().decode("utf-8")
-
-	# FIXME: this may or may not still be broken for bulk results
-	try:
-		result = json.loads(result)
-	except ValueError:
-		if result.startswith("Error="):
-			raise GCMError(result)
-	else:
-		if result['failure']:
-			raise GCMError(result)
-
-	return result
+	return urlopen(request).read()
 
 
 def _gcm_send_plain(registration_id, data, collapse_key=None, delay_while_idle=False, time_to_live=0):
@@ -83,7 +70,11 @@ def _gcm_send_plain(registration_id, data, collapse_key=None, delay_while_idle=F
 		values["data.%s" % (k)] = v.encode("utf-8")
 
 	data = urlencode(values).encode("utf-8")
-	return _gcm_send(data, "application/x-www-form-urlencoded;charset=UTF-8")
+
+	result = _gcm_send(data, "application/x-www-form-urlencoded;charset=UTF-8")
+	if result.startswith("Error="):
+		raise GCMError(result)
+	return result
 
 
 def _gcm_send_json(registration_ids, data, collapse_key=None, delay_while_idle=False, time_to_live=0):
@@ -108,7 +99,11 @@ def _gcm_send_json(registration_ids, data, collapse_key=None, delay_while_idle=F
 		values["time_to_live"] = time_to_live
 
 	data = json.dumps(values, separators=(",", ":")).encode("utf-8")
-	return _gcm_send(data, "application/json")
+
+	result = json.loads(_gcm_send(data, "application/json"))
+	if result["failure"]:
+		raise GCMError(result)
+	return result
 
 
 def gcm_send_message(registration_id, data, collapse_key=None, delay_while_idle=False, time_to_live=0):
