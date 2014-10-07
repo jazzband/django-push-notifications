@@ -1,3 +1,15 @@
+v1.2.0 (2014-10-07)
+===================
+* BACKWARDS-INCOMPATIBLE: Added support for Django 1.7 migrations. South users will have to upgrade to South 1.0 or Django 1.7.
+* APNS: APNS MAX_NOTIFICATION_SIZE is now a setting and its default has been increased to 2048
+* APNS: Always connect with TLSv1 instead of SSLv3
+* APNS: Implemented support for APNS Feedback Service
+* APNS: Support for optional "category" dict
+* GCM: Improved error handling in bulk mode
+* GCM: Added support for time_to_live parameter
+* BUGFIX: Fixed various issues relating HexIntegerField
+* BUGFIX: Fixed issues in the admin with custom user models
+
 v1.1.0 (2014-06-29)
 ===================
 * BACKWARDS-INCOMPATIBLE: The arguments for device.send_message() have changed. See README.rst for details.
