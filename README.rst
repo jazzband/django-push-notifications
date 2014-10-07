@@ -57,14 +57,12 @@ All settings are contained in a PUSH_NOTIFICATIONS_SETTINGS dict.
 In order to use GCM, you are required to include GCM_API_KEY.
 For APNS, you are required to include APNS_CERTIFICATE.
 
- - APNS_CERTIFICATE: Absolute path to your APNS certificate file. Certificates with passphrases are not supported.
- - GCM_API_KEY: Your API key for GCM.
- - APNS_HOST: The hostname used for the APNS sockets. When DEBUG=True, this defaults to gateway.sandbox.push.apple.com.
-   When DEBUG=False, this defaults to gateway.push.apple.com.
- - APNS_PORT: The port used along with APNS_HOST. Defaults to 2195.
- - GCM_POST_URL: The full url that GCM notifications will be POSTed to. Defaults to https://android.googleapis.com/gcm/send.
- - GCM_MAX_RECIPIENTS: The maximum amount of recipients that can be contained per bulk message. If the registration_ids list
-   is larger than that number, multiple bulk messages will be sent. Defaults to 1000 (the maximum amount supported by GCM).
+- APNS_CERTIFICATE: Absolute path to your APNS certificate file. Certificates with passphrases are not supported.
+- GCM_API_KEY: Your API key for GCM.
+- APNS_HOST: The hostname used for the APNS sockets. When DEBUG=True, this defaults to gateway.sandbox.push.apple.com. When DEBUG=False, this defaults to gateway.push.apple.com.
+- APNS_PORT: The port used along with APNS_HOST. Defaults to 2195.
+- GCM_POST_URL: The full url that GCM notifications will be POSTed to. Defaults to https://android.googleapis.com/gcm/send.
+- GCM_MAX_RECIPIENTS: The maximum amount of recipients that can be contained per bulk message. If the registration_ids list is larger than that number, multiple bulk messages will be sent. Defaults to 1000 (the maximum amount supported by GCM).
 
 Sending messages
 ----------------
@@ -127,10 +125,10 @@ attempt to send a message to the device fails after the call to the feedback ser
 Exceptions
 ----------
 
- - NotificationError(Exception): Base exception for all notification-related errors.
- - gcm.GCMError(NotificationError): An error was returned by GCM. This is never raised when using bulk notifications.
- - apns.APNSError(NotificationError): Something went wrong upon sending APNS notifications.
- - apns.APNSDataOverflow(APNSError): The APNS payload exceeds its maximum size and cannot be sent.
+- NotificationError(Exception): Base exception for all notification-related errors.
+- gcm.GCMError(NotificationError): An error was returned by GCM. This is never raised when using bulk notifications.
+- apns.APNSError(NotificationError): Something went wrong upon sending APNS notifications.
+- apns.APNSDataOverflow(APNSError): The APNS payload exceeds its maximum size and cannot be sent.
 
 
 Tastypie support
@@ -140,10 +138,10 @@ The app includes tastypie-compatible resources in push_notifications.api. These 
 for more involved APIs.
 The following resources are available:
 
- - APNSDeviceResource
- - GCMDeviceResource
- - APNSDeviceAuthenticatedResource
- - GCMDeviceAuthenticatedResource
+- APNSDeviceResource
+- GCMDeviceResource
+- APNSDeviceAuthenticatedResource
+- GCMDeviceAuthenticatedResource
 
 The base device resources will not ask for authentication, while the authenticated ones will link the logged in user to
 the device they register.
