@@ -139,6 +139,7 @@ Tastypie support
 The app includes tastypie-compatible resources in push_notifications.api. These can be used as-is, or as base classes
 for more involved APIs.
 The following resources are available:
+
  - APNSDeviceResource
  - GCMDeviceResource
  - APNSDeviceAuthenticatedResource
