@@ -90,7 +90,7 @@ def _apns_check_errors(sock):
 			assert command == 8, "Command must be 8!"
 			if status != 0:
 				raise APNSServerError(status, identifier)
-	except socket.timeout:  # py3
+	except socket.timeout:  # py3, see http://bugs.python.org/issue10272
 		pass
 	except ssl.SSLError as e:  # py2
 		if "timed out" not in e.message:
@@ -182,6 +182,8 @@ def _apns_receive_feedback(socket):
 					expired_token_list.append((timestamp, device_token[0]))
 			else:
 				has_data = False
+		except socket.timeout:  # py3, see http://bugs.python.org/issue10272
+			pass
 		except ssl.SSLError as e:  # py2
 			if "timed out" not in e.message:
 				raise
