@@ -27,5 +27,5 @@ class APNSPushPayloadTest(TestCase):
 	def test_oversized_payload(self):
 		socket = mock.MagicMock()
 		with mock.patch("push_notifications.apns._apns_pack_frame") as p:
-			self.assertRaises(APNSDataOverflow, _apns_send, "123", "_" * 257, socket=socket)
+			self.assertRaises(APNSDataOverflow, _apns_send, "123", "_" * 2049, socket=socket)
 			p.assert_has_calls([])
