@@ -135,8 +135,8 @@ def _apns_send(token, alert, badge=None, sound=None, category=None, content_avai
 	# convert to json, avoiding unnecessary whitespace with separators
 	json_data = json.dumps(data, separators=(",", ":")).encode("utf-8")
 
-	if len(json_data) > settings.APNS_MAX_NOTIFICATION_SIZE:
-		raise APNSDataOverflow("Notification body cannot exceed %i bytes" % (settings.APNS_MAX_NOTIFICATION_SIZE))
+	if len(json_data) > SETTINGS['APNS_MAX_NOTIFICATION_SIZE']:
+		raise APNSDataOverflow("Notification body cannot exceed %i bytes" % (SETTINGS['APNS_MAX_NOTIFICATION_SIZE']))
 
 	# if expiration isn't specified use 1 month from now
 	expiration_time = expiration if expiration is not None else int(time.time()) + 2592000
