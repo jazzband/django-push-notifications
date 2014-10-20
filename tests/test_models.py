@@ -2,7 +2,7 @@ import mock
 from django.test import TestCase
 from django.utils import timezone
 from push_notifications.models import GCMDevice, APNSDevice
-from .mock_responses import GCM_PLAIN_RESPONSE
+from tests.mock_responses import GCM_PLAIN_RESPONSE
 
 
 class ModelTestCase(TestCase):
@@ -29,7 +29,7 @@ class ModelTestCase(TestCase):
 		with mock.patch("push_notifications.gcm._gcm_send", return_value=GCM_PLAIN_RESPONSE) as p:
 			device.send_message("Hello world")
 			p.assert_called_once_with(
-				b"registration_id=abc&data.message=Hello+world",
+				b"data.message=Hello+world&registration_id=abc",
 				"application/x-www-form-urlencoded;charset=UTF-8")
 
 	def test_gcm_send_message_extra(self):
@@ -39,7 +39,7 @@ class ModelTestCase(TestCase):
 		with mock.patch("push_notifications.gcm._gcm_send", return_value=GCM_PLAIN_RESPONSE) as p:
 			device.send_message("Hello world", extra={"foo": "bar"})
 			p.assert_called_once_with(
-				b"registration_id=abc&data.foo=bar&data.message=Hello+world",
+				b"data.foo=bar&data.message=Hello+world&registration_id=abc",
 				"application/x-www-form-urlencoded;charset=UTF-8")
 
 	def test_apns_send_message(self):

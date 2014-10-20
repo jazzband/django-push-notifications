@@ -69,7 +69,7 @@ def _gcm_send_plain(registration_id, data, collapse_key=None, delay_while_idle=F
 	for k, v in data.items():
 		values["data.%s" % (k)] = v.encode("utf-8")
 
-	data = urlencode(values).encode("utf-8")
+	data = urlencode(sorted(values.items())).encode("utf-8")  # sorted items for tests
 
 	result = _gcm_send(data, "application/x-www-form-urlencoded;charset=UTF-8")
 	if result.startswith("Error="):
@@ -98,7 +98,7 @@ def _gcm_send_json(registration_ids, data, collapse_key=None, delay_while_idle=F
 	if time_to_live:
 		values["time_to_live"] = time_to_live
 
-	data = json.dumps(values, separators=(",", ":")).encode("utf-8")
+	data = json.dumps(values, separators=(",", ":"), sort_keys=True).encode("utf-8")  # keys sorted for tests
 
 	result = json.loads(_gcm_send(data, "application/json"))
 	if result["failure"]:
