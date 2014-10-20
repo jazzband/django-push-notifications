@@ -10,7 +10,7 @@ class APNSPushPayloadTest(TestCase):
 			_apns_send("123", "Hello world",
 				badge=1, sound="chime", extra={"custom_data": 12345}, expiration=3, socket=socket)
 			p.assert_called_once_with("123",
-				b'{"aps":{"sound":"chime","badge":1,"alert":"Hello world"},"custom_data":12345}', 0, 3, 10)
+				b'{"aps":{"alert":"Hello world","badge":1,"sound":"chime"},"custom_data":12345}', 0, 3, 10)
 
 	def test_localised_push_with_empty_body(self):
 		socket = mock.MagicMock()

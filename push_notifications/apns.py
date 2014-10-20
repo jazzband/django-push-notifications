@@ -132,8 +132,8 @@ def _apns_send(token, alert, badge=None, sound=None, category=None, content_avai
 	data["aps"] = aps_data
 	data.update(extra)
 
-	# convert to json, avoiding unnecessary whitespace with separators
-	json_data = json.dumps(data, separators=(",", ":")).encode("utf-8")
+	# convert to json, avoiding unnecessary whitespace with separators (keys sorted for tests)
+	json_data = json.dumps(data, separators=(",", ":"), sort_keys=True).encode("utf-8")
 
 	max_size = SETTINGS["APNS_MAX_NOTIFICATION_SIZE"]
 	if len(json_data) > max_size:
