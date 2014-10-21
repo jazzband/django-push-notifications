@@ -78,7 +78,8 @@ class APNSDeviceQuerySet(models.query.QuerySet):
 class APNSDevice(Device):
 	device_id = UUIDField(verbose_name=_("Device ID"), blank=True, null=True,
 		help_text="UDID / UIDevice.identifierForVendor()")
-	registration_id = models.CharField(verbose_name=_("Registration ID"), max_length=64, unique=True)
+        registration_id = models.CharField(verbose_name=_("Registration ID"), max_length=64, unique=True)
+        app_id = models.CharField(max_length=100, null=True, default=None)
 
 	objects = APNSDeviceManager()
 
@@ -88,7 +89,9 @@ class APNSDevice(Device):
 	def send_message(self, message, **kwargs):
 		from .apns import apns_send_message
 
-		return apns_send_message(registration_id=self.registration_id, alert=message, **kwargs)
+                return apns_send_message(registration_id=self.registration_id,
+                                         app_id=self.app_id,
+                                         alert=message, **kwargs)
 
 
 # This is an APNS-only function right now, but maybe GCM will implement it
