@@ -60,9 +60,9 @@ def _apns_create_socket_to_push(app_id):
                                    _apns_select_certificate(app_id))
 
 
-def _apns_create_socket_to_feedback():
+def _apns_create_socket_to_feedback(app_id):
         return _apns_create_socket((SETTINGS["APNS_FEEDBACK_HOST"], SETTINGS["APNS_FEEDBACK_PORT"]),
-                                   SETTINGS.get("APNS_CERTIFICATE"))
+                                   _apns_select_certificate(app_id))
 
 
 def _apns_pack_frame(token_hex, payload, identifier, expiration, priority):
@@ -228,15 +228,22 @@ def apns_send_message(registration_id, alert, **kwargs):
 #			_apns_send(registration_id, alert, identifier=identifier, socket=socket, **kwargs)
 
 
-def apns_fetch_inactive_ids():
-	"""
-	Queries the APNS server for id's that are no longer active since
-	the last fetch
-	"""
-	with closing(_apns_create_socket_to_feedback()) as socket:
+def apns_fetch_inactive_ids_for(app_id):
+        with closing(_apns_create_socket_to_feedback(app_id)) as socket:
 		inactive_ids = []
 		# Maybe we should have a flag to return the timestamp?
 		# It doesn't seem that useful right now, though.
 		for tStamp, registration_id in _apns_receive_feedback(socket):
 			inactive_ids.append(registration_id.encode('hex'))
 		return inactive_ids
+
+
+def apns_fetch_inactive_ids():
+	"""
+	Queries the APNS server for id's that are no longer active since
+	the last fetch
+        """
+        return sum([apns_fetch_inactive_ids_for(app_id)
+                    for app_id in SETTINGS["APNS_CERTIFICATES"].keys()],
+                   [])
+

@@ -46,7 +46,7 @@ Edit your settings.py file::
 
 	PUSH_NOTIFICATIONS_SETTINGS = {
 		"GCM_API_KEY": "<your api key>",
-		"APNS_CERTIFICATE": "/path/to/your/certificate.pem",
+                "APNS_CERTIFICATES": {"default": "/path/to/your/certificate.pem"},
 	}
 
 
@@ -55,9 +55,9 @@ Settings list
 All settings are contained in a PUSH_NOTIFICATIONS_SETTINGS dict.
 
 In order to use GCM, you are required to include GCM_API_KEY.
-For APNS, you are required to include APNS_CERTIFICATE.
+For APNS, you are required to include APNS_CERTIFICATES.
 
-- APNS_CERTIFICATE: Absolute path to your APNS certificate file. Certificates with passphrases are not supported.
+- APNS_CERTIFICATES: A dictionary mapping app IDs to absolute path to your APNS certificate files. Should contain an entry with the key "default" as the fallback. Certificates with passphrases are not supported.
 - GCM_API_KEY: Your API key for GCM.
 - APNS_HOST: The hostname used for the APNS sockets. When DEBUG=True, this defaults to gateway.sandbox.push.apple.com. When DEBUG=False, this defaults to gateway.push.apple.com.
 - APNS_PORT: The port used along with APNS_HOST. Defaults to 2195.
