@@ -100,7 +100,7 @@ Sending messages in bulk
 	from push_notifications.models import APNSDevice, GCMDevice
 
 	devices = GCMDevice.objects.filter(user__first_name="James")
-	devices.send_message({"message": "Happy name day!"})
+	devices.send_message("Happy name day!")
 
 Sending messages in bulk makes use of the bulk mechanics offered by GCM and APNS. It is almost always preferable to send
 bulk notifications instead of single ones.
