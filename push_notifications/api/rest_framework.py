@@ -16,7 +16,9 @@ class APNSDeviceSerializer(ModelSerializer):
 
 	def validate_registration_id(self, attrs, source):
 		# iOS device tokens are 256-bit hexadecimal (64 characters)
-		if re.match("[0-9a-fA-F]{64}", attrs[source]) is None:
+		hex64re = re.compile("[0-9a-fA-F]{64}")
+
+		if hex64re.match(attrs[source]) is None:
 			raise ValidationError("Registration ID (device token) is invalid")
 		return attrs
 
@@ -39,11 +41,12 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
 # Mixins
 class DeviceMixin(object):
 	def pre_save(self, obj):
-		if self.request.user.is_authenticated(): obj.user = self.request.user
+		if self.request.user.is_authenticated():
+			obj.user = self.request.user
 
 
 class AuthorizedMixin(object):
-	permission_classes = (permissions.IsAuthenticated, IsOwnerOrReadOnly,)
+	permission_classes = (permissions.IsAuthenticated, IsOwnerOrReadOnly)
 
 
 # ViewSets
