@@ -149,10 +149,10 @@ def _apns_send(token, alert, badge=None, sound=None, category=None, content_avai
 	if socket:
 		try:
 			socket.write(frame)
-                except Socket.error, e:
-                        if e[0] == errno.EPIPE:
-                                raise APNSServerError(20, identifier)
-                        raise APNSServerError(255, identifier)
+		except Socket.error, e:
+			if e[0] == errno.EPIPE:
+				raise APNSServerError(20, identifier)
+			raise APNSServerError(255, identifier)
 	else:
 		with closing(_apns_create_socket_to_push()) as socket:
 			socket.write(frame)
