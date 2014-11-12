@@ -28,6 +28,7 @@ The app also depends on django-uuidfield.
 Tastypie support should work on Tastypie 0.9.11 and newer.
 
 Django versions older than 1.5 require 'six' to be installed.
+Django versions older than 1.7 require 'south' to be installed.
 
 
 Setup
@@ -48,6 +49,11 @@ Edit your settings.py file::
 		"GCM_API_KEY": "<your api key>",
 		"APNS_CERTIFICATE": "/path/to/your/certificate.pem",
 	}
+
+Native Django migrations are supported on Django 1.7 and beyond. The app will automatically
+fall back to South on older versions, however you will also need the following setting::
+
+	SOUTH_MIGRATION_MODULES = {"push_notifications": "push_notifications.south_migrations"}
 
 
 Settings list
