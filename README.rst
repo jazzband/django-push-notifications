@@ -33,6 +33,10 @@ Django versions older than 1.7 require 'south' to be installed.
 
 Setup
 -----
+
+If you do not have the Django UUIDField package, install it now:
+	$pip install django-uuidfield
+	
 You can install the library directly from pypi using pip::
 
 	$ pip install django-push-notifications
