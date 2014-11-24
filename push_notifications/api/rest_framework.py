@@ -8,6 +8,8 @@ from rest_framework.viewsets import ModelViewSet
 
 from push_notifications.models import APNSDevice, GCMDevice
 
+HEX64_RE = re.compile("[0-9a-f]{64}", re.IGNORE_CASE)
+
 
 # Serializers
 class APNSDeviceSerializer(ModelSerializer):
@@ -16,9 +18,8 @@ class APNSDeviceSerializer(ModelSerializer):
 
 	def validate_registration_id(self, attrs, source):
 		# iOS device tokens are 256-bit hexadecimal (64 characters)
-		hex64re = re.compile("[0-9a-fA-F]{64}")
 
-		if hex64re.match(attrs[source]) is None:
+		if HEX64_RE.match(attrs[source]) is None:
 			raise ValidationError("Registration ID (device token) is invalid")
 		return attrs
 
