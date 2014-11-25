@@ -8,7 +8,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from push_notifications.models import APNSDevice, GCMDevice
 
-HEX64_RE = re.compile("[0-9a-f]{64}", re.IGNORE_CASE)
+HEX64_RE = re.compile("[0-9a-f]{64}", re.IGNORECASE)
 
 
 # Serializers
