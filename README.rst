@@ -50,6 +50,9 @@ Edit your settings.py file::
 		"APNS_CERTIFICATE": "/path/to/your/certificate.pem",
 	}
 
+Note: If you are planning on running your project with `DEBUG=True`, then make sure you have set the
+*development* certificate as your `APNS_CERTIFICATE`. Otherwise the app will not be able to connect to the correct host.
+
 Native Django migrations are supported on Django 1.7 and beyond. The app will automatically
 fall back to South on older versions, however you will also need the following setting::
 
