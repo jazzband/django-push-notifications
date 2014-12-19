@@ -53,6 +53,8 @@ Edit your settings.py file::
 Note: If you are planning on running your project with `DEBUG=True`, then make sure you have set the
 *development* certificate as your `APNS_CERTIFICATE`. Otherwise the app will not be able to connect to the correct host.
 
+You can learn more about APNS certificates here: https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/ProvisioningDevelopment.html
+
 Native Django migrations are supported on Django 1.7 and beyond. The app will automatically
 fall back to South on older versions, however you will also need the following setting::
 
