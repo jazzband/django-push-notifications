@@ -21,3 +21,9 @@ SITE_ID = 1
 ROOT_URLCONF = "core.urls"
 
 SECRET_KEY = "foobar"
+
+PUSH_NOTIFICATIONS_SETTINGS = {
+    "GCM_API_KEY": "<your api key>",
+    "APNS_CERTIFICATE_PROD": "/path/to/your/prod/certificate.pem",
+    "APNS_CERTIFICATE_DEV": "/path/to/your/dev/certificate.pem",
+}

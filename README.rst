@@ -47,7 +47,8 @@ Edit your settings.py file::
 
 	PUSH_NOTIFICATIONS_SETTINGS = {
 		"GCM_API_KEY": "<your api key>",
-		"APNS_CERTIFICATE": "/path/to/your/certificate.pem",
+		"APNS_CERTIFICATE_PROD": "/path/to/your/prod/certificate.pem",
+		"APNS_CERTIFICATE_DEV": "/path/to/your/dev/certificate.pem",
 	}
 
 Native Django migrations are supported on Django 1.7 and beyond. The app will automatically
