@@ -30,6 +30,8 @@ setup(
 		"push_notifications",
 		"push_notifications/migrations",
 		"push_notifications/south_migrations",
+		"push_notifications/management",
+		"push_notifications/management/commands",
 	],
 	author=push_notifications.__author__,
 	author_email=push_notifications.__email__,
