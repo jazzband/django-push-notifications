@@ -33,12 +33,13 @@ class GCMDeviceQuerySet(models.query.QuerySet):
 	def send_message(self, message, **kwargs):
 		if self:
 			from .gcm import gcm_send_bulk_message
+
 			data = kwargs.pop("extra", {})
 			if message is not None:
 				data["message"] = message
-			return gcm_send_bulk_message(
-				registration_ids=list(self.values_list("registration_id", flat=True)),
-				data=data)
+
+			reg_ids = list(self.values_list("registration_id", flat=True))
+			return gcm_send_bulk_message(registration_ids=reg_ids, data=data)
 
 
 class GCMDevice(Device):
@@ -72,7 +73,8 @@ class APNSDeviceQuerySet(models.query.QuerySet):
 	def send_message(self, message, **kwargs):
 		if self:
 			from .apns import apns_send_bulk_message
-			return apns_send_bulk_message(registration_ids=list(self.values_list("registration_id", flat=True)), alert=message, **kwargs)
+			reg_ids = list(self.values_list("registration_id", flat=True))
+			return apns_send_bulk_message(registration_ids=reg_ids, alert=message, **kwargs)
 
 
 class APNSDevice(Device):
