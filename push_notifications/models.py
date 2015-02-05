@@ -1,8 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from uuidfield import UUIDField
-from .fields import HexIntegerField
+from .fields import HexIntegerField, UUIDField
 
 
 # Compatibility with custom user models, while keeping backwards-compatibility with <1.5

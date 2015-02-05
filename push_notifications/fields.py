@@ -11,7 +11,13 @@ except ImportError:
 	import six
 
 
-__all__ = ["HexadecimalField", "HexIntegerField"]
+__all__ = ["HexadecimalField", "HexIntegerField", "UUIDField"]
+
+# Django <1.8 compatibility: UUIDField
+if hasattr(models, "UUIDField"):
+	UUIDField = models.UUIDField
+else:
+	from uuidfield import UUIDField
 
 hex_re = re.compile(r"^0x[0-9a-fA-F]+$")
 postgres_engines = [

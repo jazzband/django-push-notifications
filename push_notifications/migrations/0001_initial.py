@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=255, null=True, verbose_name='Name', blank=True)),
                 ('active', models.BooleanField(default=True, help_text='Inactive devices will not be sent notifications', verbose_name='Is active')),
                 ('date_created', models.DateTimeField(auto_now_add=True, verbose_name='Creation date', null=True)),
-                ('device_id', uuidfield.fields.UUIDField(help_text=b'UDID / UIDevice.identifierForVendor()', max_length=32, null=True, verbose_name='Device ID', blank=True)),
+                ('device_id', push_notifications.fields.UUIDField(help_text=b'UDID / UIDevice.identifierForVendor()', max_length=32, null=True, verbose_name='Device ID', blank=True)),
                 ('registration_id', models.CharField(unique=True, max_length=64, verbose_name='Registration ID')),
                 ('user', models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, null=True)),
             ],
