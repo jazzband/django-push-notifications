@@ -4,7 +4,11 @@ from .models import APNSDevice, GCMDevice, get_expired_tokens
 
 
 def _user__username():
-	from django.contrib.auth import get_user_model
+	try:
+		from django.contrib.auth import get_user_model
+	except ImportError:
+		# Django <1.5
+		return "user__username"
 	return "user__%s" % (get_user_model().USERNAME_FIELD)
 
 
