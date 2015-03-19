@@ -38,7 +38,7 @@ class GCMDeviceQuerySet(models.query.QuerySet):
 				data["message"] = message
 
 			reg_ids = list(self.values_list("registration_id", flat=True))
-			return gcm_send_bulk_message(registration_ids=reg_ids, data=data)
+			return gcm_send_bulk_message(registration_ids=reg_ids, data=data, **kwargs)
 
 
 class GCMDevice(Device):
