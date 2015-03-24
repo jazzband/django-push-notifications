@@ -54,7 +54,7 @@ class HexIntegerField(six.with_metaclass(models.SubfieldBase, models.BigIntegerF
 		elif engine == "django.db.backends.sqlite":
 			return "UNSIGNED BIG INT"
 		else:
-			return super(HexIntegerField, self).db_type(connection)
+			return super(HexIntegerField, self).db_type(connection=connection)
 
 	def get_prep_value(self, value):
 		if value is None or value == "":
