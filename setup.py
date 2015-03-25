@@ -28,6 +28,7 @@ setup(
 	name="django-push-notifications",
 	packages=[
 		"push_notifications",
+		"push_notifications/api",
 		"push_notifications/migrations",
 		"push_notifications/south_migrations",
 		"push_notifications/management",
