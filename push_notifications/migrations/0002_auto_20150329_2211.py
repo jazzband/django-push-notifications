@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='apnsdevice',
             name='device_id',
-            field=models.UUIDField(blank=True, help_text='UDID / UIDevice.identifierForVendor()', null=True, verbose_name='Device ID', db_index=True),
+            field=push_notifications.fields.UUIDField(blank=True, help_text='UDID / UIDevice.identifierForVendor()', null=True, verbose_name='Device ID', db_index=True),
         ),
         migrations.AlterField(
             model_name='gcmdevice',
