@@ -9,6 +9,7 @@ import ssl
 import struct
 import socket
 import time
+import select
 from contextlib import closing
 from binascii import unhexlify
 from django.core.exceptions import ImproperlyConfigured
@@ -215,8 +216,19 @@ def apns_send_bulk_message(registration_ids, alert, **kwargs):
 	it won't be included in the notification. You will need to pass None
 	to this for silent notifications.
 	"""
+	error_check_delay_seconds = SETTINGS.get("APNS_BULK_ERROR_CHECK_DELAY_SECONDS")
 	with closing(_apns_create_socket_to_push()) as socket:
 		for identifier, registration_id in enumerate(registration_ids):
+			if identifier > 0 and error_check_delay_seconds > 0:
+				# if there is an issue with an alert, Apple will make a 6 byte message available for
+				# reading in the socket, and requires that all messages from that point on be resent
+				# (we skip the errored message to avoid a neverending cycle of errors)
+				# see "Push Notification Throughput and Error Checking" in Apple's "Technical Note
+				# TN2265"
+				ready_to_read = select.select([socket], [], [], error_check_delay_seconds)
+				if ready_to_read[0]:
+					socket.close()
+					socket = _apns_create_socket_to_push()
 			_apns_send(registration_id, alert, identifier=identifier, socket=socket, **kwargs)
 		_apns_check_errors(socket)
 
