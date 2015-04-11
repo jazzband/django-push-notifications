@@ -1,3 +1,15 @@
+v1.2.1 (2015-04-11)
+===================
+* APNS, GCM: Add a db_index to the device_id field
+* APNS: Use the native UUIDField on Django 1.8
+* APNS: Fix timeout handling on Python 3
+* APNS: Restore error checking on apns_send_bulk_message
+* GCM: Expose the time_to_live argument in gcm_send_bulk_message
+* GCM: Fix return value when gcm bulk is split in batches
+* GCM: Improved error checking reliability
+* GCM: Properly pass kwargs in GCMDeviceQuerySet.send_message()
+* BUGFIX: Fix HexIntegerField for Django 1.3
+
 v1.2.0 (2014-10-07)
 ===================
 * BACKWARDS-INCOMPATIBLE: Added support for Django 1.7 migrations. South users will have to upgrade to South 1.0 or Django 1.7.
