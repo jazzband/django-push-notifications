@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 from django.db import models, migrations
 import push_notifications.fields
 from django.conf import settings
-import uuidfield.fields
 
 
 class Migration(migrations.Migration):
