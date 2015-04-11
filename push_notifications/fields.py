@@ -3,21 +3,12 @@ import struct
 from django import forms
 from django.core.validators import RegexValidator
 from django.db import models, connection
+from django.utils import six
 from django.utils.translation import ugettext_lazy as _
 
-try:
-	from django.utils import six
-except ImportError:
-	import six
 
+__all__ = ["HexadecimalField", "HexIntegerField"]
 
-__all__ = ["HexadecimalField", "HexIntegerField", "UUIDField"]
-
-# Django <1.8 compatibility: UUIDField
-if hasattr(models, "UUIDField"):
-	UUIDField = models.UUIDField
-else:
-	from uuidfield import UUIDField
 
 hex_re = re.compile(r"^0x[0-9a-fA-F]+$")
 postgres_engines = [
@@ -81,9 +72,3 @@ class HexIntegerField(six.with_metaclass(models.SubfieldBase, models.BigIntegerF
 		defaults.update(kwargs)
 		# yes, that super call is right
 		return super(models.IntegerField, self).formfield(**defaults)
-
-try:
-	from south.modelsinspector import add_introspection_rules
-	add_introspection_rules([], ["^push_notifications\.fields\.HexIntegerField"])
-except ImportError:
-	pass

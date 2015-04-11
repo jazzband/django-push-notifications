@@ -1,20 +1,15 @@
 from django.contrib import admin
+from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
 from .models import APNSDevice, GCMDevice, get_expired_tokens
 
 
-def _user__username():
-	try:
-		from django.contrib.auth import get_user_model
-	except ImportError:
-		# Django <1.5
-		return "user__username"
-	return "user__%s" % (get_user_model().USERNAME_FIELD)
+User = get_user_model()
 
 
 class DeviceAdmin(admin.ModelAdmin):
 	list_display = ("__unicode__", "device_id", "user", "active", "date_created")
-	search_fields = ("name", "device_id", _user__username())
+	search_fields = ("name", "device_id", "user__%s" % (User.USERNAME_FIELD))
 	list_filter = ("active", )
 	actions = ("send_message", "send_bulk_message", "prune_devices", "enable", "disable")
 

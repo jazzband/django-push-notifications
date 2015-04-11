@@ -22,13 +22,9 @@ single messages.
 
 Dependencies
 ------------
-All versions of Django 1.0 and newer should be supported, however no guarantees are made for versions older than 1.4.
+Django 1.8 is required. Support for older versions is available in the release 1.2.1.
 
-Tastypie support should work on Tastypie 0.9.11 and newer.
-
-Django versions older than 1.5 require 'six' to be installed.
-Django versions older than 1.7 require 'south' to be installed.
-Django versions older than 1.8 require 'django-uuidfield' to be installed.
+Tastypie support should work on Tastypie 0.11.0 and newer.
 
 
 Setup
@@ -55,10 +51,7 @@ Note: If you are planning on running your project with `DEBUG=True`, then make s
 
 You can learn more about APNS certificates here: https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/ProvisioningDevelopment.html
 
-Native Django migrations are supported on Django 1.7 and beyond. The app will automatically
-fall back to South on older versions, however you will also need the following setting::
-
-	SOUTH_MIGRATION_MODULES = {"push_notifications": "push_notifications.south_migrations"}
+Native Django migrations are in use. `manage.py migrate` will install and migrate all models.
 
 
 Settings list
@@ -164,4 +157,4 @@ When registered, the APIs will show up at <api_root>/device/apns and <api_root>/
 Python 3 support
 ----------------
 
-django-push-notifications is compatible with Python 3. Django 1.8 or higher is recommended.
+django-push-notifications is fully compatible with Python 3.

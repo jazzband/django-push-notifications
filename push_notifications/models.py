@@ -1,18 +1,14 @@
 from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from .fields import HexIntegerField, UUIDField
-
-
-# Compatibility with custom user models, while keeping backwards-compatibility with <1.5
-AUTH_USER_MODEL = getattr(settings, "AUTH_USER_MODEL", "auth.User")
+from .fields import HexIntegerField
 
 
 class Device(models.Model):
 	name = models.CharField(max_length=255, verbose_name=_("Name"), blank=True, null=True)
 	active = models.BooleanField(verbose_name=_("Is active"), default=True,
 		help_text=_("Inactive devices will not be sent notifications"))
-	user = models.ForeignKey(AUTH_USER_MODEL, blank=True, null=True)
+	user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
 	date_created = models.DateTimeField(verbose_name=_("Creation date"), auto_now_add=True, null=True)
 
 	class Meta:
@@ -27,7 +23,6 @@ class Device(models.Model):
 class GCMDeviceManager(models.Manager):
 	def get_queryset(self):
 		return GCMDeviceQuerySet(self.model)
-	get_query_set = get_queryset  # Django < 1.6 compatiblity
 
 
 class GCMDeviceQuerySet(models.query.QuerySet):
@@ -67,7 +62,6 @@ class GCMDevice(Device):
 class APNSDeviceManager(models.Manager):
 	def get_queryset(self):
 		return APNSDeviceQuerySet(self.model)
-	get_query_set = get_queryset  # Django < 1.6 compatiblity
 
 
 class APNSDeviceQuerySet(models.query.QuerySet):
@@ -79,7 +73,7 @@ class APNSDeviceQuerySet(models.query.QuerySet):
 
 
 class APNSDevice(Device):
-	device_id = UUIDField(verbose_name=_("Device ID"), blank=True, null=True, db_index=True,
+	device_id = models.UUIDField(verbose_name=_("Device ID"), blank=True, null=True, db_index=True,
 		help_text="UDID / UIDevice.identifierForVendor()")
 	registration_id = models.CharField(verbose_name=_("Registration ID"), max_length=64, unique=True)
 

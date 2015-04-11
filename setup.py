@@ -12,7 +12,6 @@ CLASSIFIERS = [
 	"Intended Audience :: Developers",
 	"License :: OSI Approved :: MIT License",
 	"Programming Language :: Python",
-	"Programming Language :: Python :: 2.6",
 	"Programming Language :: Python :: 2.7",
 	"Programming Language :: Python :: 3",
 	"Programming Language :: Python :: 3.3",
@@ -29,7 +28,6 @@ setup(
 	packages=[
 		"push_notifications",
 		"push_notifications/migrations",
-		"push_notifications/south_migrations",
 		"push_notifications/management",
 		"push_notifications/management/commands",
 	],
