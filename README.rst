@@ -24,6 +24,8 @@ Django 1.8 is required. Support for older versions is available in the release 1
 
 Tastypie support should work on Tastypie 0.11.0 and newer.
 
+Django REST Framework support should work on DRF version 3.0 and newer.
+
 Setup
 -----
 You can install the library directly from pypi using pip:
@@ -142,7 +144,7 @@ Exceptions
 Tastypie support
 ----------------
 
-The app includes tastypie-compatible resources in push_notifications.api. These can be used as-is, or as base classes
+The app includes tastypie-compatible resources in push_notifications.api.tastypie. These can be used as-is, or as base classes
 for more involved APIs.
 The following resources are available:
 
@@ -156,6 +158,57 @@ the device they register.
 Subclassing the authenticated resources in order to add a ``SameUserAuthentication`` and a user ``ForeignKey`` is recommended.
 
 When registered, the APIs will show up at ``<api_root>/device/apns`` and ``<api_root>/device/gcm``, respectively.
+
+Django REST Framework (DRF) support
+-----------------------------------
+
+ViewSets are available for both APNS and GCM devices in two permission flavors:
+
+- ``APNSDeviceViewSet`` and ``GCMDeviceViewSet``
+
+	- Permissions as specified in settings (``AllowAny`` by default, which is not recommended)
+	- A device may be registered without associating it with a user
+
+- ``APNSDeviceAuthorizedViewSet`` and ``GCMDeviceAuthorizedViewSet``
+
+	- Permissions are ``IsAuthenticated`` and custom permission ``IsOwner``, which will only allow the ``request.user`` to get and update devices that belong to that user
+	- Requires a user to be authenticated, so all devices will be associated with a user
+
+When creating an ``APNSDevice``, the ``registration_id`` is validated to be a 64-character hexadecimal string.
+
+Routes can be added one of two ways:
+
+- Routers_ (include all views)
+.. _Routers: http://www.django-rest-framework.org/tutorial/6-viewsets-and-routers#using-routers
+
+::
+
+	from push_notifications.api.rest_framework import APNSDeviceAuthorizedViewSet, GCMDeviceAuthorizedViewSet
+	from rest_framework.routers import DefaultRouter
+
+	router = DefaultRouter()
+	router.register(r'device/apns', APNSDeviceAuthorizedViewSet)
+	router.register(r'device/gcm', GCMDeviceAuthorizedViewSet)
+
+	urlpatterns = patterns('',
+		# URLs will show up at <api_root>/device/apns
+		url(r'^', include(router.urls)),
+		# ...
+	)
+
+- Using as_view_ (specify which views to include)
+.. _as_view: http://www.django-rest-framework.org/tutorial/6-viewsets-and-routers#binding-viewsets-to-urls-explicitly
+
+::
+
+	from push_notifications.api.rest_framework import APNSDeviceAuthorizedViewSet
+
+	urlpatterns = patterns('',
+		# Only allow creation of devices by authenticated users
+		url(r'^device/apns/?$', APNSDeviceAuthorizedViewSet.as_view({'post': 'create'}), name='create_apns_device'),
+		# ...
+	)
+
 
 Python 3 support
 ----------------
