@@ -45,8 +45,10 @@ def _apns_create_socket(address_tuple):
 	except Exception as e:
 		raise ImproperlyConfigured("The APNS certificate file at %r is not readable: %s" % (certfile, e))
 
+	ca_certs = SETTINGS.get("APNS_CA_CERTIFICATES")
+
 	sock = socket.socket()
-	sock = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_TLSv1, certfile=certfile)
+	sock = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_TLSv1, certfile=certfile, ca_certs=ca_certs)
 	sock.connect(address_tuple)
 
 	return sock

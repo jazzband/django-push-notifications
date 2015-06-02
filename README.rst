@@ -67,6 +67,7 @@ In order to use GCM, you are required to include ``GCM_API_KEY``.
 For APNS, you are required to include ``APNS_CERTIFICATE``.
 
 - ``APNS_CERTIFICATE``: Absolute path to your APNS certificate file. Certificates with passphrases are not supported.
+- ``APNS_CA_CERTIFICATES``: Absolute path to a CA certificates file for APNS. Optional - do not set if not needed. Defaults to None.
 - ``GCM_API_KEY``: Your API key for GCM.
 - ``APNS_HOST``: The hostname used for the APNS sockets.
    - When ``DEBUG=True``, this defaults to ``gateway.sandbox.push.apple.com``.
