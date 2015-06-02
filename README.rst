@@ -67,6 +67,7 @@ For APNS, you are required to include APNS_CERTIFICATE.
 - APNS_PORT: The port used along with APNS_HOST. Defaults to 2195.
 - GCM_POST_URL: The full url that GCM notifications will be POSTed to. Defaults to https://android.googleapis.com/gcm/send.
 - GCM_MAX_RECIPIENTS: The maximum amount of recipients that can be contained per bulk message. If the registration_ids list is larger than that number, multiple bulk messages will be sent. Defaults to 1000 (the maximum amount supported by GCM).
+- CA_CERTS: (Optional) Absolute path to CA certificates file used for APNS SSL connection.
 
 Sending messages
 ----------------
