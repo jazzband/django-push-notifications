@@ -33,7 +33,7 @@ class APNSDataOverflow(APNSError):
 
 def _apns_create_socket(address_tuple):
 	certfile = SETTINGS.get("APNS_CERTIFICATE")
-        ca_certs = SETTINGS.get("CA_CERTS")
+	ca_certs = SETTINGS.get("CA_CERTS")
 	if not certfile:
 		raise ImproperlyConfigured(
 			'You need to set PUSH_NOTIFICATIONS_SETTINGS["APNS_CERTIFICATE"] to send messages through APNS.'
