@@ -40,9 +40,9 @@ class HexIntegerField(six.with_metaclass(models.SubfieldBase, models.BigIntegerF
 	"""
 	def db_type(self, connection):
 		engine = connection.settings_dict["ENGINE"]
-		if engine.endswith("backends.mysql"):
+		if "mysql" in engine:
 			return "bigint unsigned"
-		elif engine == "django.db.backends.sqlite":
+		elif "sqlite" in engine:
 			return "UNSIGNED BIG INT"
 		else:
 			return super(HexIntegerField, self).db_type(connection=connection)
