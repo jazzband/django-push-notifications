@@ -47,7 +47,7 @@ def _gcm_send(data, content_type):
 	return urlopen(request).read()
 
 
-def _gcm_send_plain(registration_id, data, collapse_key=None, delay_while_idle=False, time_to_live=0):
+def _gcm_send_plain(registration_id, data, **kwargs):
 	"""
 	Sends a GCM notification to a single registration_id.
 	This will send the notification as form data.
@@ -57,17 +57,15 @@ def _gcm_send_plain(registration_id, data, collapse_key=None, delay_while_idle=F
 
 	values = {"registration_id": registration_id}
 
-	if collapse_key:
-		values["collapse_key"] = collapse_key
-
-	if delay_while_idle:
-		values["delay_while_idle"] = int(delay_while_idle)
-
-	if time_to_live:
-		values["time_to_live"] = time_to_live
-
 	for k, v in data.items():
 		values["data.%s" % (k)] = v.encode("utf-8")
+
+	for k, v in kwargs.items():
+		if v:
+			if isinstance(v, bool):
+				# Encode bools into ints
+				v = 1
+			values[k] = v
 
 	data = urlencode(sorted(values.items())).encode("utf-8")  # sorted items for tests
 
@@ -77,7 +75,7 @@ def _gcm_send_plain(registration_id, data, collapse_key=None, delay_while_idle=F
 	return result
 
 
-def _gcm_send_json(registration_ids, data, collapse_key=None, delay_while_idle=False, time_to_live=0):
+def _gcm_send_json(registration_ids, data, **kwargs):
 	"""
 	Sends a GCM notification to one or more registration_ids. The registration_ids
 	needs to be a list.
@@ -89,14 +87,9 @@ def _gcm_send_json(registration_ids, data, collapse_key=None, delay_while_idle=F
 	if data is not None:
 		values["data"] = data
 
-	if collapse_key:
-		values["collapse_key"] = collapse_key
-
-	if delay_while_idle:
-		values["delay_while_idle"] = delay_while_idle
-
-	if time_to_live:
-		values["time_to_live"] = time_to_live
+	for k, v in kwargs.items():
+		if v:
+			values[k] = v
 
 	data = json.dumps(values, separators=(",", ":"), sort_keys=True).encode("utf-8")  # keys sorted for tests
 
@@ -106,7 +99,7 @@ def _gcm_send_json(registration_ids, data, collapse_key=None, delay_while_idle=F
 	return result
 
 
-def gcm_send_message(registration_id, data, collapse_key=None, delay_while_idle=False, time_to_live=0):
+def gcm_send_message(registration_id, data, **kwargs):
 	"""
 	Sends a GCM notification to a single registration_id.
 
@@ -115,24 +108,26 @@ def gcm_send_message(registration_id, data, collapse_key=None, delay_while_idle=
 
 	If sending multiple notifications, it is more efficient to use
 	gcm_send_bulk_message() with a list of registration_ids
+
+	A reference of extra keyword arguments sent to the server is available here:
+	https://developers.google.com/cloud-messaging/server-ref#downstream
 	"""
 
-	args = data, collapse_key, delay_while_idle, time_to_live
-
 	try:
-		_gcm_send_plain(registration_id, *args)
+		_gcm_send_plain(registration_id, data, **kwargs)
 	except AttributeError:
-		_gcm_send_json([registration_id], *args)
+		_gcm_send_json([registration_id], data, *kwargs)
 
 
-def gcm_send_bulk_message(registration_ids, data, collapse_key=None, delay_while_idle=False, time_to_live=0):
+def gcm_send_bulk_message(registration_ids, data, **kwargs):
 	"""
 	Sends a GCM notification to one or more registration_ids. The registration_ids
 	needs to be a list.
 	This will send the notification as json data.
-	"""
 
-	args = data, collapse_key, delay_while_idle, time_to_live
+	A reference of extra keyword arguments sent to the server is available here:
+	https://developers.google.com/cloud-messaging/server-ref#downstream
+	"""
 
 	# GCM only allows up to 1000 reg ids per bulk message
 	# https://developer.android.com/google/gcm/gcm.html#request
@@ -140,7 +135,7 @@ def gcm_send_bulk_message(registration_ids, data, collapse_key=None, delay_while
 	if len(registration_ids) > max_recipients:
 		ret = []
 		for chunk in _chunks(registration_ids, max_recipients):
-			ret.append(_gcm_send_json(chunk, *args))
+			ret.append(_gcm_send_json(chunk, data, **kwargs))
 		return ret
 
-	return _gcm_send_json(registration_ids, *args)
+	return _gcm_send_json(registration_ids, data, **kwargs)
