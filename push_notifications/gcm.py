@@ -113,10 +113,7 @@ def gcm_send_message(registration_id, data, **kwargs):
 	https://developers.google.com/cloud-messaging/server-ref#downstream
 	"""
 
-	try:
-		_gcm_send_plain(registration_id, data, **kwargs)
-	except AttributeError:
-		_gcm_send_json([registration_id], data, *kwargs)
+	return _gcm_send_plain(registration_id, data, **kwargs)
 
 
 def gcm_send_bulk_message(registration_ids, data, **kwargs):
