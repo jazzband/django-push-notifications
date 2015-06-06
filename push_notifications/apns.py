@@ -215,10 +215,36 @@ def apns_send_bulk_message(registration_ids, alert, **kwargs):
 	it won't be included in the notification. You will need to pass None
 	to this for silent notifications.
 	"""
-	with closing(_apns_create_socket_to_push()) as socket:
-		for identifier, registration_id in enumerate(registration_ids):
-			_apns_send(registration_id, alert, identifier=identifier, socket=socket, **kwargs)
-		_apns_check_errors(socket)
+	sock = _apns_create_socket_to_push()
+	invalid_ids = []
+	errors = 0
+	length = len(registration_ids)
+	try:
+		identifier = 0
+		while identifier < length:
+			registration_id = registration_ids[identifier]
+			_apns_send(registration_id, alert, identifier=identifier, socket=sock, **kwargs)
+			if identifier == length - 1:
+				try:
+					_apns_check_errors(sock)
+				except APNSServerError as e:
+					# in the event of an error, all messages from the point of the error must be
+					# resent to apple (we skip the error causing identifier to prevent a
+					# neverending cycle)
+					# see "Push Notification Throughput and Error Checking" in Apple's "Technical
+					# Note TN2265"
+					sock.close()
+					sock = _apns_create_socket_to_push()
+					errors += 1
+					if (e.status == 8):
+						invalid_ids.append(registration_ids[e.identifier])
+					# skip failing identifier
+					identifier = e.identifier + 1
+					continue
+			identifier += 1
+	finally:
+		sock.close()
+	return {'success': length - errors, 'failure': errors, 'invalid_registration_ids': invalid_ids}
 
 
 def apns_fetch_inactive_ids():
