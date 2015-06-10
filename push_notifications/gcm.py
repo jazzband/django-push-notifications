@@ -94,8 +94,6 @@ def _gcm_send_json(registration_ids, data, **kwargs):
 	data = json.dumps(values, separators=(",", ":"), sort_keys=True).encode("utf-8")  # keys sorted for tests
 
 	result = json.loads(_gcm_send(data, "application/json"))
-	if result["failure"]:
-		raise GCMError(result)
 	return result
 
 
@@ -129,10 +127,26 @@ def gcm_send_bulk_message(registration_ids, data, **kwargs):
 	# GCM only allows up to 1000 reg ids per bulk message
 	# https://developer.android.com/google/gcm/gcm.html#request
 	max_recipients = SETTINGS.get("GCM_MAX_RECIPIENTS")
-	if len(registration_ids) > max_recipients:
-		ret = []
-		for chunk in _chunks(registration_ids, max_recipients):
-			ret.append(_gcm_send_json(chunk, data, **kwargs))
-		return ret
+	ret = {'failure': 0, 'canonical_ids': 0, 'success': 0, 'invalid_registration_ids': []}
+	for chunk in _chunks(registration_ids, max_recipients):
+		chunk_ret = _gcm_send_json(chunk, data, **kwargs)
+		ret['failure'] += chunk_ret['failure']
+		ret['canonical_ids'] += chunk_ret['canonical_ids']
+		ret['success'] += chunk_ret['success']
+		if chunk_ret['failure']:
+			invalids = []
+			for i, x in enumerate(chunk_ret['results']):
+				if 'error' in x:
+					# Attempt to cacth only errors related on registration_id
+					if x['error'] == 'MissingRegistration' or x['error'] == 'InvalidRegistration' or x['error'] == 'NotRegistered' or \
+						x['error'] == 'InvalidPackageName' or x['error'] == 'MismatchSenderId':
+						invalids.append(chunk[i])
+						if len(invalids) == chunk_ret['failure']:
+							break
+					elif x['error'] != 'DeviceMessageRateExceeded':
+						# Skipping devices that receve too many messages
+						# Raising error for the remaining errors
+						raise GCMError(chunk_ret)
 
-	return _gcm_send_json(registration_ids, data, **kwargs)
+			ret['invalid_registration_ids'].extend(invalids)
+	return ret
