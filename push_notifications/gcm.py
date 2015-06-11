@@ -6,6 +6,8 @@ https://developer.android.com/google/gcm/index.html
 """
 
 import json
+from .models import GCMDevice
+
 
 try:
 	from urllib.request import Request, urlopen
@@ -22,6 +24,8 @@ from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 class GCMError(NotificationError):
 	pass
+
+device_errors = ["NotRegistered", "InvalidRegistration"]
 
 
 def _chunks(l, n):
@@ -71,6 +75,11 @@ def _gcm_send_plain(registration_id, data, **kwargs):
 
 	result = _gcm_send(data, "application/x-www-form-urlencoded;charset=UTF-8")
 	if result.startswith("Error="):
+		for error in device_errors:
+			if error in result:
+				device = GCMDevice.objects.filter(registration_id=values["registration_id"])
+				device.update(active=0)
+				return result
 		raise GCMError(result)
 	return result
 
@@ -95,7 +104,18 @@ def _gcm_send_json(registration_ids, data, **kwargs):
 
 	result = json.loads(_gcm_send(data, "application/json"))
 	if result["failure"]:
-		raise GCMError(result)
+		ids_to_remove = []
+		throw_error = 0
+		for index, er in enumerate(result["results"]):
+			if er.get("error", "none") in device_errors:
+				ids_to_remove.append(values["registration_ids"][index])
+			elif er.get("error", "none") is not "none":
+				throw_error = 1
+		if ids_to_remove:
+			removed = GCMDevice.objects.filter(registration_id__in=ids_to_remove)
+			removed.update(active=0)
+		if throw_error:
+			raise GCMError(result)
 	return result
 
 
