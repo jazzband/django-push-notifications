@@ -12,3 +12,6 @@ build
 
 # virtualenv
 .env
+
+# tox
+.tox

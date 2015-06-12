@@ -1,17 +1,10 @@
 language: python
-python:
-  - "2.7"
-  - "3.2"
-  - "3.3"
-  - "3.4"
 env:
-  - DJANGO=1.8
+  - TOXENV=flake8
+  - TOXENV=py27-django18
+  - TOXENV=py33-django18
+  - TOXENV=py34-django18
 install:
-  - pip install -q Django==$DJANGO --use-mirrors
-  - pip install -r requirements.txt --use-mirrors
-  - pip install flake8 --use-mirrors
-  - python setup.py -q install
-before_script:
-  - "flake8 push_notifications"
+  - pip install tox
 script:
-  - python tests/runtests.py
+  - tox -e $TOXENV
