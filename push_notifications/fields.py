@@ -10,7 +10,7 @@ from django.utils.translation import ugettext_lazy as _
 __all__ = ["HexadecimalField", "HexIntegerField"]
 
 
-hex_re = re.compile(r"^0x[0-9a-fA-F]+$")
+hex_re = re.compile(r"^((0x[0-9a-fA-F]+)|([0-9]+))$")
 postgres_engines = [
 	"django.db.backends.postgresql_psycopg2",
 	"django.contrib.gis.db.backends.postgis",
@@ -50,7 +50,7 @@ class HexIntegerField(six.with_metaclass(models.SubfieldBase, models.BigIntegerF
 	def get_prep_value(self, value):
 		if value is None or value == "":
 			return None
-		if isinstance(value, six.string_types):
+		if isinstance(value, six.string_types) and 'x' in value:
 			value = int(value, 16)
 		# on postgres only, interpret as signed
 		if connection.settings_dict["ENGINE"] in postgres_engines:
