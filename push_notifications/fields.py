@@ -10,7 +10,7 @@ from django.utils.translation import ugettext_lazy as _
 __all__ = ["HexadecimalField", "HexIntegerField"]
 
 
-hex_re = re.compile(r"^[0-9A-f]+$")
+hex_re = re.compile(r"^(([0-9A-f])|(0x[0-9A-f]))+$")
 postgres_engines = [
 	"django.db.backends.postgresql_psycopg2",
 	"django.contrib.gis.db.backends.postgis",
@@ -24,6 +24,13 @@ class HexadecimalField(forms.CharField):
 	def __init__(self, *args, **kwargs):
 		self.default_validators = [RegexValidator(hex_re, _("Enter a valid hexadecimal number"), "invalid")]
 		super(HexadecimalField, self).__init__(*args, **kwargs)
+
+	def prepare_value(self, value):
+		# converts bigint from db to hex before it is displayed in admin
+		if value and not isinstance(value, six.string_types) \
+			and connection.vendor in ("mysql", "sqlite"):
+			value = hex(value).rstrip("L")
+		return super(forms.CharField, self).prepare_value(value)
 
 
 class HexIntegerField(six.with_metaclass(models.SubfieldBase, models.BigIntegerField)):
