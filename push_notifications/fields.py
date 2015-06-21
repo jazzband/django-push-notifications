@@ -79,3 +79,7 @@ class HexIntegerField(six.with_metaclass(models.SubfieldBase, models.BigIntegerF
 		defaults.update(kwargs)
 		# yes, that super call is right
 		return super(models.IntegerField, self).formfield(**defaults)
+
+	def run_validators(self, value):
+		# make sure validation is performed on integer value not string value
+		return super(models.BigIntegerField, self).run_validators(self.get_prep_value(value))
