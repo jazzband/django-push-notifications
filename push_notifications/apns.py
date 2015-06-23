@@ -4,6 +4,7 @@ Documentation is available on the iOS Developer Library:
 https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/ApplePushService.html
 """
 
+import codecs
 import json
 import ssl
 import struct
@@ -231,5 +232,5 @@ def apns_fetch_inactive_ids():
 		# Maybe we should have a flag to return the timestamp?
 		# It doesn't seem that useful right now, though.
 		for tStamp, registration_id in _apns_receive_feedback(socket):
-			inactive_ids.append(registration_id.encode('hex'))
+			inactive_ids.append(codecs.encode(registration_id, 'hex_codec'))
 		return inactive_ids
