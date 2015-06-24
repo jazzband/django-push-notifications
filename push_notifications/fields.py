@@ -10,7 +10,7 @@ from django.utils.translation import ugettext_lazy as _
 __all__ = ["HexadecimalField", "HexIntegerField"]
 
 
-hex_re = re.compile(r"^0x[0-9a-fA-F]+$")
+hex_re = re.compile(r"^[0-9A-f]+$")
 postgres_engines = [
 	"django.db.backends.postgresql_psycopg2",
 	"django.contrib.gis.db.backends.postgis",
