@@ -1,3 +1,17 @@
+v1.3.0 (2015-06-30)
+===================
+* BACKWARDS-INCOMPATIBLE: Drop support for Python<2.7
+* BACKWARDS-INCOMPATIBLE: Drop support for Django<1.8
+* NEW FEATURE: Added a Django Rest Framework API. Requires DRF>=3.0.
+* APNS: Add support for setting the ca_certs file with new APNS_CA_CERTIFICATES setting
+* GCM: Deactivate GCMDevices when their notifications cause NotRegistered or InvalidRegistration
+* GCM: Indiscriminately handle all keyword arguments in gcm_send_message and gcm_send_bulk_message
+* GCM: Never fall back to json in gcm_send_message
+* BUGFIX: Fixed migration issues from 1.2.0 upgrade.
+* BUGFIX: Better detection of SQLite/GIS MySQL in various checks
+* BUGFIX: Assorted Python 3 bugfixes
+* BUGFIX: Fix display of device_id in admin
+
 v1.2.1 (2015-04-11)
 ===================
 * APNS, GCM: Add a db_index to the device_id field
