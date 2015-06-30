@@ -25,8 +25,6 @@ from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 class GCMError(NotificationError):
 	pass
 
-device_errors = ["NotRegistered", "InvalidRegistration"]
-
 
 def _chunks(l, n):
 	"""
@@ -74,13 +72,16 @@ def _gcm_send_plain(registration_id, data, **kwargs):
 	data = urlencode(sorted(values.items())).encode("utf-8")  # sorted items for tests
 
 	result = _gcm_send(data, "application/x-www-form-urlencoded;charset=UTF-8")
+
 	if result.startswith("Error="):
-		for error in device_errors:
-			if error in result:
-				device = GCMDevice.objects.filter(registration_id=values["registration_id"])
-				device.update(active=0)
-				return result
+		if result in ("Error=NotRegistered", "Error=InvalidRegistration"):
+			# Deactivate the problematic device
+			device = GCMDevice.objects.filter(registration_id=values["registration_id"])
+			device.update(active=0)
+			return result
+
 		raise GCMError(result)
+
 	return result
 
 
