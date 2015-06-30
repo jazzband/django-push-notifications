@@ -108,7 +108,7 @@ def _gcm_send_json(registration_ids, data, **kwargs):
 		ids_to_remove = []
 		throw_error = 0
 		for index, er in enumerate(result["results"]):
-			if er.get("error", "none") in device_errors:
+			if er.get("error", "none") in ("NotRegistered", "InvalidRegistration"):
 				ids_to_remove.append(values["registration_ids"][index])
 			elif er.get("error", "none") is not "none":
 				throw_error = 1

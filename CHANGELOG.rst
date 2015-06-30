@@ -1,3 +1,7 @@
+v1.3.1 (2015-06-30)
+===================
+This is an errata release.
+
 v1.3.0 (2015-06-30)
 ===================
 * BACKWARDS-INCOMPATIBLE: Drop support for Python<2.7
