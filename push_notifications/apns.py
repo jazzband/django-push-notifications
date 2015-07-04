@@ -49,14 +49,14 @@ def _apns_create_socket(address_tuple):
 		raise ImproperlyConfigured("The APNS certificate file at %r is not readable: %s" % (certfile, e))
 
 	ca_certs = SETTINGS.get("APNS_CA_CERTIFICATES")
-	proxy = os.environ.get("https_proxy") # format http://127.0.0.1:8080
+	proxy = os.environ.get("https_proxy")  # format http://127.0.0.1:8080
 
 	if not proxy:
 		sock = socket.socket()
 		sock = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_TLSv1, certfile=certfile, ca_certs=ca_certs)
 		sock.connect(address_tuple)
 	else:
-		sock = socks.socksocket() # Same API as socket.socket in the standard lib
+		sock = socks.socksocket()  # Same API as socket.socket in the standard lib
 		parsed_proxy = urlparse(proxy)
 		sock.set_proxy(socks.HTTP, parsed_proxy.hostname, parsed_proxy.port)
 
