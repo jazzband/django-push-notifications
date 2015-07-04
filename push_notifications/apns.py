@@ -10,6 +10,12 @@ import ssl
 import struct
 import socket
 import time
+import os
+import socks
+try:
+	from urlparse import urlparse
+except ImportError:
+	from urllib import parse
 from contextlib import closing
 from binascii import unhexlify
 from django.core.exceptions import ImproperlyConfigured
@@ -46,10 +52,20 @@ def _apns_create_socket(address_tuple):
 		raise ImproperlyConfigured("The APNS certificate file at %r is not readable: %s" % (certfile, e))
 
 	ca_certs = SETTINGS.get("APNS_CA_CERTIFICATES")
+	proxy = os.environ.get("https_proxy")  # format http://127.0.0.1:8080
 
-	sock = socket.socket()
-	sock = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_TLSv1, certfile=certfile, ca_certs=ca_certs)
-	sock.connect(address_tuple)
+	if not proxy:
+		sock = socket.socket()
+		sock = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_TLSv1, certfile=certfile, ca_certs=ca_certs)
+		sock.connect(address_tuple)
+	else:
+		sock = socks.socksocket()  # Same API as socket.socket in the standard lib
+		parsed_proxy = urlparse(proxy)
+		sock.set_proxy(socks.HTTP, parsed_proxy.hostname, parsed_proxy.port)
+
+		# connect to proxy first, then perform SSL handshake with APNS server
+		sock.connect(address_tuple)
+		sock = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_TLSv1, certfile=certfile, ca_certs=ca_certs)
 
 	return sock
 
