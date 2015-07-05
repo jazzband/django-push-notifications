@@ -32,23 +32,32 @@ class APNSDataOverflow(APNSError):
 	pass
 
 
+class APNSCert(object):
+
+	def __init__(self, app_name=None):
+		self.certfile = SETTINGS.get("APNS_CERTIFICATE")
+		if not self.certfile:
+			raise ImproperlyConfigured(
+				'You need to set PUSH_NOTIFICATIONS_SETTINGS["APNS_CERTIFICATE"] to send messages through APNS.'
+			)
+
+		self.ca_certs = SETTINGS.get("APNS_CA_CERTIFICATES")
+
+	def load(self):
+		try:
+			with open(self.certfile, "r") as f:
+				f.read()
+		except Exception as e:
+			error_msg = "The APNS certificate file at %r is not readable: %s"
+			raise ImproperlyConfigured(error_msg % (self.certfile, e))
+
+
 def _apns_create_socket(address_tuple):
-	certfile = SETTINGS.get("APNS_CERTIFICATE")
-	if not certfile:
-		raise ImproperlyConfigured(
-			'You need to set PUSH_NOTIFICATIONS_SETTINGS["APNS_CERTIFICATE"] to send messages through APNS.'
-		)
 
-	try:
-		with open(certfile, "r") as f:
-			f.read()
-	except Exception as e:
-		raise ImproperlyConfigured("The APNS certificate file at %r is not readable: %s" % (certfile, e))
-
-	ca_certs = SETTINGS.get("APNS_CA_CERTIFICATES")
+	cert = APNSCert()
 
 	sock = socket.socket()
-	sock = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_TLSv1, certfile=certfile, ca_certs=ca_certs)
+	sock = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_TLSv1, certfile=cert.certfile, ca_certs=cert.ca_certs)
 	sock.connect(address_tuple)
 
 	return sock

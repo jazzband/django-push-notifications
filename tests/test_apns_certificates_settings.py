@@ -1,5 +1,6 @@
 import mock
 from django.test import TestCase
+from push_notifications.apns import APNSCert
 
 
 class APNSCertificateSettingsTest(TestCase):
