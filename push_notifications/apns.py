@@ -35,18 +35,64 @@ class APNSDataOverflow(APNSError):
 
 class APNSCert(object):
 
-	def __init__(self, app_name=None):
-		self.certfile = SETTINGS.get("APNS_CERTIFICATE")
+	def _get_old_settings(self):
+		new_settings = SETTINGS.copy()
+		cert = new_settings.pop("APNS_CERTIFICATE", None)
+		ca_cert = new_settings.pop("APNS_CA_CERTIFICATES", None)
+		new_settings["APNS_APP_CERTIFICATES"] = {
+			"APP": {
+				"APNS_CERTIFICATE": cert,
+				"APNS_CA_CERTIFICATES": ca_cert
+			}
+		}
 		warnings.warn(
-			"Bla",
+			"""
+			Please use the new APNS Certificates format.
+			If both exist the new one will be ignored.
+			Here is how for your current settings:
+			{s}
+			""".format(s=new_settings),
 			DeprecationWarning
 		)
-		if not self.certfile:
-			raise ImproperlyConfigured(
-				'You need to set PUSH_NOTIFICATIONS_SETTINGS["APNS_CERTIFICATE"] to send messages through APNS.'
-			)
+		return SETTINGS
 
-		self.ca_certs = SETTINGS.get("APNS_CA_CERTIFICATES")
+	def _get_app_settings(self, name=None):
+		if "APNS_CERTIFICATE" in SETTINGS:
+			return self._get_old_settings()
+
+		app_settings = SETTINGS.get("APNS_APP_CERTIFICATES", None)
+		if not app_settings:
+			raise ImproperlyConfigured(
+				'You need to set PUSH_NOTIFICATIONS_SETTINGS["APNS_APP_CERTIFICATES"] to send messages through APNS.'
+			)
+		if not len(app_settings):
+			raise ImproperlyConfigured(
+				'You need to set at least one app in ["APNS_APP_CERTIFICATES"] to send messages through APNS.'
+			)
+		if not name:
+			if len(app_settings) > 1:
+				raise ValueError(
+					"More than 2 apps -> Please specify the one to use by passing a name."
+				)
+			return list(app_settings.values())[0]
+		try:
+			return app_settings[name]
+		except KeyError:
+			raise ValueError(
+					"App name '{n}' doesn't exist on APNS_APP_CERTIFICATES settings.".format(n=name)
+				)
+
+	def __init__(self, app_name=None):
+		settings = self._get_app_settings(name=app_name)
+		self.cert = settings.get("APNS_CERTIFICATE")
+		if not self.cert:
+			raise ImproperlyConfigured(
+				"""
+				You need to set PUSH_NOTIFICATIONS_SETTINGS["APNS_APP_CERTIFICATES"]["{name}"][APNS_CERTIFICATE]
+				to send messages through APNS.
+				""".format(name=(app_name or "YOUR_APP_NAME"))
+			)
+		self.ca_cert = settings.get("APNS_CA_CERTIFICATES")
 
 	def load(self):
 		try:
@@ -62,7 +108,7 @@ def _apns_create_socket(address_tuple):
 	cert = APNSCert()
 
 	sock = socket.socket()
-	sock = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_TLSv1, certfile=cert.certfile, ca_certs=cert.ca_certs)
+	sock = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_TLSv1, certfile=cert.cert, ca_certs=cert.ca_cert)
 	sock.connect(address_tuple)
 
 	return sock
