@@ -10,6 +10,7 @@ import ssl
 import struct
 import socket
 import time
+import warnings
 from contextlib import closing
 from binascii import unhexlify
 from django.core.exceptions import ImproperlyConfigured
@@ -36,6 +37,10 @@ class APNSCert(object):
 
 	def __init__(self, app_name=None):
 		self.certfile = SETTINGS.get("APNS_CERTIFICATE")
+		warnings.warn(
+			"Bla",
+			DeprecationWarning
+		)
 		if not self.certfile:
 			raise ImproperlyConfigured(
 				'You need to set PUSH_NOTIFICATIONS_SETTINGS["APNS_CERTIFICATE"] to send messages through APNS.'
