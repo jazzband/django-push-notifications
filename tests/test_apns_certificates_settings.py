@@ -15,7 +15,7 @@ class APNSCertificateSettingsTest(TestCase):
 		SETTINGS.PUSH_NOTIFICATIONS_SETTINGS.pop("APNS_APP_CERTIFICATES", None)
 	
 	def test_apns_deprecated(self):
-		SETTINGS.PUSH_NOTIFICATIONS_SETTINGS["APNS_CERTIFICATE"] = "some/path/to/somewhere"
+		SETTINGS.PUSH_NOTIFICATIONS_SETTINGS["APNS_CERTIFICATE"] = "/dev/null"
 		SETTINGS.PUSH_NOTIFICATIONS_SETTINGS["APNS_CA_CERTIFICATES"] =  None
 		with warnings.catch_warnings(record=True) as w:
 			warnings.simplefilter("always")
@@ -30,8 +30,8 @@ class APNSCertificateSettingsTest(TestCase):
 	def test_single_apps(self):
 		SETTINGS.PUSH_NOTIFICATIONS_SETTINGS["APNS_APP_CERTIFICATES"] = {
 					"App1": {
-						"APNS_CERTIFICATE": "some/path/to/somewhere",
-						"APNS_CA_CERTIFICATES": "some/capath"
+						"APNS_CERTIFICATE": "/dev/null",
+						"APNS_CA_CERTIFICATES": "/dev/null"
 					}
 		}
 		wrapper = APNSCert()
@@ -49,11 +49,11 @@ class APNSCertificateSettingsTest(TestCase):
 	def test_multiple_apps(self):
 		SETTINGS.PUSH_NOTIFICATIONS_SETTINGS["APNS_APP_CERTIFICATES"] = {
 					"App1": {
-						"APNS_CERTIFICATE": "some/path/to/somewhere",
+						"APNS_CERTIFICATE": "/dev/null",
 						"APNS_CA_CERTIFICATES": None
 					},
 					"App2": {
-						"APNS_CERTIFICATE": "some/path/to/otherplace",
+						"APNS_CERTIFICATE": "/dev/null",
 						"APNS_CA_CERTIFICATES": None
 					}
 		}
