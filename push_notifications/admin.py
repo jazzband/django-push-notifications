@@ -62,7 +62,7 @@ class GCMDeviceAdmin(DeviceAdmin):
 	Inherits from DeviceAdmin to handle displaying gcm device as a hex value
 	"""
 	def device_id_hex(self, obj):
-		if connection.vendor in ("mysql", "sqlite"):
+		if connection.vendor in ("mysql", "sqlite") and obj.device_id:
 			return hex(obj.device_id).rstrip("L")
 		else:
 			return obj.device_id
