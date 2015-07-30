@@ -124,9 +124,6 @@ def gcm_send_message(registration_id, data, **kwargs):
 	"""
 	Sends a GCM notification to a single registration_id.
 
-	This will send the notification as form data if possible, otherwise it will
-	fall back to json data.
-
 	If sending multiple notifications, it is more efficient to use
 	gcm_send_bulk_message() with a list of registration_ids
 
