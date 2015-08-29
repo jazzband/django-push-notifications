@@ -4,3 +4,5 @@ GCM_MULTIPLE_JSON_RESPONSE = '{"multicast_id":108,"success":2,"failure":0,"canon
 GCM_PLAIN_RESPONSE_ERROR = ['Error=NotRegistered', 'Error=InvalidRegistration']
 GCM_PLAIN_RESPONSE_ERROR_B = 'Error=MismatchSenderId'
 GCM_JSON_RESPONSE_ERROR = '{"failure": 3, "canonical_ids": 0, "cast_id": 6358665107659088804, "results": [{"error": "NotRegistered"}, {"message_id": "0:1433830664381654%3449593ff9fd7ecd"}, {"error": "InvalidRegistration"}]}'
+GCM_DRF_INVALID_HEX_ERROR = {'device_id': [u"ValidationError Device ID is not a valid hex number"]}
+GCM_DRF_OUT_OF_RANGE_ERROR = {'device_id': [u"ValidationError Device ID is out of range"]}
