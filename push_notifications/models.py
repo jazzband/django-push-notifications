@@ -4,6 +4,29 @@ from django.utils.translation import ugettext_lazy as _
 from .fields import HexIntegerField
 
 
+def custom_model_deconstruct(self):
+	# prevents migrations from being created for fields not stored in the db
+	# add new fields to exclude to excluded_fields, to support new model
+	# fields, subclass the existing field and call custom_model_deconstruct
+	# from your custom fields deconstruct method
+	excluded_fields = ["help_text", "verbose_name"]
+	name, path, args, kwargs = super(type(self), self).deconstruct()
+	for field in excluded_fields:
+		if field in kwargs:
+			del kwargs[field]
+	return name, path, args, kwargs
+
+
+class CustomUUIDField(models.UUIDField):
+	def deconstruct(self):
+		return custom_model_deconstruct(self)
+
+
+class CustomHexIntegerField(HexIntegerField):
+	def deconstruct(self):
+		return custom_model_deconstruct(self)
+
+
 class Device(models.Model):
 	name = models.CharField(max_length=255, verbose_name=_("Name"), blank=True, null=True)
 	active = models.BooleanField(verbose_name=_("Is active"), default=True,
@@ -42,7 +65,7 @@ class GCMDevice(Device):
 	# device_id cannot be a reliable primary key as fragmentation between different devices
 	# can make it turn out to be null and such:
 	# http://android-developers.blogspot.co.uk/2011/03/identifying-app-installations.html
-	device_id = HexIntegerField(verbose_name=_("Device ID"), blank=True, null=True, db_index=True,
+	device_id = CustomHexIntegerField(verbose_name=_("Device ID"), blank=True, null=True, db_index=True,
 		help_text=_("ANDROID_ID / TelephonyManager.getDeviceId() (always as hex)"))
 	registration_id = models.TextField(verbose_name=_("Registration ID"))
 
@@ -73,7 +96,7 @@ class APNSDeviceQuerySet(models.query.QuerySet):
 
 
 class APNSDevice(Device):
-	device_id = models.UUIDField(verbose_name=_("Device ID"), blank=True, null=True, db_index=True,
+	device_id = CustomUUIDField(verbose_name=_("Device ID"), blank=True, null=True, db_index=True,
 		help_text="UDID / UIDevice.identifierForVendor()")
 	registration_id = models.CharField(verbose_name=_("Registration ID"), max_length=64, unique=True)
 
