@@ -38,6 +38,9 @@ class DeviceSerializerMixin(ModelSerializer):
 		fields = ("name", "registration_id", "device_id", "active", "date_created")
 		read_only_fields = ("date_created", )
 
+		# See https://github.com/tomchristie/django-rest-framework/issues/1101
+		extra_kwargs = {"active": {"default": True}}
+
 
 class APNSDeviceSerializer(ModelSerializer):
 
