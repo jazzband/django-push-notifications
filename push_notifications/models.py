@@ -38,7 +38,7 @@ class GCMDeviceQuerySet(models.query.QuerySet):
 			if message is not None:
 				data["message"] = message
 
-			reg_ids = [rec.registration_id for rec in self]
+			reg_ids = [rec.registration_id for rec in self if rec.active]
 			return gcm_send_bulk_message(registration_ids=reg_ids, data=data, **kwargs)
 
 
@@ -72,7 +72,7 @@ class APNSDeviceQuerySet(models.query.QuerySet):
 	def send_message(self, message, **kwargs):
 		if self:
 			from .apns import apns_send_bulk_message
-			reg_ids = [rec.registration_id for rec in self]
+			reg_ids = [rec.registration_id for rec in self if rec.active]
 			return apns_send_bulk_message(registration_ids=reg_ids, alert=message, **kwargs)
 
 

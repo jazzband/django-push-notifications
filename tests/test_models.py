@@ -72,6 +72,25 @@ class ModelTestCase(TestCase):
                     "registration_ids": ["abc", "abc1"]
                 }, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json")
 
+    def test_gcm_send_message_active_devices(self):
+        GCMDevice.objects.create(
+            registration_id="abc",
+            active=True
+        )
+
+        GCMDevice.objects.create(
+            registration_id="xyz",
+            active=False
+        )
+
+        with mock.patch("push_notifications.gcm._gcm_send", return_value=GCM_MULTIPLE_JSON_RESPONSE) as p:
+            GCMDevice.objects.all().send_message("Hello world")
+            p.assert_called_once_with(
+                json.dumps({
+                    "data": { "message": "Hello world" },
+                    "registration_ids": ["abc"]
+                }, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json")
+
     def test_gcm_send_message_extra_to_multiple_devices(self):
         GCMDevice.objects.create(
             registration_id="abc",
