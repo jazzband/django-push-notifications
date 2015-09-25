@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from django.db.backends.base.operations import BaseDatabaseOperations
 from rest_framework import permissions
 from rest_framework.serializers import ModelSerializer, ValidationError
+from rest_framework.validators import UniqueValidator
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.fields import IntegerField
 
@@ -62,6 +63,16 @@ class GCMDeviceSerializer(ModelSerializer):
 
 	class Meta(DeviceSerializerMixin.Meta):
 		model = GCMDevice
+
+		extra_kwargs = {
+			# Work around an issue with validating the uniqueness of
+			# registration ids of up to 4k
+			'registration_id': {
+				'validators': [
+					UniqueValidator(queryset=GCMDevice.objects.all())
+				]
+			}
+		}
 
 	def validate_device_id(self, value):
 		# max value for django.db.models.BigIntegerField is 9223372036854775807
