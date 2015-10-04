@@ -3,11 +3,10 @@ import mock
 from django.test import TestCase
 from django.utils import timezone
 from push_notifications.models import GCMDevice, APNSDevice
-from tests.mock_responses import GCM_PLAIN_RESPONSE, \
-    GCM_MULTIPLE_JSON_RESPONSE, GCM_PLAIN_RESPONSE_ERROR, \
-    GCM_JSON_RESPONSE_ERROR, GCM_PLAIN_RESPONSE_ERROR_B,\
-    GCM_PLAIN_CANONICAL_ID_RESPONSE, GCM_JSON_CANONICAL_ID_RESPONSE,\
-    GCM_JSON_CANONICAL_ID_SAME_DEVICE_RESPONSE
+from tests.mock_responses import ( GCM_PLAIN_RESPONSE,GCM_MULTIPLE_JSON_RESPONSE, GCM_PLAIN_RESPONSE_ERROR,
+                                   GCM_JSON_RESPONSE_ERROR, GCM_PLAIN_RESPONSE_ERROR_B, GCM_JSON_RESPONSE_ERROR_B,
+                                   GCM_PLAIN_CANONICAL_ID_RESPONSE, GCM_JSON_CANONICAL_ID_RESPONSE,
+                                   GCM_JSON_CANONICAL_ID_SAME_DEVICE_RESPONSE)
 from push_notifications.gcm import GCMError
 
 
@@ -139,8 +138,7 @@ class ModelTestCase(TestCase):
                 device = GCMDevice.objects. \
                     get(registration_id=device_list[index])
                 device.send_message("Hello World!")
-                assert GCMDevice.objects.get(registration_id=device_list[index]) \
-                           .active is False
+                assert GCMDevice.objects.get(registration_id=device_list[index]).active is False
 
     def test_gcm_send_message_to_single_device_with_error_b(self):
         # these errors are not device specific, GCMError should be thrown
@@ -152,8 +150,7 @@ class ModelTestCase(TestCase):
                 get(registration_id=device_list[0])
             with self.assertRaises(GCMError):
                 device.send_message("Hello World!")
-            assert GCMDevice.objects.get(registration_id=device_list[0]) \
-                            .active is True
+            assert GCMDevice.objects.get(registration_id=device_list[0]).active is True
 
     def test_gcm_send_message_to_multiple_devices_with_error(self):
         device_list = ['abc', 'abc1', 'abc2']
@@ -162,12 +159,21 @@ class ModelTestCase(TestCase):
                         return_value=GCM_JSON_RESPONSE_ERROR) as p:
             devices = GCMDevice.objects.all()
             devices.send_message("Hello World")
-            assert GCMDevice.objects.get(registration_id=device_list[0]) \
-                       .active is False
-            assert GCMDevice.objects.get(registration_id=device_list[1]) \
-                       .active is True
-            assert GCMDevice.objects.get(registration_id=device_list[2]) \
-                       .active is False
+            assert GCMDevice.objects.get(registration_id=device_list[0]).active is False
+            assert GCMDevice.objects.get(registration_id=device_list[1]).active is True
+            assert GCMDevice.objects.get(registration_id=device_list[2]).active is False
+
+    def test_gcm_send_message_to_multiple_devices_with_error_b(self):
+        device_list = ['abc', 'abc1', 'abc2']
+        self.create_devices(device_list)
+        with mock.patch("push_notifications.gcm._gcm_send",
+                        return_value=GCM_JSON_RESPONSE_ERROR_B) as p:
+            devices = GCMDevice.objects.all()
+            with self.assertRaises(GCMError):
+                devices.send_message("Hello World")
+            assert GCMDevice.objects.get(registration_id=device_list[0]).active is True
+            assert GCMDevice.objects.get(registration_id=device_list[1]).active is True
+            assert GCMDevice.objects.get(registration_id=device_list[2]).active is False
 
     def test_gcm_send_message_to_multiple_devices_with_canonical_id(self):
         device_list = ['foo', 'bar']

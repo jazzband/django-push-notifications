@@ -1,6 +1,7 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
+from .gcm import GCMError
 from .models import APNSDevice, GCMDevice, get_expired_tokens
 
 
@@ -13,26 +14,45 @@ class DeviceAdmin(admin.ModelAdmin):
 	list_filter = ("active", )
 	actions = ("send_message", "send_bulk_message", "prune_devices", "enable", "disable")
 
-	def send_message(self, request, queryset):
+	def send_messages(self, request, queryset, bulk=False):
+		"""
+		Provides error handling for DeviceAdmin send_message and send_bulk_message methods.
+		"""
 		ret = []
 		errors = []
 		r = ""
+
 		for device in queryset:
 			try:
-				r = device.send_message("Test single notification")
-			except Exception as e:
+				if bulk:
+					r = queryset.send_message("Test bulk notification")
+				else:
+					r = device.send_message("Test single notification")
+				if r:
+					ret.append(r)
+			except GCMError as e:
 				errors.append(str(e))
-			if r:
-				ret.append(r)
+
+			if bulk:
+				break
+
 		if errors:
-			self.message_user(request, _("Some messages could not be processed: %r" % ("\n".join(errors))))
+			self.message_user(request, _("Some messages could not be processed: %r" % (", ".join(errors))), level=messages.ERROR)
 		if ret:
-			self.message_user(request, _("All messages were sent: %s" % ("\n".join(ret))))
+			if not bulk:
+				ret = ", ".join(ret)
+			if errors:
+				msg = _("Some messages were sent: %s" % (ret))
+			else:
+				msg = _("All messages were sent: %s" % (ret))
+			self.message_user(request, msg)
+
+	def send_message(self, request, queryset):
+		self.send_messages(request, queryset)
 	send_message.short_description = _("Send test message")
 
 	def send_bulk_message(self, request, queryset):
-		r = queryset.send_message("Test bulk notification")
-		self.message_user(request, _("All messages were sent: %s" % (r)))
+		self.send_messages(request, queryset, True)
 	send_bulk_message.short_description = _("Send test message in bulk")
 
 	def enable(self, request, queryset):
