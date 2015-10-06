@@ -210,6 +210,17 @@ class ModelTestCase(TestCase):
             device.send_message("Hello world", socket=socket, expiration=1)
             p.assert_called_once_with("abc", b'{"aps":{"alert":"Hello world"}}', 0, 1, 10)
 
+    def test_apns_send_message_for_specific_app(self):
+        device = APNSDevice.objects.create(
+            registration_id="abc",
+        )
+        socket = mock.MagicMock()
+        with mock.patch("push_notifications.apns._apns_send") as p:
+            device.send_message("Hello world for HelloApp", socket=socket, expiration=1,
+                app_name="HelloApp")
+            a, k = p.call_args
+            self.assertEquals(k["app_name"], "HelloApp")
+
     def test_apns_send_message_extra(self):
         device = APNSDevice.objects.create(
             registration_id="abc",
