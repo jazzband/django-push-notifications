@@ -1,9 +1,9 @@
 language: python
 env:
   - TOXENV=flake8
-  - TOXENV=py27-django18
-  - TOXENV=py33-django18
-  - TOXENV=py34-django18
+  - TOXENV=py27-django18-pysocks154
+  - TOXENV=py33-django18-pysocks154
+  - TOXENV=py34-django18-pysocks154
 install:
   - pip install tox
 script:
