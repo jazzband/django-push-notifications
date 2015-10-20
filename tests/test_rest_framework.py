@@ -87,7 +87,19 @@ class GCMDeviceSerializerTestCase(TestCase):
 		serializer = GCMDeviceSerializer(data={
 			"registration_id": "foobar",
 			"name": "Galaxy Note 3",
-			"device_id": "a54eb38370070a1b",
+			"device_id": "10000000000000000", # 2**64
 		})
 		self.assertFalse(serializer.is_valid())
 		self.assertEqual(serializer.errors, GCM_DRF_OUT_OF_RANGE_ERROR)
+
+	def test_device_id_validation_value_between_signed_unsigned_64b_int_maximums(self):
+		"""
+		2**63 < 0xe87a4e72d634997c < 2**64
+		"""
+		serializer = GCMDeviceSerializer(data={
+			"registration_id": "foobar",
+			"name": "Nexus 5",
+			"device_id": "e87a4e72d634997c",
+		})
+		self.assertTrue(serializer.is_valid())
+

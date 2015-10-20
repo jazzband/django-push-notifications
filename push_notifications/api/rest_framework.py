@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 
-from django.db.backends.base.operations import BaseDatabaseOperations
 from rest_framework import permissions
 from rest_framework.serializers import ModelSerializer, ValidationError
 from rest_framework.validators import UniqueValidator
@@ -9,9 +8,7 @@ from rest_framework.fields import IntegerField
 
 from push_notifications.models import APNSDevice, GCMDevice
 from push_notifications.fields import hex_re
-
-
-BIGINT_MAX_VALUE = BaseDatabaseOperations.integer_field_ranges["BigIntegerField"][1]
+from push_notifications.fields import UNSIGNED_64BIT_INT_MAX_VALUE
 
 # Fields
 
@@ -22,7 +19,8 @@ class HexIntegerField(IntegerField):
 	"""
 
 	def to_internal_value(self, data):
-		# validate that value is a hex number
+		# validate hex string and convert it to the unsigned
+		# integer representation for internal use
 		try:
 			data = int(data, 16)
 		except ValueError:
@@ -78,9 +76,8 @@ class GCMDeviceSerializer(ModelSerializer):
 		}
 
 	def validate_device_id(self, value):
-		# max value for django.db.models.BigIntegerField is 9223372036854775807
-		# make sure the value is in valid range
-		if value > BIGINT_MAX_VALUE:
+		# device ids are 64 bit unsigned values
+		if value > UNSIGNED_64BIT_INT_MAX_VALUE:
 			raise ValidationError("ValidationError Device ID is out of range")
 		return value
 
