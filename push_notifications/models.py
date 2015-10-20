@@ -4,6 +4,7 @@ from django.conf import settings
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
+
 from .fields import HexIntegerField
 
 
@@ -38,7 +39,7 @@ class GCMDeviceQuerySet(models.query.QuerySet):
 			if message is not None:
 				data["message"] = message
 
-			reg_ids = [rec.registration_id for rec in self if rec.active]
+			reg_ids = list(self.filter(active=True).values_list('registration_id', flat=True))
 			return gcm_send_bulk_message(registration_ids=reg_ids, data=data, **kwargs)
 
 
@@ -72,7 +73,7 @@ class APNSDeviceQuerySet(models.query.QuerySet):
 	def send_message(self, message, **kwargs):
 		if self:
 			from .apns import apns_send_bulk_message
-			reg_ids = [rec.registration_id for rec in self if rec.active]
+			reg_ids = list(self.filter(active=True).values_list('registration_id', flat=True))
 			return apns_send_bulk_message(registration_ids=reg_ids, alert=message, **kwargs)
 
 
