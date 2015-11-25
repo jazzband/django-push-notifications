@@ -2,14 +2,16 @@ from __future__ import absolute_import
 
 from rest_framework import permissions
 from rest_framework.serializers import ModelSerializer, ValidationError
+from rest_framework.validators import UniqueValidator
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.fields import IntegerField
 
 from push_notifications.models import APNSDevice, GCMDevice
 from push_notifications.fields import hex_re
-
+from push_notifications.fields import UNSIGNED_64BIT_INT_MAX_VALUE
 
 # Fields
+
 
 class HexIntegerField(IntegerField):
 	"""
@@ -17,7 +19,12 @@ class HexIntegerField(IntegerField):
 	"""
 
 	def to_internal_value(self, data):
-		data = int(data, 16)
+		# validate hex string and convert it to the unsigned
+		# integer representation for internal use
+		try:
+			data = int(data, 16)
+		except ValueError:
+			raise ValidationError("ValidationError Device ID is not a valid hex number")
 		return super(HexIntegerField, self).to_internal_value(data)
 
 	def to_representation(self, value):
@@ -29,6 +36,9 @@ class DeviceSerializerMixin(ModelSerializer):
 	class Meta:
 		fields = ("name", "registration_id", "device_id", "active", "date_created")
 		read_only_fields = ("date_created", )
+
+		# See https://github.com/tomchristie/django-rest-framework/issues/1101
+		extra_kwargs = {"active": {"default": True}}
 
 
 class APNSDeviceSerializer(ModelSerializer):
@@ -55,6 +65,22 @@ class GCMDeviceSerializer(ModelSerializer):
 	class Meta(DeviceSerializerMixin.Meta):
 		model = GCMDevice
 
+		extra_kwargs = {
+			# Work around an issue with validating the uniqueness of
+			# registration ids of up to 4k
+			'registration_id': {
+				'validators': [
+					UniqueValidator(queryset=GCMDevice.objects.all())
+				]
+			}
+		}
+
+	def validate_device_id(self, value):
+		# device ids are 64 bit unsigned values
+		if value > UNSIGNED_64BIT_INT_MAX_VALUE:
+			raise ValidationError("ValidationError Device ID is out of range")
+		return value
+
 
 # Permissions
 class IsOwner(permissions.BasePermission):
@@ -70,6 +96,7 @@ class DeviceViewSetMixin(object):
 	def perform_create(self, serializer):
 		if self.request.user.is_authenticated():
 			serializer.save(user=self.request.user)
+		return super(DeviceViewSetMixin, self).perform_create(serializer)
 
 
 class AuthorizedMixin(object):

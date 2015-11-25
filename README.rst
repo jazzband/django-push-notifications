@@ -7,7 +7,7 @@ A minimal Django app that implements Device models that can send messages throug
 
 The app implements two models: ``GCMDevice`` and ``APNSDevice``. Those models share the same attributes:
  - ``name`` (optional): A name for the device.
- - ``is_active`` (default True): A boolean that determines whether the device will be sent notifications.
+ - ``active`` (default True): A boolean that determines whether the device will be sent notifications.
  - ``user`` (optional): A foreign key to auth.User, if you wish to link the device to a specific user.
  - ``device_id`` (optional): A UUID for the device obtained from Android/iOS APIs, if you wish to uniquely identify it.
  - ``registration_id`` (required): The GCM registration id or the APNS token for the device.

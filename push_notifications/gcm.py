@@ -73,7 +73,18 @@ def _gcm_send_plain(registration_id, data, **kwargs):
 
 	result = _gcm_send(data, "application/x-www-form-urlencoded;charset=UTF-8")
 
-	if result.startswith("Error="):
+	# Information about handling response from Google docs (https://developers.google.com/cloud-messaging/http):
+	# If first line starts with id, check second line:
+	# If second line starts with registration_id, gets its value and replace the registration tokens in your
+	# server database. Otherwise, get the value of Error
+
+	if result.startswith("id"):
+		lines = result.split("\n")
+		if len(lines) > 1 and lines[1].startswith("registration_id"):
+			new_id = lines[1].split("=")[-1]
+			_gcm_handle_canonical_id(new_id, registration_id)
+
+	elif result.startswith("Error="):
 		if result in ("Error=NotRegistered", "Error=InvalidRegistration"):
 			# Deactivate the problematic device
 			device = GCMDevice.objects.filter(registration_id=values["registration_id"])
@@ -103,29 +114,53 @@ def _gcm_send_json(registration_ids, data, **kwargs):
 
 	data = json.dumps(values, separators=(",", ":"), sort_keys=True).encode("utf-8")  # keys sorted for tests
 
-	result = json.loads(_gcm_send(data, "application/json"))
-	if result["failure"]:
-		ids_to_remove = []
-		throw_error = 0
-		for index, er in enumerate(result["results"]):
-			if er.get("error", "none") in ("NotRegistered", "InvalidRegistration"):
-				ids_to_remove.append(values["registration_ids"][index])
-			elif er.get("error", "none") is not "none":
-				throw_error = 1
+	response = json.loads(_gcm_send(data, "application/json"))
+	if response["failure"] or response["canonical_ids"]:
+		ids_to_remove, old_new_ids = [], []
+		throw_error = False
+		for index, result in enumerate(response["results"]):
+			error = result.get("error")
+			if error:
+				# Information from Google docs (https://developers.google.com/cloud-messaging/http)
+				# If error is NotRegistered or InvalidRegistration, then we will deactivate devices because this
+				# registration ID is no more valid and can't be used to send messages, otherwise raise error
+				if error in ("NotRegistered", "InvalidRegistration"):
+					ids_to_remove.append(registration_ids[index])
+				else:
+					throw_error = True
+
+			# If registration_id is set, replace the original ID with the new value (canonical ID) in your
+			# server database. Note that the original ID is not part of the result, so you need to obtain it
+			# from the list of registration_ids passed in the request (using the same index).
+			new_id = result.get("registration_id")
+			if new_id:
+				old_new_ids.append((registration_ids[index], new_id))
+
 		if ids_to_remove:
 			removed = GCMDevice.objects.filter(registration_id__in=ids_to_remove)
 			removed.update(active=0)
+
+		for old_id, new_id in old_new_ids:
+			_gcm_handle_canonical_id(new_id, old_id)
+
 		if throw_error:
-			raise GCMError(result)
-	return result
+			raise GCMError(response)
+	return response
+
+
+def _gcm_handle_canonical_id(canonical_id, current_id):
+	"""
+	Handle situation when GCM server response contains canonical ID
+	"""
+	if GCMDevice.objects.filter(registration_id=canonical_id, active=True).exists():
+		GCMDevice.objects.filter(registration_id=current_id).update(active=False)
+	else:
+		GCMDevice.objects.filter(registration_id=current_id).update(registration_id=canonical_id)
 
 
 def gcm_send_message(registration_id, data, **kwargs):
 	"""
 	Sends a GCM notification to a single registration_id.
-
-	This will send the notification as form data if possible, otherwise it will
-	fall back to json data.
 
 	If sending multiple notifications, it is more efficient to use
 	gcm_send_bulk_message() with a list of registration_ids

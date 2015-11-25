@@ -2,13 +2,13 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
 from .models import APNSDevice, GCMDevice, get_expired_tokens
-from django.db import connection
+
 
 User = get_user_model()
 
 
 class DeviceAdmin(admin.ModelAdmin):
-	list_display = ("__unicode__", "device_id", "user", "active", "date_created")
+	list_display = ("__str__", "device_id", "user", "active", "date_created")
 	search_fields = ("name", "device_id", "user__%s" % (User.USERNAME_FIELD))
 	list_filter = ("active", )
 	actions = ("send_message", "send_bulk_message", "prune_devices", "enable", "disable")
@@ -57,18 +57,5 @@ class DeviceAdmin(admin.ModelAdmin):
 			d.save()
 
 
-class GCMDeviceAdmin(DeviceAdmin):
-	"""
-	Inherits from DeviceAdmin to handle displaying gcm device as a hex value
-	"""
-	def device_id_hex(self, obj):
-		if connection.vendor in ("mysql", "sqlite"):
-			return hex(obj.device_id).rstrip("L")
-		else:
-			return obj.device_id
-	device_id_hex.short_description = "Device ID"
-
-	list_display = ("__unicode__", "device_id_hex", "user", "active", "date_created")
-
 admin.site.register(APNSDevice, DeviceAdmin)
-admin.site.register(GCMDevice, GCMDeviceAdmin)
+admin.site.register(GCMDevice, DeviceAdmin)
