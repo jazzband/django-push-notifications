@@ -70,19 +70,22 @@ For APNS, you are required to include ``APNS_CERTIFICATE``, ``APNS_CERTIFICATES`
 
 - ``APNS_CERTIFICATE``: Absolute path to your APNS certificate file. Certificates with passphrases are not supported.
 - ``APNS_CERTIFICATES``: A dictionary reflecting separate application IDs to separate APNS certificate files.
-- ``APNS_CERTIFICATES_MODEL``: A dictionary containing description of a database model to reflect application ID to APNS certificate file path.
+- ``APNS_CERTIFICATES_MODEL``: A dictionary containing description of a database model to reflect
+  application ID to APNS certificate file path.
     - ``'model'`` - a model name like ``'my_application.MyModel'``
     - ``'key'`` - a field name of the model referenced above, containing an application ID like ``'application_id'``
-    - ``'value'`` - a path to the field from the model referenced above, which contains an APNS certificate file path, or just having
-                    a type django.db.models.fields.FileField, like ``'certificate'``
+    - ``'value'`` - a path to the field from the model referenced above, which contains an APNS certificate
+      file path, or just having a type django.db.models.fields.FileField, like ``'certificate'``
 - ``APNS_CA_CERTIFICATES``: Absolute path to a CA certificates file for APNS. Optional - do not set if not needed. Defaults to None.
 - ``GCM_API_KEY``: Your API key for GCM.
 - ``GCM_API_KEYS``: A dictionary reflecting separate application IDs to separate GCM API keys.
-- ``GCM_API_KEYS_MODEL``: A dictionary reflecting separate application IDs to separate GCM API keys.
+- ``GCM_API_KEYS_MODEL``: A dictionary reflecting separate application IDs to separate GCM API
+  keys.
     - ``'model'`` - a model name like ``'my_application.MyModel'``
     - ``'key'`` - a field name of the model referenced above, containing an application ID like ``'application_id'``
     - ``'value'`` - a path to the field from the model referenced above, which contains a GCM API key like ``'api_key'``
-- ``APNS_HOST``: The hostname used for the APNS sockets.
+- ``APNS_HOST``: The hostname used for the APNS
+  sockets.
    - When ``DEBUG=True``, this defaults to ``gateway.sandbox.push.apple.com``.
    - When ``DEBUG=False``, this defaults to ``gateway.push.apple.com``.
 - ``APNS_PORT``: The port used along with APNS_HOST. Defaults to 2195.
@@ -168,7 +171,7 @@ reflect an application ID to the correspondent application credentials:
 
 .. code-block:: python
 
-    class Application(models.Model):
+    class ApplicationModel(models.Model):
         application_id = models.CharField(max_length=64,db_index=True)
         cgm_api_key = models.TextField()
         apns_certificate = models.FileField()
@@ -180,21 +183,22 @@ Then settings for the application should look like:
 	PUSH_NOTIFICATIONS_SETTINGS = {
 		"GCM_API_KEY": "<your default application api key>",
 		"GCM_API_KEYS_MODEL": {
-		    "model":"applications.Application",
+		    "model":"applications.ApplicationModel",
 		    "key":"application_id",
 		    "value":"cgm_api_key",
 		},
 		"APNS_CERTIFICATE": "/path/to/your/default/certificate.pem",
 		"APNS_CERTIFICATES_MODEL": {
-		    "model":"applications.Application",
+		    "model":"applications.ApplicationModel",
 		    "key":"application_id",
 		    "value":"apns_certificate",
 		}
 	}
 
-Definitely, either your mobile application should store it's application ID together with a registration ID
-while registering, or your server should identify the mobile application itself, while the mobile application
-instance is registering on the server. You can use application access token for the purpose in the latter case.
+Definitely, either your mobile application should store it's application ID in the Device instance
+together with a registration ID while registering, or your server should identify the mobile
+application itself, while the mobile application instance is registering on the server.
+You can use application access token for the purpose in the latter case.
 
 Administration
 --------------
