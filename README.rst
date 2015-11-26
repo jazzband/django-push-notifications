@@ -173,7 +173,7 @@ reflect an application ID to the correspondent application credentials:
 
     class ApplicationModel(models.Model):
         application_id = models.CharField(max_length=64,db_index=True)
-        cgm_api_key = models.TextField()
+        gcm_api_key = models.TextField()
         apns_certificate = models.FileField()
 
 Then settings for the application should look like:
@@ -185,7 +185,7 @@ Then settings for the application should look like:
 		"GCM_API_KEYS_MODEL": {
 		    "model":"applications.ApplicationModel",
 		    "key":"application_id",
-		    "value":"cgm_api_key",
+		    "value":"gcm_api_key",
 		},
 		"APNS_CERTIFICATE": "/path/to/your/default/certificate.pem",
 		"APNS_CERTIFICATES_MODEL": {
