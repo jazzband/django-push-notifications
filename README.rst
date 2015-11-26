@@ -18,6 +18,8 @@ GCM or APNS devices and in the action dropdown, select "Send test message" or "S
 Note that sending a non-bulk test message to more than one device will just iterate over the devices and send multiple
 single messages.
 
+The application supports multiple mobile applications with separate application IDs using one server simultaneously.
+
 Dependencies
 ------------
 Django 1.8 is required. Support for older versions is available in the release 1.2.1.
@@ -63,12 +65,23 @@ Settings list
 -------------
 All settings are contained in a ``PUSH_NOTIFICATIONS_SETTINGS`` dict.
 
-In order to use GCM, you are required to include ``GCM_API_KEY``.
-For APNS, you are required to include ``APNS_CERTIFICATE``.
+In order to use GCM, you are required to include one of ``GCM_API_KEY``, ``GCM_API_KEYS``, or ``GCM_API_KEYS_MODEL``.
+For APNS, you are required to include ``APNS_CERTIFICATE``, ``APNS_CERTIFICATES``, or ``APNS_CERTIFICATES_MODEL``.
 
 - ``APNS_CERTIFICATE``: Absolute path to your APNS certificate file. Certificates with passphrases are not supported.
+- ``APNS_CERTIFICATES``: A dictionary reflecting separate application IDs to separate APNS certificate files.
+- ``APNS_CERTIFICATES_MODEL``: A dictionary containing description of a database model to reflect application ID to APNS certificate file path.
+    - ``'model'`` - a model name like ``'my_application.MyModel'``
+    - ``'key'`` - a field name of the model referenced above, containing an application ID like ``'application_id'``
+    - ``'value'`` - a path to the field from the model referenced above, which contains an APNS certificate file path, or just having
+                    a type django.db.models.fields.FileField, like ``'certificate'``
 - ``APNS_CA_CERTIFICATES``: Absolute path to a CA certificates file for APNS. Optional - do not set if not needed. Defaults to None.
 - ``GCM_API_KEY``: Your API key for GCM.
+- ``GCM_API_KEYS``: A dictionary reflecting separate application IDs to separate GCM API keys.
+- ``GCM_API_KEYS_MODEL``: A dictionary reflecting separate application IDs to separate GCM API keys.
+    - ``'model'`` - a model name like ``'my_application.MyModel'``
+    - ``'key'`` - a field name of the model referenced above, containing an application ID like ``'application_id'``
+    - ``'value'`` - a path to the field from the model referenced above, which contains a GCM API key like ``'api_key'``
 - ``APNS_HOST``: The hostname used for the APNS sockets.
    - When ``DEBUG=True``, this defaults to ``gateway.sandbox.push.apple.com``.
    - When ``DEBUG=False``, this defaults to ``gateway.push.apple.com``.
@@ -116,6 +129,72 @@ Sending messages in bulk
 
 Sending messages in bulk makes use of the bulk mechanics offered by GCM and APNS. It is almost always preferable to send
 bulk notifications instead of single ones.
+
+Multiple mobile applications
+----------------------------
+
+In order to use multiple mobile applications on the same server, you should provide some method to associate the application IDs
+and correspondent application keys or certificates.
+
+If your are planning to use some not big and static number of mobile applications, you can use a static dictionary directly in
+your settings file. Use ``APNS_CERTIFICATES`` and ``GCM_API_KEYS`` settings to store this dictionary for APNS and GCM
+correspondently. The ``APNS_CERTIFICATE`` and ``GCM_API_KEY`` settings are used as defaults.
+
+.. code-block:: python
+
+	PUSH_NOTIFICATIONS_SETTINGS = {
+		"GCM_API_KEY": "<your default application api key>",
+		"GCM_API_KEYS": {
+		    "<application ID 1>":"<your api key 1>",
+		    "<application ID 2>":"<your api key 2>",
+		    ...
+		},
+		"APNS_CERTIFICATE": "/path/to/your/default/certificate.pem",
+		"APNS_CERTIFICATES": {
+		    "<application ID 1>":"/path/to/your/certificate1.pem",
+		    "<application ID 2>":"/path/to/your/certificate2.pem",
+		    ...
+		}
+	}
+
+If your are planning to use dynamic and/or big number of mobile applications, you can use a dynamic access to
+the database table containig records describing applications. Use ``APNS_CERTIFICATES_MODEL``
+and ``GCM_API_KEYS_MODEL`` settings to describe model(s) containing reflection
+of application IDs to the correspondent values. The ``APNS_CERTIFICATE`` and ``GCM_API_KEY`` settings are used
+as defaults.
+
+Let say, the application ``applications`` contains a model ``ApplicationModel`` which contains three fields to
+reflect an application ID to the correspondent application credentials:
+
+.. code-block:: python
+
+    class Application(models.Model):
+        application_id = models.CharField(max_length=64,db_index=True)
+        cgm_api_key = models.TextField()
+        apns_certificate = models.FileField()
+
+Then settings for the application should look like:
+
+.. code-block:: python
+
+	PUSH_NOTIFICATIONS_SETTINGS = {
+		"GCM_API_KEY": "<your default application api key>",
+		"GCM_API_KEYS_MODEL": {
+		    "model":"applications.Application",
+		    "key":"application_id",
+		    "value":"cgm_api_key",
+		},
+		"APNS_CERTIFICATE": "/path/to/your/default/certificate.pem",
+		"APNS_CERTIFICATES_MODEL": {
+		    "model":"applications.Application",
+		    "key":"application_id",
+		    "value":"apns_certificate",
+		}
+	}
+
+Definitely, either your mobile application should store it's application ID together with a registration ID
+while registering, or your server should identify the mobile application itself, while the mobile application
+instance is registering on the server. You can use application access token for the purpose in the latter case.
 
 Administration
 --------------
