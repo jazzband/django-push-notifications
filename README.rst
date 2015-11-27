@@ -79,8 +79,8 @@ For APNS, you are required to include ``APNS_CERTIFICATE``, ``APNS_CERTIFICATES`
 - ``APNS_CA_CERTIFICATES``: Absolute path to a CA certificates file for APNS. Optional - do not set if not needed. Defaults to None.
 - ``GCM_API_KEY``: Your API key for GCM.
 - ``GCM_API_KEYS``: A dictionary reflecting separate application IDs to separate GCM API keys.
-- ``GCM_API_KEYS_MODEL``: A dictionary reflecting separate application IDs to separate GCM API
-  keys.
+- ``GCM_API_KEYS_MODEL``: A dictionary containing description of a database model to reflect application IDs to
+  GCM API keys.
     - ``'model'`` - a model name like ``'my_application.MyModel'``
     - ``'key'`` - a field name of the model referenced above, containing an application ID like ``'application_id'``
     - ``'value'`` - a path to the field from the model referenced above, which contains a GCM API key like ``'api_key'``
@@ -172,9 +172,9 @@ reflect an application ID to the correspondent application credentials:
 .. code-block:: python
 
     class ApplicationModel(models.Model):
-        application_id = models.CharField(max_length=64,db_index=True)
-        gcm_api_key = models.TextField()
-        apns_certificate = models.FileField()
+        application_id = models.CharField(max_length=64,unique=True)
+        gcm_api_key = models.TextField(null=True,blank=True)
+        apns_certificate = models.FileField(null=True,blank=True)
 
 Then settings for the application should look like:
 
@@ -197,7 +197,7 @@ Then settings for the application should look like:
 
 Definitely, either your mobile application should store it's application ID in the Device instance
 together with a registration ID while registering, or your server should identify the mobile
-application itself, while the mobile application instance is registering on the server.
+application, while the mobile application instance is registering itself on the server.
 You can use application access token for the purpose in the latter case.
 
 Administration

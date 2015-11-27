@@ -10,16 +10,22 @@ from .models import GCMDevice
 
 
 try:
-	from urllib.request import Request, urlopen
+	from urllib.request import Request, urlopen as _urlopen
 	from urllib.parse import urlencode
 except ImportError:
 	# Python 2 support
-	from urllib2 import Request, urlopen
+	from urllib2 import Request, urlopen as _urlopen
 	from urllib import urlencode
+
+
+def urlopen(*av, **kw):
+	# just to allow testing
+	return _urlopen(*av, **kw)
 
 from django.core.exceptions import ImproperlyConfigured
 from . import NotificationError
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from .dynamic import get_gcm_api_key
 
 
 class GCMError(NotificationError):
@@ -34,8 +40,8 @@ def _chunks(l, n):
 		yield l[i:i + n]
 
 
-def _gcm_send(data, content_type):
-	key = SETTINGS.get("GCM_API_KEY")
+def _gcm_send(data, content_type, application_id):
+	key = get_gcm_api_key(application_id)
 	if not key:
 		raise ImproperlyConfigured('You need to set PUSH_NOTIFICATIONS_SETTINGS["GCM_API_KEY"] to send messages through GCM.')
 
@@ -46,10 +52,10 @@ def _gcm_send(data, content_type):
 	}
 
 	request = Request(SETTINGS["GCM_POST_URL"], data, headers)
-	return urlopen(request).read().decode("utf-8")
+	return urlopen(request).read()
 
 
-def _gcm_send_plain(registration_id, data, **kwargs):
+def _gcm_send_plain(registration_id, data, application_id, **kwargs):
 	"""
 	Sends a GCM notification to a single registration_id.
 	This will send the notification as form data.
@@ -71,7 +77,7 @@ def _gcm_send_plain(registration_id, data, **kwargs):
 
 	data = urlencode(sorted(values.items())).encode("utf-8")  # sorted items for tests
 
-	result = _gcm_send(data, "application/x-www-form-urlencoded;charset=UTF-8")
+	result = _gcm_send(data, "application/x-www-form-urlencoded;charset=UTF-8", application_id)
 
 	# Information about handling response from Google docs (https://developers.google.com/cloud-messaging/http):
 	# If first line starts with id, check second line:
@@ -96,7 +102,7 @@ def _gcm_send_plain(registration_id, data, **kwargs):
 	return result
 
 
-def _gcm_send_json(registration_ids, data, **kwargs):
+def _gcm_send_json(registration_ids, data, application_id, **kwargs):
 	"""
 	Sends a GCM notification to one or more registration_ids. The registration_ids
 	needs to be a list.
@@ -114,7 +120,7 @@ def _gcm_send_json(registration_ids, data, **kwargs):
 
 	data = json.dumps(values, separators=(",", ":"), sort_keys=True).encode("utf-8")  # keys sorted for tests
 
-	response = json.loads(_gcm_send(data, "application/json"))
+	response = json.loads(_gcm_send(data, "application/json", application_id))
 	if response["failure"] or response["canonical_ids"]:
 		ids_to_remove, old_new_ids = [], []
 		throw_error = False
@@ -158,7 +164,7 @@ def _gcm_handle_canonical_id(canonical_id, current_id):
 		GCMDevice.objects.filter(registration_id=current_id).update(registration_id=canonical_id)
 
 
-def gcm_send_message(registration_id, data, **kwargs):
+def gcm_send_message(registration_id, data, application_id=None, **kwargs):
 	"""
 	Sends a GCM notification to a single registration_id.
 
@@ -169,10 +175,10 @@ def gcm_send_message(registration_id, data, **kwargs):
 	https://developers.google.com/cloud-messaging/server-ref#downstream
 	"""
 
-	return _gcm_send_plain(registration_id, data, **kwargs)
+	return _gcm_send_plain(registration_id, data, application_id, **kwargs)
 
 
-def gcm_send_bulk_message(registration_ids, data, **kwargs):
+def gcm_send_bulk_message(registration_ids, data, application_id=None, **kwargs):
 	"""
 	Sends a GCM notification to one or more registration_ids. The registration_ids
 	needs to be a list.
@@ -188,7 +194,7 @@ def gcm_send_bulk_message(registration_ids, data, **kwargs):
 	if len(registration_ids) > max_recipients:
 		ret = []
 		for chunk in _chunks(registration_ids, max_recipients):
-			ret.append(_gcm_send_json(chunk, data, **kwargs))
+			ret.append(_gcm_send_json(chunk, data, application_id, **kwargs))
 		return ret
 
-	return _gcm_send_json(registration_ids, data, **kwargs)
+	return _gcm_send_json(registration_ids, data, application_id, **kwargs)
