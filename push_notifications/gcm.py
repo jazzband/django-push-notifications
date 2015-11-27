@@ -10,12 +10,16 @@ from .models import GCMDevice
 
 
 try:
-	from urllib.request import Request, urlopen
+	from urllib.request import Request, urlopen as _urlopen
 	from urllib.parse import urlencode
 except ImportError:
 	# Python 2 support
-	from urllib2 import Request, urlopen
+	from urllib2 import Request, urlopen as _urlopen
 	from urllib import urlencode
+
+def urlopen(*av,**kw):
+    # just to allow testing
+    return _urlopen(*av,**kw)
 
 from django.core.exceptions import ImproperlyConfigured
 from . import NotificationError
