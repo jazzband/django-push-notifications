@@ -93,6 +93,24 @@ class ModelTestCase(TestCase):
                     "registration_ids": ["abc"]
                 }, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json")
 
+    def test_gcm_send_message_active_single_device(self):
+        GCMDevice.objects.create(
+            registration_id="abc",
+            active=True
+        )
+
+        GCMDevice.objects.create(
+            registration_id="xyz",
+            active=False
+        )
+
+        with mock.patch("push_notifications.gcm._gcm_send", return_value=GCM_PLAIN_RESPONSE) as p:
+            for device in GCMDevice.objects.all():
+                device.send_message("Hello world")
+            p.assert_called_once_with(
+                b"data.message=Hello+world&registration_id=abc",
+                "application/x-www-form-urlencoded;charset=UTF-8")
+
     def test_gcm_send_message_extra_to_multiple_devices(self):
         GCMDevice.objects.create(
             registration_id="abc",
@@ -214,6 +232,21 @@ class ModelTestCase(TestCase):
         socket = mock.MagicMock()
         with mock.patch("push_notifications.apns._apns_pack_frame") as p:
             device.send_message("Hello world", socket=socket, expiration=1)
+            p.assert_called_once_with("abc", b'{"aps":{"alert":"Hello world"}}', 0, 1, 10)
+
+    def test_apns_send_message_single_device_active(self):
+        device = APNSDevice.objects.create(
+            registration_id="abc",
+            active=True
+        )
+        device = APNSDevice.objects.create(
+            registration_id="xyz",
+            active=False
+        )
+        socket = mock.MagicMock()
+        with mock.patch("push_notifications.apns._apns_pack_frame") as p:
+            for device in APNSDevice.objects.all():
+                device.send_message("Hello world", socket=socket, expiration=1)
             p.assert_called_once_with("abc", b'{"aps":{"alert":"Hello world"}}', 0, 1, 10)
 
     def test_apns_send_message_extra(self):
