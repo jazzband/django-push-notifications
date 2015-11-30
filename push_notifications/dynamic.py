@@ -13,7 +13,9 @@ def _get_application_settings(application_id,settings_key,error_message):
     values = SETTINGS.get(settings_key+"S",{})
 
     if values.has_key(application_id):
-        return values.get(application_id)
+        value = values.get(application_id)
+        if value is not None:
+            return value
 
     # new behaviour, getting from the model
     values_model = SETTINGS.get(settings_key+"S_MODEL",None)
@@ -25,7 +27,9 @@ def _get_application_settings(application_id,settings_key,error_message):
             values = FieldPairDict(model,key,value)
 
     if values.has_key(application_id):
-        return values.get(application_id)
+        value = values.get(application_id)
+        if value is not None:
+            return value
 
     value = SETTINGS.get(settings_key,None)
     if not value:

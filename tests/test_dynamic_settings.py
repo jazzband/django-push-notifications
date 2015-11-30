@@ -26,6 +26,15 @@ class DynamicSettingsTestCase(TestCase):
         assert type(ex) == ImproperlyConfigured
         assert ex.message == 'Test Exception'
 
+    def test_default_if_none(self):
+        settings.PUSH_NOTIFICATIONS_SETTINGS['TEST'] = 'test'
+        settings.PUSH_NOTIFICATIONS_SETTINGS['TESTS'] = {
+            'qwerty':'uiop',
+            'qwerty2':None
+        }
+        assert dynamic._get_application_settings('qwerty','TEST','Test Exception') == 'uiop'
+        assert dynamic._get_application_settings('qwerty2','TEST','Test Exception') == 'test'
+
     def test_database_settings(self):
         settings.PUSH_NOTIFICATIONS_SETTINGS['TEST'] = 'test'
         settings.PUSH_NOTIFICATIONS_SETTINGS['TESTS_MODEL'] = {
