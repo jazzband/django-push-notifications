@@ -72,8 +72,8 @@ class DeviceAdmin(admin.ModelAdmin):
 		#  this is just a bad API.
 		app_ids = set(queryset.values_list('application_id', flat=True).distinct())
 		for app_id in app_ids:
-		    expired = get_expired_tokens(app_id)
-		    queryset.filter(registration_id__in=expired).update(active=False)
+			expired = get_expired_tokens(app_id)
+			queryset.filter(registration_id__in=expired).update(active=False)
 
 admin.site.register(APNSDevice, DeviceAdmin)
 admin.site.register(GCMDevice, DeviceAdmin)

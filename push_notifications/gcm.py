@@ -17,9 +17,10 @@ except ImportError:
 	from urllib2 import Request, urlopen as _urlopen
 	from urllib import urlencode
 
-def urlopen(*av,**kw):
-    # just to allow testing
-    return _urlopen(*av,**kw)
+
+def urlopen(*av, **kw):
+	# just to allow testing
+	return _urlopen(*av, **kw)
 
 from django.core.exceptions import ImproperlyConfigured
 from . import NotificationError
@@ -119,7 +120,7 @@ def _gcm_send_json(registration_ids, data, application_id, **kwargs):
 
 	data = json.dumps(values, separators=(",", ":"), sort_keys=True).encode("utf-8")  # keys sorted for tests
 
-	response = json.loads(_gcm_send(data, "application/json",application_id))
+	response = json.loads(_gcm_send(data, "application/json", application_id))
 	if response["failure"] or response["canonical_ids"]:
 		ids_to_remove, old_new_ids = [], []
 		throw_error = False

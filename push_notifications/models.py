@@ -12,6 +12,7 @@ try:
 except:
 	from uuidfield import UUIDField
 
+
 @python_2_unicode_compatible
 class Device(models.Model):
 	name = models.CharField(max_length=255, verbose_name=_("Name"), blank=True, null=True)
@@ -19,7 +20,7 @@ class Device(models.Model):
 		help_text=_("Inactive devices will not be sent notifications"))
 	user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
 	date_created = models.DateTimeField(verbose_name=_("Creation date"), auto_now_add=True, null=True)
-	application_id = models.CharField(max_length=64,verbose_name=_("Application ID"),
+	application_id = models.CharField(max_length=64, verbose_name=_("Application ID"),
 		help_text=_("Opaque application identity, should be filled in for multiple key/certificate access"),
 		blank=True, null=True)
 
@@ -49,12 +50,13 @@ class GCMDeviceQuerySet(models.query.QuerySet):
 			app_ids = set(self.filter(active=True).values_list('application_id', flat=True).distinct())
 			res = []
 			for app_id in app_ids:
-				reg_ids = list(self.filter(active=True,application_id=app_id).values_list('registration_id', flat=True))
+				reg_ids = list(self.filter(active=True, application_id=app_id).values_list('registration_id', flat=True))
 				r = gcm_send_bulk_message(registration_ids=reg_ids, data=data, application_id=app_id, **kwargs)
-				if hasattr(r,'has_key'):
-				    res += [r]
-				elif hasattr(r,'__getitem__'):
-				    res += r
+				if hasattr(r, 'has_key'):
+					res += [r]
+				elif hasattr(r, '__getitem__'):
+					res += r
+
 
 class GCMDevice(Device):
 	# device_id cannot be a reliable primary key as fragmentation between different devices
@@ -90,13 +92,14 @@ class APNSDeviceQuerySet(models.query.QuerySet):
 			app_ids = set(self.filter(active=True).values_list('application_id', flat=True).distinct())
 			res = []
 			for app_id in app_ids:
-				reg_ids = list(self.filter(active=True,application_id=app_id).values_list('registration_id', flat=True))
+				reg_ids = list(self.filter(active=True, application_id=app_id).values_list('registration_id', flat=True))
 				r = apns_send_bulk_message(registration_ids=reg_ids, alert=message, application_id=app_id, **kwargs)
-				if hasattr(r,'has_key'):
-				    res += [r]
-				elif hasattr(r,'__getitem__'):
-				    res += r
+				if hasattr(r, 'has_key'):
+					res += [r]
+				elif hasattr(r, '__getitem__'):
+					res += r
 			return res
+
 
 class APNSDevice(Device):
 	device_id = UUIDField(verbose_name=_("Device ID"), blank=True, null=True, db_index=True,
@@ -120,7 +123,8 @@ def get_expired_tokens(application_id):
 	from .apns import apns_fetch_inactive_ids
 	return apns_fetch_inactive_ids(application_id)
 
+
 class ApplicationModel(models.Model):
-    application_id = models.CharField(max_length=64,verbose_name=_("Application ID"),unique=True)
-    gcm_api_key = models.TextField(verbose_name=_("GCM API Key"),null=True,blank=True)
-    apns_certificate = models.FileField(verbose_name=_("APNS Certificate"),null=True,blank=True,upload_to='apns_certificates')
+	application_id = models.CharField(max_length=64, verbose_name=_("Application ID"), unique=True)
+	gcm_api_key = models.TextField(verbose_name=_("GCM API Key"), null=True, blank=True)
+	apns_certificate = models.FileField(verbose_name=_("APNS Certificate"), null=True, blank=True, upload_to='apns_certificates')

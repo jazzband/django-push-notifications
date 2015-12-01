@@ -33,7 +33,7 @@ class APNSDataOverflow(APNSError):
 	pass
 
 
-def _apns_create_socket(address_tuple,application_id):
+def _apns_create_socket(address_tuple, application_id):
 	certfile = get_apns_certificate(application_id)
 	if not certfile:
 		raise ImproperlyConfigured(
@@ -56,11 +56,11 @@ def _apns_create_socket(address_tuple,application_id):
 
 
 def _apns_create_socket_to_push(application_id):
-	return _apns_create_socket((SETTINGS["APNS_HOST"], SETTINGS["APNS_PORT"]),application_id)
+	return _apns_create_socket((SETTINGS["APNS_HOST"], SETTINGS["APNS_PORT"]), application_id)
 
 
 def _apns_create_socket_to_feedback(application_id):
-	return _apns_create_socket((SETTINGS["APNS_FEEDBACK_HOST"], SETTINGS["APNS_FEEDBACK_PORT"]),application_id)
+	return _apns_create_socket((SETTINGS["APNS_FEEDBACK_HOST"], SETTINGS["APNS_FEEDBACK_PORT"]), application_id)
 
 
 def _apns_pack_frame(token_hex, payload, identifier, expiration, priority):
