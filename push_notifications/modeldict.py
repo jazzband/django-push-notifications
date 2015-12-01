@@ -12,7 +12,7 @@ class ModelDict(MutableMapping):
 			self._model = apps.get_model(*self._model.split('.', 1))
 
 	def _get_value(self, o):
-		return {f.name:getattr(o, f.name) for f in o._meta.fields}
+		return {f.name: getattr(o, f.name) for f in o._meta.fields}
 
 	def _set_value(self, o, value):
 		for k in value:
@@ -23,7 +23,7 @@ class ModelDict(MutableMapping):
 
 	def get(self, key, *d):
 		self._fix_model()
-		q = self._model.objects.filter(**{self._key:key})
+		q = self._model.objects.filter(**{self._key: key})
 		if q:
 			return self._get_value(q[0])
 		if len(d):
@@ -32,21 +32,21 @@ class ModelDict(MutableMapping):
 
 	def has_key(self, key):
 		self._fix_model()
-		q = self._model.objects.filter(**{self._key:key})
+		q = self._model.objects.filter(**{self._key: key})
 		return bool(q)
 
 	def set(self, key, value):
 		self._fix_model()
-		q = self._model.objects.filter(**{self._key:key})
+		q = self._model.objects.filter(**{self._key: key})
 		if q:
 			o = q[0]
 		else:
-			o = self._model(**{self._key:key})
+			o = self._model(**{self._key: key})
 		self._set_value(o, value)
 
 	def remove(self, key):
 		self._fix_model()
-		self._model.objects.filter(**{self._key:key}).delete()
+		self._model.objects.filter(**{self._key: key}).delete()
 
 	def __getitem__(self, key):
 		return self.get(key)
