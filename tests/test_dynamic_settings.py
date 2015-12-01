@@ -18,13 +18,12 @@ class DynamicSettingsTestCase(TestCase):
         }
         assert dynamic._get_application_settings('qwerty','TEST','Test Exception') == 'uiop'
         assert dynamic._get_application_settings('uiop','TEST','Test Exception') == 'test'
-        ex = None
         try:
             dynamic._get_application_settings('qwerty','NOTPRESENT','Test Exception')
+            assert False
         except Exception as ex:
-            pass
-        assert type(ex) == ImproperlyConfigured
-        assert ex.message == 'Test Exception'
+            assert type(ex) == ImproperlyConfigured
+            assert ex.message == 'Test Exception'
 
     def test_default_if_none(self):
         settings.PUSH_NOTIFICATIONS_SETTINGS['TEST'] = 'test'
@@ -45,21 +44,19 @@ class DynamicSettingsTestCase(TestCase):
         ApplicationModel.objects.create(application_id='qwerty2',gcm_api_key='uiop2')
         assert dynamic._get_application_settings('qwerty2','TEST','Test Exception') == 'uiop2'
         assert dynamic._get_application_settings('uiop2','TEST','Test Exception') == 'test'
-        ex = None
         try:
             dynamic._get_application_settings('qwerty','NOTPRESENT','Test Exception')
+            assert False
         except Exception as ex:
-            pass
-        assert type(ex) == ImproperlyConfigured
-        assert ex.message == 'Test Exception'
+            assert type(ex) == ImproperlyConfigured
+            assert ex.message == 'Test Exception'
 
     def test_push_settings(self):
-        ex = None
         try:
             r = dynamic.get_gcm_api_key()
+            assert False
         except Exception as ex:
-            pass
-        assert type(ex) == ImproperlyConfigured
+            assert type(ex) == ImproperlyConfigured
         settings.PUSH_NOTIFICATIONS_SETTINGS['GCM_API_KEY'] = 'testkey'
         settings.PUSH_NOTIFICATIONS_SETTINGS['APNS_CERTIFICATE'] = 'testcert'
         assert dynamic.get_gcm_api_key() == 'testkey'

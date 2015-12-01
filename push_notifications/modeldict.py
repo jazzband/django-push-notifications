@@ -1,6 +1,11 @@
 from django.apps import apps
 from collections import MutableMapping
 
+try:
+    basestring
+except:
+    basestring = str
+
 
 class ModelDict(MutableMapping):
 	def __init__(self, model, key_field):

@@ -2,6 +2,11 @@ from django.core.exceptions import ImproperlyConfigured
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 from .modeldict import FieldPairDict
 
+try:
+    basestring
+except:
+    basestring = str
+
 
 def _get_application_settings(application_id, settings_key, error_message):
 	if not application_id:  # old behaviour
