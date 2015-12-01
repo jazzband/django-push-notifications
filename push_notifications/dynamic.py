@@ -3,9 +3,9 @@ from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 from .modeldict import FieldPairDict
 
 try:
-    basestring
+	basestring
 except:
-    basestring = str
+	basestring = str
 
 
 def _get_application_settings(application_id, settings_key, error_message):

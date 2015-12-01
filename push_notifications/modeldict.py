@@ -2,9 +2,9 @@ from django.apps import apps
 from collections import MutableMapping
 
 try:
-    basestring
+	basestring
 except:
-    basestring = str
+	basestring = str
 
 
 class ModelDict(MutableMapping):
