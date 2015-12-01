@@ -7,7 +7,7 @@ from django.conf import settings
 
 try:
     from django.db.models import UUIDField
-except:
+except ImportError:
     from uuidfield import UUIDField
 
 

@@ -21,7 +21,7 @@ class DynamicSettingsTestCase(TestCase):
         ex = None
         try:
             dynamic._get_application_settings('qwerty','NOTPRESENT','Test Exception')
-        except Exception,ex:
+        except Exception as ex:
             pass
         assert type(ex) == ImproperlyConfigured
         assert ex.message == 'Test Exception'
@@ -48,7 +48,7 @@ class DynamicSettingsTestCase(TestCase):
         ex = None
         try:
             dynamic._get_application_settings('qwerty','NOTPRESENT','Test Exception')
-        except Exception,ex:
+        except Exception as ex:
             pass
         assert type(ex) == ImproperlyConfigured
         assert ex.message == 'Test Exception'
@@ -57,7 +57,7 @@ class DynamicSettingsTestCase(TestCase):
         ex = None
         try:
             r = dynamic.get_gcm_api_key()
-        except Exception,ex:
+        except Exception as ex:
             pass
         assert type(ex) == ImproperlyConfigured
         settings.PUSH_NOTIFICATIONS_SETTINGS['GCM_API_KEY'] = 'testkey'
