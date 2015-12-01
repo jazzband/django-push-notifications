@@ -52,7 +52,7 @@ class GCMDeviceQuerySet(models.query.QuerySet):
 			for app_id in app_ids:
 				reg_ids = list(self.filter(active=True, application_id=app_id).values_list('registration_id', flat=True))
 				r = gcm_send_bulk_message(registration_ids=reg_ids, data=data, application_id=app_id, **kwargs)
-				if hasattr(r, 'has_key'):
+				if hasattr(r, 'keys'):
 					res += [r]
 				elif hasattr(r, '__getitem__'):
 					res += r
@@ -94,7 +94,7 @@ class APNSDeviceQuerySet(models.query.QuerySet):
 			for app_id in app_ids:
 				reg_ids = list(self.filter(active=True, application_id=app_id).values_list('registration_id', flat=True))
 				r = apns_send_bulk_message(registration_ids=reg_ids, alert=message, application_id=app_id, **kwargs)
-				if hasattr(r, 'has_key'):
+				if hasattr(r, 'keys'):
 					res += [r]
 				elif hasattr(r, '__getitem__'):
 					res += r

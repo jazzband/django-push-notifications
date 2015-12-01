@@ -28,7 +28,7 @@ class ModelDict(MutableMapping):
 			return self._get_value(q[0])
 		if len(d):
 			return d[0]
-		raise IndexError("No such key in the database")
+		raise KeyError("No such key in the database")
 
 	def has_key(self, key):
 		self._fix_model()

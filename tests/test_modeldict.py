@@ -16,6 +16,8 @@ class ModelDictTestCase(TestCase):
         keys = md.keys()
         keys.sort()
         assert tuple(keys) == ('u1','u2','u3','u4','u5')
+        assert 'u2' in md
+        assert 'uu2' not in md
         for k in keys:
             assert md[k]['first_name'] == "user %s" % k
         for k in keys:

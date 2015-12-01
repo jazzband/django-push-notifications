@@ -9,8 +9,6 @@ from tests.mock_responses import ( GCM_PLAIN_RESPONSE,GCM_MULTIPLE_JSON_RESPONSE
                                    GCM_JSON_CANONICAL_ID_SAME_DEVICE_RESPONSE)
 from push_notifications.gcm import GCMError
 
-from contextlib import nested
-
 class ModelTestCase(TestCase):
     def test_can_save_gcm_device(self):
         device = GCMDevice.objects.create(
@@ -263,13 +261,11 @@ class APNSModelWithSettingsTestCase(TestCase):
         f.close()
         import ssl
         socket = mock.MagicMock()
-        with nested(
-            mock.patch("ssl.wrap_socket",return_value=socket),
-            mock.patch("push_notifications.apns._apns_pack_frame"),
-        ) as (s,p):
-            device.send_message("Hello world", expiration=1)
-            p.assert_called_once_with("abc", b'{"aps":{"alert":"Hello world"}}', 0, 1, 10)
-            s.assert_called_once_with(*s.call_args[0],ca_certs=None,certfile='uiopcert',ssl_version=ssl.PROTOCOL_TLSv1)
+        with mock.patch("ssl.wrap_socket",return_value=socket) as s:
+            with mock.patch("push_notifications.apns._apns_pack_frame") as p:
+                device.send_message("Hello world", expiration=1)
+                p.assert_called_once_with("abc", b'{"aps":{"alert":"Hello world"}}', 0, 1, 10)
+                s.assert_called_once_with(*s.call_args[0],ca_certs=None,certfile='uiopcert',ssl_version=ssl.PROTOCOL_TLSv1)
 
     def test_apns_send_multi_message_with_app_id(self):
         from django.conf import settings
@@ -289,15 +285,13 @@ class APNSModelWithSettingsTestCase(TestCase):
         f.close()
         import ssl
         socket = mock.MagicMock()
-        with nested(
-            mock.patch("ssl.wrap_socket",return_value=socket),
-            mock.patch("push_notifications.apns._apns_pack_frame"),
-        ) as (s,p):
-            APNSDevice.objects.all().send_message("Hello world", expiration=1)
-            device.send_message("Hello world", expiration=1)
-            p.assert_any_call("abc", b'{"aps":{"alert":"Hello world"}}', 0, 1, 10)
-            p.assert_any_call("def", b'{"aps":{"alert":"Hello world"}}', 0, 1, 10)
-            s.assert_any_call(*s.call_args_list[0][0],ca_certs=None,certfile='uiopcert',ssl_version=ssl.PROTOCOL_TLSv1)
+        with mock.patch("ssl.wrap_socket",return_value=socket) as s:
+            with mock.patch("push_notifications.apns._apns_pack_frame") as p:
+                APNSDevice.objects.all().send_message("Hello world", expiration=1)
+                device.send_message("Hello world", expiration=1)
+                p.assert_any_call("abc", b'{"aps":{"alert":"Hello world"}}', 0, 1, 10)
+                p.assert_any_call("def", b'{"aps":{"alert":"Hello world"}}', 0, 1, 10)
+                s.assert_any_call(*s.call_args_list[0][0],ca_certs=None,certfile='uiopcert',ssl_version=ssl.PROTOCOL_TLSv1)
 
     def tearDown(self):
         import os

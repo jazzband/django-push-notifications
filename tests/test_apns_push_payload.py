@@ -2,8 +2,6 @@ import mock
 from django.test import TestCase
 from push_notifications.apns import _apns_send, APNSDataOverflow
 
-from contextlib import nested
-
 from django.conf import settings
 from push_notifications.models import ApplicationModel
 
@@ -49,16 +47,13 @@ class APNSPushSettingsTest(TestCase):
 		a.apns_certificate.save("uiopcertxxx",f)
 		path = a.apns_certificate.path
 		socket = mock.MagicMock()
-		with nested(
-		    #mock.patch("push_notifications.apns._apns_create_socket",return_value=socket),
-		    mock.patch("ssl.wrap_socket",return_value=socket),
-		    mock.patch("push_notifications.apns._apns_pack_frame")
-		) as (s,p):
-			_apns_send("123", "Hello world", 'qwertyxxx',
-				badge=1, sound="chime", extra={"custom_data": 12345}, expiration=3)
-			s.assert_called_once_with(*s.call_args[0],ca_certs=None,certfile=path,ssl_version=ssl.PROTOCOL_TLSv1)
-			p.assert_called_once_with("123",
-				b'{"aps":{"alert":"Hello world","badge":1,"sound":"chime"},"custom_data":12345}', 0, 3, 10)
+		with mock.patch("ssl.wrap_socket",return_value=socket) as s:
+			with mock.patch("push_notifications.apns._apns_pack_frame") as p:
+				_apns_send("123", "Hello world", 'qwertyxxx',
+					badge=1, sound="chime", extra={"custom_data": 12345}, expiration=3)
+				s.assert_called_once_with(*s.call_args[0],ca_certs=None,certfile=path,ssl_version=ssl.PROTOCOL_TLSv1)
+				p.assert_called_once_with("123",
+					b'{"aps":{"alert":"Hello world","badge":1,"sound":"chime"},"custom_data":12345}', 0, 3, 10)
 	def tearDown(self):
 	    # teardown temporary media
 	    from django.conf import settings

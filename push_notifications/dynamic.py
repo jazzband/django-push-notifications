@@ -47,7 +47,7 @@ def get_apns_certificate(application_id=None):
 		# probably the (Django) file, and file path should be got
 		if hasattr(r, 'path'):
 			return r.path
-		elif (hasattr(r, 'has_key') or hasattr(r, 'keys')) and 'path' in r:
+		elif (hasattr(r, 'has_key') or hasattr(r, '__contains__')) and 'path' in r:
 			return r['path']
 		else:
 			raise ImproperlyConfigured("The APNS certificate settings value should be a string, or should have a 'path' attribute or key")
