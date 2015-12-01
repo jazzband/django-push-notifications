@@ -23,7 +23,7 @@ class DynamicSettingsTestCase(TestCase):
             assert False
         except Exception as ex:
             assert type(ex) == ImproperlyConfigured
-            assert ex.message == 'Test Exception'
+            assert ex.args and ex.args[0] == 'Test Exception'
 
     def test_default_if_none(self):
         settings.PUSH_NOTIFICATIONS_SETTINGS['TEST'] = 'test'
@@ -49,7 +49,7 @@ class DynamicSettingsTestCase(TestCase):
             assert False
         except Exception as ex:
             assert type(ex) == ImproperlyConfigured
-            assert ex.message == 'Test Exception'
+            assert ex.args and ex.args[0] == 'Test Exception'
 
     def test_push_settings(self):
         try:

@@ -52,7 +52,7 @@ def _gcm_send(data, content_type, application_id):
 	}
 
 	request = Request(SETTINGS["GCM_POST_URL"], data, headers)
-	return urlopen(request).read().decode("utf-8")
+	return urlopen(request).read()
 
 
 def _gcm_send_plain(registration_id, data, application_id, **kwargs):

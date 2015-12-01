@@ -257,7 +257,7 @@ class APNSModelWithSettingsTestCase(TestCase):
             'asdfg':'uiopcert'
         }
         f = open('uiopcert','wb')
-        f.write('')
+        f.write(b'')
         f.close()
         import ssl
         socket = mock.MagicMock()
@@ -281,7 +281,7 @@ class APNSModelWithSettingsTestCase(TestCase):
             'asdfg':'uiopcert'
         }
         f = open('uiopcert','wb')
-        f.write('')
+        f.write(b'')
         f.close()
         import ssl
         socket = mock.MagicMock()
@@ -325,7 +325,10 @@ class GCMModelWithSettingsTestCase(TestCase):
         settings.PUSH_NOTIFICATIONS_SETTINGS['GCM_API_KEYS'] = {
             'asdfg':'uiopkey'
         }
-        from StringIO import StringIO
+        try:
+            from StringIO import StringIO
+        except ImportError:
+            from io import StringIO
         import json
         with mock.patch("push_notifications.gcm.urlopen",return_value=StringIO(json.dumps({
             'failure':[],
@@ -350,7 +353,10 @@ class GCMModelWithSettingsTestCase(TestCase):
             'asdfg':'asdfgkey',
             'uiop':'uiopkey'
         }
-        from StringIO import StringIO
+        try:
+            from StringIO import StringIO
+        except ImportError:
+            from io import StringIO
         import json
         requests = []
         def c():

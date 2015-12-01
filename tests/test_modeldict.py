@@ -13,7 +13,7 @@ class ModelDictTestCase(TestCase):
                 first_name= "user u%s" % k
             )
         md = modeldict.ModelDict('auth.User','username')
-        keys = md.keys()
+        keys = list(md.keys())
         keys.sort()
         assert tuple(keys) == ('u1','u2','u3','u4','u5')
         assert 'u2' in md
@@ -33,7 +33,7 @@ class ModelDictTestCase(TestCase):
                 first_name= "user u%s" % k
             )
         md = modeldict.FieldPairDict('auth.User','username','first_name')
-        keys = md.keys()
+        keys = list(md.keys())
         keys.sort()
         assert tuple(keys) == ('u1','u2','u3','u4','u5')
         for k in keys:
