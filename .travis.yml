@@ -1,11 +1,12 @@
 language: python
-env:
-  - TOXENV=flake8
-  - TOXENV=py27-django18
-  - TOXENV=py33-django18
-  - TOXENV=py34-django18
+addons:
+  apt:
+    sources:
+    - deadsnakes
+    packages:
+    - python3.5
 install:
   - pip install tox
 script:
-  - tox -e $TOXENV
+  - tox
 sudo: false
