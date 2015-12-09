@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-
 import os.path
+import push_notifications
 from distutils.core import setup
 
 README = open(os.path.join(os.path.dirname(__file__), "README.rst")).read()
@@ -19,9 +19,6 @@ CLASSIFIERS = [
 	"Topic :: Software Development :: Libraries :: Python Modules",
 	"Topic :: System :: Networking",
 ]
-
-
-import push_notifications
 
 setup(
 	name="django-push-notifications",
