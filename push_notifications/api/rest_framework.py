@@ -24,7 +24,7 @@ class HexIntegerField(IntegerField):
 		try:
 			data = int(data, 16)
 		except ValueError:
-			raise ValidationError("ValidationError Device ID is not a valid hex number")
+			raise ValidationError("Device ID is not a valid hex number")
 		return super(HexIntegerField, self).to_internal_value(data)
 
 	def to_representation(self, value):
@@ -78,7 +78,7 @@ class GCMDeviceSerializer(ModelSerializer):
 	def validate_device_id(self, value):
 		# device ids are 64 bit unsigned values
 		if value > UNSIGNED_64BIT_INT_MAX_VALUE:
-			raise ValidationError("ValidationError Device ID is out of range")
+			raise ValidationError("Device ID is out of range")
 		return value
 
 
