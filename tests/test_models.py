@@ -9,7 +9,6 @@ from tests.mock_responses import ( GCM_PLAIN_RESPONSE,GCM_MULTIPLE_JSON_RESPONSE
                                    GCM_JSON_CANONICAL_ID_SAME_DEVICE_RESPONSE)
 from push_notifications.gcm import GCMError
 
-
 class ModelTestCase(TestCase):
     def test_can_save_gcm_device(self):
         device = GCMDevice.objects.create(
@@ -35,7 +34,20 @@ class ModelTestCase(TestCase):
             device.send_message("Hello world")
             p.assert_called_once_with(
                 b"data.message=Hello+world&registration_id=abc",
-                "application/x-www-form-urlencoded;charset=UTF-8")
+                "application/x-www-form-urlencoded;charset=UTF-8",
+                None)
+
+    def test_gcm_send_message_with_app_id(self):
+        device = GCMDevice.objects.create(
+            registration_id="abc",
+            application_id="qwerty",
+        )
+        with mock.patch("push_notifications.gcm._gcm_send", return_value=GCM_PLAIN_RESPONSE) as p:
+            device.send_message("Hello world")
+            p.assert_called_once_with(
+                b"data.message=Hello+world&registration_id=abc",
+                "application/x-www-form-urlencoded;charset=UTF-8",
+                "qwerty")
 
     def test_gcm_send_message_extra(self):
         device = GCMDevice.objects.create(
@@ -45,7 +57,8 @@ class ModelTestCase(TestCase):
             device.send_message("Hello world", extra={"foo": "bar"})
             p.assert_called_once_with(
                 b"data.foo=bar&data.message=Hello+world&registration_id=abc",
-                "application/x-www-form-urlencoded;charset=UTF-8")
+                "application/x-www-form-urlencoded;charset=UTF-8",
+                None)
 
     def test_gcm_send_message_collapse_key(self):
         device = GCMDevice.objects.create(
@@ -55,7 +68,8 @@ class ModelTestCase(TestCase):
             device.send_message("Hello world", collapse_key="test_key")
             p.assert_called_once_with(
                 b"collapse_key=test_key&data.message=Hello+world&registration_id=abc",
-                "application/x-www-form-urlencoded;charset=UTF-8")
+                "application/x-www-form-urlencoded;charset=UTF-8",
+                None)
 
     def test_gcm_send_message_to_multiple_devices(self):
         GCMDevice.objects.create(
@@ -72,7 +86,7 @@ class ModelTestCase(TestCase):
                 json.dumps({
                     "data": { "message": "Hello world" },
                     "registration_ids": ["abc", "abc1"]
-                }, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json")
+                }, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json",None)
 
     def test_gcm_send_message_active_devices(self):
         GCMDevice.objects.create(
@@ -91,7 +105,7 @@ class ModelTestCase(TestCase):
                 json.dumps({
                     "data": { "message": "Hello world" },
                     "registration_ids": ["abc"]
-                }, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json")
+                }, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json",None)
 
     def test_gcm_send_message_extra_to_multiple_devices(self):
         GCMDevice.objects.create(
@@ -108,7 +122,7 @@ class ModelTestCase(TestCase):
                 json.dumps({
                     "data": { "foo": "bar", "message": "Hello world" },
                     "registration_ids": ["abc", "abc1"]
-                }, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json")
+                }, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json",None)
 
     def test_gcm_send_message_collapse_to_multiple_devices(self):
         GCMDevice.objects.create(
@@ -126,7 +140,7 @@ class ModelTestCase(TestCase):
                     "collapse_key": "test_key",
                     "data": { "message": "Hello world" },
                     "registration_ids": ["abc", "abc1"]
-                }, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json")
+                }, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json",None)
 
     def test_gcm_send_message_to_single_device_with_error(self):
         # these errors are device specific, device.active will be set false
@@ -216,6 +230,7 @@ class ModelTestCase(TestCase):
             device.send_message("Hello world", socket=socket, expiration=1)
             p.assert_called_once_with("abc", b'{"aps":{"alert":"Hello world"}}', 0, 1, 10)
 
+
     def test_apns_send_message_extra(self):
         device = APNSDevice.objects.create(
             registration_id="abc",
@@ -230,3 +245,131 @@ class ModelTestCase(TestCase):
             GCMDevice.objects.create(
                 registration_id=device,
             )
+
+class APNSModelWithSettingsTestCase(TestCase):
+    def test_apns_send_message_with_app_id(self):
+        from django.conf import settings
+        device = APNSDevice.objects.create(
+            registration_id="abc",
+            application_id="asdfg"
+        )
+        settings.PUSH_NOTIFICATIONS_SETTINGS['APNS_CERTIFICATES'] = {
+            'asdfg':'uiopcert'
+        }
+        f = open('uiopcert','wb')
+        f.write(b'')
+        f.close()
+        import ssl
+        socket = mock.MagicMock()
+        with mock.patch("ssl.wrap_socket",return_value=socket) as s:
+            with mock.patch("push_notifications.apns._apns_pack_frame") as p:
+                device.send_message("Hello world", expiration=1)
+                p.assert_called_once_with("abc", b'{"aps":{"alert":"Hello world"}}', 0, 1, 10)
+                s.assert_called_once_with(*s.call_args[0],ca_certs=None,certfile='uiopcert',ssl_version=ssl.PROTOCOL_TLSv1)
+
+    def test_apns_send_multi_message_with_app_id(self):
+        from django.conf import settings
+        device = APNSDevice.objects.create(
+            registration_id="abc",
+            application_id="asdfg"
+        )
+        device = APNSDevice.objects.create(
+            registration_id="def",
+            application_id="asdfg"
+        )
+        settings.PUSH_NOTIFICATIONS_SETTINGS['APNS_CERTIFICATES'] = {
+            'asdfg':'uiopcert'
+        }
+        f = open('uiopcert','wb')
+        f.write(b'')
+        f.close()
+        import ssl
+        socket = mock.MagicMock()
+        with mock.patch("ssl.wrap_socket",return_value=socket) as s:
+            with mock.patch("push_notifications.apns._apns_pack_frame") as p:
+                APNSDevice.objects.all().send_message("Hello world", expiration=1)
+                device.send_message("Hello world", expiration=1)
+                p.assert_any_call("abc", b'{"aps":{"alert":"Hello world"}}', 0, 1, 10)
+                p.assert_any_call("def", b'{"aps":{"alert":"Hello world"}}', 0, 1, 10)
+                s.assert_any_call(*s.call_args_list[0][0],ca_certs=None,certfile='uiopcert',ssl_version=ssl.PROTOCOL_TLSv1)
+
+    def tearDown(self):
+        import os
+        os.unlink('uiopcert')
+
+class GCMModelWithSettingsTestCase(TestCase):
+    def test_gcm_send_message_with_app_id(self):
+        from django.conf import settings
+        device = GCMDevice.objects.create(
+            registration_id="abc",
+            application_id="asdfg"
+        )
+        settings.PUSH_NOTIFICATIONS_SETTINGS['GCM_API_KEYS'] = {
+            'asdfg':'uiopkey'
+        }
+        with mock.patch("push_notifications.gcm.urlopen") as u:
+            device.send_message("Hello world")
+            request = u.call_args[0][0]
+            assert request.headers['Authorization'] == 'key=uiopkey'
+
+    def test_gcm_send_multi_message_with_app_id(self):
+        from django.conf import settings
+        device = GCMDevice.objects.create(
+            registration_id="abc",
+            application_id="asdfg"
+        )
+        device = GCMDevice.objects.create(
+            registration_id="def",
+            application_id="asdfg"
+        )
+        settings.PUSH_NOTIFICATIONS_SETTINGS['GCM_API_KEYS'] = {
+            'asdfg':'uiopkey'
+        }
+        try:
+            from StringIO import StringIO
+        except ImportError:
+            from io import StringIO
+        import json
+        with mock.patch("push_notifications.gcm.urlopen",return_value=StringIO(json.dumps({
+            'failure':[],
+            'canonical_ids':[]
+        }))) as u:
+            GCMDevice.objects.all().send_message("Hello world")
+            assert u.call_count == 1
+            request = u.call_args[0][0]
+            assert request.headers['Authorization'] == 'key=uiopkey'
+
+    def test_gcm_send_multi_message_with_different_app_id(self):
+        from django.conf import settings
+        device = GCMDevice.objects.create(
+            registration_id="abc",
+            application_id="asdfg"
+        )
+        device = GCMDevice.objects.create(
+            registration_id="def",
+            application_id="uiop"
+        )
+        settings.PUSH_NOTIFICATIONS_SETTINGS['GCM_API_KEYS'] = {
+            'asdfg':'asdfgkey',
+            'uiop':'uiopkey'
+        }
+        try:
+            from StringIO import StringIO
+        except ImportError:
+            from io import StringIO
+        import json
+        requests = []
+        def c():
+            def f(r):
+                requests.append(r)
+                return StringIO(json.dumps({
+                    'failure':[],
+                    'canonical_ids':[]
+                }))
+            return f
+        with mock.patch("push_notifications.gcm.urlopen",new_callable=c) as u:
+            GCMDevice.objects.all().send_message("Hello world")
+            keys = set(r.headers['Authorization'] for r in requests)
+            assert len(keys) == 2
+            assert 'key=asdfgkey' in keys
+            assert 'key=uiopkey' in keys
