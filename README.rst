@@ -46,7 +46,12 @@ Edit your settings.py file:
 
 	PUSH_NOTIFICATIONS_SETTINGS = {
 		"GCM_API_KEY": "<your api key>",
-		"APNS_CERTIFICATE": "/path/to/your/certificate.pem",
+		"APNS_APP_CERTIFICATES": {
+			"YOUR_APP_NAME": {
+				"APNS_CERTIFICATE": "/path/to/your/certificate.pem",
+			}
+		}
+
 	}
 
 .. note::
@@ -66,8 +71,11 @@ All settings are contained in a ``PUSH_NOTIFICATIONS_SETTINGS`` dict.
 In order to use GCM, you are required to include ``GCM_API_KEY``.
 For APNS, you are required to include ``APNS_CERTIFICATE``.
 
-- ``APNS_CERTIFICATE``: Absolute path to your APNS certificate file. Certificates with passphrases are not supported.
-- ``APNS_CA_CERTIFICATES``: Absolute path to a CA certificates file for APNS. Optional - do not set if not needed. Defaults to None.
+- ``APNS_APP_CERTIFICATES``: A dictionary where the keys are your iOS app names and the values dictionaries with:
+	- ``APNS_CERTIFICATE``: Absolute path to your APNS certificate file. Certificates with passphrases are not supported.
+	- ``APNS_CA_CERTIFICATES``: Absolute path to a CA certificates file for APNS. Optional - do not set if not needed. Defaults to None.
+	- ``APNS_HOST``: The hostname used with this certificate for the APNS sockets. Optional - will default to the value of ``APNS_HOST``.
+	- ``APNS_PORT``: The port used used with this certificate. Optional - will default to the value of ``APNS_PORT``.
 - ``GCM_API_KEY``: Your API key for GCM.
 - ``APNS_HOST``: The hostname used for the APNS sockets.
    - When ``DEBUG=True``, this defaults to ``gateway.sandbox.push.apple.com``.
@@ -99,6 +107,13 @@ GCM and APNS services have slightly different semantics. The app tries to offer 
 	device.send_message("You've got mail") # Alert message may only be sent as text.
 	device.send_message(None, badge=5) # No alerts but with badge.
 	device.send_message(None, badge=1, extra={"foo": "bar"}) # Silent message with badge and added custom data.
+
+	# If you have more then one app on your APNS_APP_CERTIFICATES settings you
+	# must use the app_name kwarg to specify the target app.
+	# You will have an error otherwise.
+	device.send_message("You've got mail", app_name="MailApp")
+	device.send_message("You've got mail", app_name="MailNSALoggerApp")
+
 
 .. note::
 	APNS does not support sending payloads that exceed 2048 bytes (increased from 256 in 2014).
