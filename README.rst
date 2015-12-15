@@ -297,6 +297,6 @@ Routes can be added one of two ways:
 Python 3 support
 ----------------
 
-``django-push-notifications`` is fully compatible with Python 3.
+``django-push-notifications`` is fully compatible with Python 3.4 & 3.5
 
 .. [1] Any devices which are not selected, but are not receiving notifications will not be deactivated on a subsequent call to "prune devices" unless another attempt to send a message to the device fails after the call to the feedback service.

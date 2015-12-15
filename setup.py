@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-
 import os.path
+import push_notifications
 from distutils.core import setup
 
 README = open(os.path.join(os.path.dirname(__file__), "README.rst")).read()
@@ -14,14 +14,11 @@ CLASSIFIERS = [
 	"Programming Language :: Python",
 	"Programming Language :: Python :: 2.7",
 	"Programming Language :: Python :: 3",
-	"Programming Language :: Python :: 3.3",
 	"Programming Language :: Python :: 3.4",
+	"Programming Language :: Python :: 3.5",
 	"Topic :: Software Development :: Libraries :: Python Modules",
 	"Topic :: System :: Networking",
 ]
-
-
-import push_notifications
 
 setup(
 	name="django-push-notifications",

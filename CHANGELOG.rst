@@ -1,3 +1,17 @@
+v1.4.0 (2015-12-13)
+===================
+* BACKWARDS-INCOMPATIBLE: Drop support for Python<3.4
+* DJANGO: Support Django 1.9
+* GCM: Handle canonical IDs
+* GCM: Allow full range of GCMDevice.device_id values
+* GCM: Do not allow duplicate registration_ids
+* DRF: Work around empty boolean defaults issue (django-rest-framework#1101)
+* BUGFIX: Do not throw GCMError in bulk messages from the admin
+* BUGFIX: Avoid generating an extra migration on Python 3
+* BUGFIX: Only send in bulk to active devices
+* BUGFIX: Display models correctly in the admin on both Python 2 and 3
+
+
 v1.3.1 (2015-06-30)
 ===================
 This is an errata release.

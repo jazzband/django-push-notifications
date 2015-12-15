@@ -58,7 +58,7 @@ class HexadecimalField(forms.CharField):
 		return super(forms.CharField, self).prepare_value(value)
 
 
-class HexIntegerField(six.with_metaclass(models.SubfieldBase, models.BigIntegerField)):
+class HexIntegerField(models.BigIntegerField):
 	"""
 	This field stores a hexadecimal *string* of up to 64 bits as an unsigned integer
 	on *all* backends including postgres.
@@ -108,7 +108,7 @@ class HexIntegerField(six.with_metaclass(models.SubfieldBase, models.BigIntegerF
 		if isinstance(value, six.string_types):
 			return value
 		if value is None:
-			return ""
+			return value
 		return _unsigned_integer_to_hex_string(value)
 
 	def formfield(self, **kwargs):
