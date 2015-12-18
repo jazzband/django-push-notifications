@@ -1,4 +1,5 @@
 import mock
+import os
 from django.test import TestCase
 from push_notifications.apns import _apns_send, APNSDataOverflow
 
@@ -42,7 +43,11 @@ class APNSPushSettingsTest(TestCase):
 		}
 		import ssl
 		from django.core.files.base import ContentFile
-		f = ContentFile("QWERTY!!!")
+		path = os.path.join(os.path.dirname(__file__),"test_data","good_revoked.pem")
+		f = open(path,'r')
+		content = f.read()
+		f.close()
+		f = ContentFile(content)
 		a = ApplicationModel.objects.create(application_id='qwertyxxx')
 		a.apns_certificate.save("uiopcertxxx",f)
 		path = a.apns_certificate.path

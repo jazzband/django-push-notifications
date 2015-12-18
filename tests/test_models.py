@@ -1,5 +1,6 @@
 import json
 import mock
+import os
 from django.test import TestCase
 from django.utils import timezone
 from push_notifications.models import GCMDevice, APNSDevice
@@ -249,26 +250,25 @@ class ModelTestCase(TestCase):
 class APNSModelWithSettingsTestCase(TestCase):
     def test_apns_send_message_with_app_id(self):
         from django.conf import settings
+        path = os.path.join(os.path.dirname(__file__),"test_data","good_revoked.pem")
         device = APNSDevice.objects.create(
             registration_id="abc",
             application_id="asdfg"
         )
         settings.PUSH_NOTIFICATIONS_SETTINGS['APNS_CERTIFICATES'] = {
-            'asdfg':'uiopcert'
+            'asdfg':path
         }
-        f = open('uiopcert','wb')
-        f.write(b'')
-        f.close()
         import ssl
         socket = mock.MagicMock()
         with mock.patch("ssl.wrap_socket",return_value=socket) as s:
             with mock.patch("push_notifications.apns._apns_pack_frame") as p:
                 device.send_message("Hello world", expiration=1)
                 p.assert_called_once_with("abc", b'{"aps":{"alert":"Hello world"}}', 0, 1, 10)
-                s.assert_called_once_with(*s.call_args[0],ca_certs=None,certfile='uiopcert',ssl_version=ssl.PROTOCOL_TLSv1)
+                s.assert_called_once_with(*s.call_args[0],ca_certs=None,certfile=path,ssl_version=ssl.PROTOCOL_TLSv1)
 
     def test_apns_send_multi_message_with_app_id(self):
         from django.conf import settings
+        path = os.path.join(os.path.dirname(__file__),"test_data","good_revoked.pem")
         device = APNSDevice.objects.create(
             registration_id="abc",
             application_id="asdfg"
@@ -278,7 +278,7 @@ class APNSModelWithSettingsTestCase(TestCase):
             application_id="asdfg"
         )
         settings.PUSH_NOTIFICATIONS_SETTINGS['APNS_CERTIFICATES'] = {
-            'asdfg':'uiopcert'
+            'asdfg':path
         }
         f = open('uiopcert','wb')
         f.write(b'')
@@ -291,11 +291,8 @@ class APNSModelWithSettingsTestCase(TestCase):
                 device.send_message("Hello world", expiration=1)
                 p.assert_any_call("abc", b'{"aps":{"alert":"Hello world"}}', 0, 1, 10)
                 p.assert_any_call("def", b'{"aps":{"alert":"Hello world"}}', 0, 1, 10)
-                s.assert_any_call(*s.call_args_list[0][0],ca_certs=None,certfile='uiopcert',ssl_version=ssl.PROTOCOL_TLSv1)
+                s.assert_any_call(*s.call_args_list[0][0],ca_certs=None,certfile=path,ssl_version=ssl.PROTOCOL_TLSv1)
 
-    def tearDown(self):
-        import os
-        os.unlink('uiopcert')
 
 class GCMModelWithSettingsTestCase(TestCase):
     def test_gcm_send_message_with_app_id(self):
