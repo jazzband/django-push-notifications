@@ -4,6 +4,7 @@ from test_apns_push_payload import *
 from test_management_commands import *
 from test_modeldict import *
 from test_dynamic_settings import *
+from test_apns_certfilecheck import *
 
 # conditionally test rest_framework api if the DRF package is installed
 try:
