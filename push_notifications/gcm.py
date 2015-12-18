@@ -51,13 +51,13 @@ def _gcm_send(data, content_type):
 
 def _gcm_send_plain(registration_id, data, **kwargs):
 	"""
-	Sends a GCM notification to a single registration_id.
+	Sends a GCM notification to a single registration_id or to a topic (If "topic" included in the kwargs).
 	This will send the notification as form data.
 	If sending multiple notifications, it is more efficient to use
 	gcm_send_bulk_message() with a list of registration_ids
 	"""
 
-	values = {"registration_id": registration_id}
+	values = {"registration_id": registration_id} if registration_id else {}
 
 	for k, v in data.items():
 		values["data.%s" % (k)] = v.encode("utf-8")

@@ -117,6 +117,20 @@ Sending messages in bulk
 Sending messages in bulk makes use of the bulk mechanics offered by GCM and APNS. It is almost always preferable to send
 bulk notifications instead of single ones.
 
+
+Sending messages to topic members
+---------------------------------
+GCM topic messaging allows your app server to send a message to multiple devices that have opted in to a particular topic. Based on the publish/subscribe model, topic messaging supports unlimited subscriptions per app. Developers can choose any topic name that matches the regular expression, "/topics/[a-zA-Z0-9-_.~%]+".
+
+.. code-block:: python
+
+	from push_notifications.gcm import gcm_send_message
+        
+        # First param is "None" because no Registration_id is needed, the message will be sent to all devices subscribed to the topic.
+        gcm_send_message(None, "Hello members of my_topic!", topic='/topics/my_topic')
+
+Reference: `GCM Documentation <https://developers.google.com/cloud-messaging/topic-messaging>`_
+
 Administration
 --------------
 
