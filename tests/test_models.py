@@ -280,9 +280,6 @@ class APNSModelWithSettingsTestCase(TestCase):
         settings.PUSH_NOTIFICATIONS_SETTINGS['APNS_CERTIFICATES'] = {
             'asdfg':path
         }
-        f = open('uiopcert','wb')
-        f.write(b'')
-        f.close()
         import ssl
         socket = mock.MagicMock()
         with mock.patch("ssl.wrap_socket",return_value=socket) as s:
