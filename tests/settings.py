@@ -21,3 +21,6 @@ SITE_ID = 1
 ROOT_URLCONF = "core.urls"
 
 SECRET_KEY = "foobar"
+
+PUSH_NOTIFICATIONS_SETTINGS = {
+}

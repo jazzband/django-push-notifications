@@ -32,6 +32,22 @@ class APNSDataOverflow(APNSError):
 	pass
 
 
+def _check_certificate(ss):
+	mode = 'start'
+	for s in ss.split('\n'):
+		if mode == 'start':
+			if 'BEGIN RSA PRIVATE KEY' in s:
+				mode = 'key'
+		elif mode == 'key':
+			if 'END RSA PRIVATE KEY' in s:
+				mode = 'end'
+				break
+			elif s.startswith('Proc-Type') and 'ENCRYPTED' in s:
+				raise Exception("The certificate private key should not be encrypted")
+	if mode != 'end':
+		raise Exception("The certificate doesn't contain a private key")
+
+
 def _apns_create_socket(address_tuple):
 	certfile = SETTINGS.get("APNS_CERTIFICATE")
 	if not certfile:
@@ -41,9 +57,14 @@ def _apns_create_socket(address_tuple):
 
 	try:
 		with open(certfile, "r") as f:
-			f.read()
+			content = f.read()
 	except Exception as e:
 		raise ImproperlyConfigured("The APNS certificate file at %r is not readable: %s" % (certfile, e))
+
+	try:
+		_check_certificate(content)
+	except Exception as e:
+		raise ImproperlyConfigured("The APNS certificate file at %r is unusable: %s" % (certfile, e))
 
 	ca_certs = SETTINGS.get("APNS_CA_CERTIFICATES")
 
