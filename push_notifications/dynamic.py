@@ -57,3 +57,19 @@ def get_apns_certificate(application_id=None):
 		else:
 			raise ImproperlyConfigured("The APNS certificate settings value should be a string, or should have a 'path' attribute or key")
 	return r
+
+
+def get_apns_host(application_id=None):
+	return _get_application_settings(application_id, "APNS_HOST", 'You need to setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages')
+
+
+def get_apns_port(application_id=None):
+	return _get_application_settings(application_id, "APNS_PORT", 'You need to setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages')
+
+
+def get_apns_feedback_host(application_id=None):
+	return _get_application_settings(application_id, "APNS_FEEDBACK_HOST", 'You need to setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages')
+
+
+def get_apns_feedback_port(application_id=None):
+	return _get_application_settings(application_id, "APNS_FEEDBACK_PORT", 'You need to setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages')

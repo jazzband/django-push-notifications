@@ -255,8 +255,18 @@ class APNSModelWithSettingsTestCase(TestCase):
             registration_id="abc",
             application_id="asdfg"
         )
+        device2 = APNSDevice.objects.create(
+            registration_id="def",
+        )
+        settings.PUSH_NOTIFICATIONS_SETTINGS['APNS_CERTIFICATE'] = path
         settings.PUSH_NOTIFICATIONS_SETTINGS['APNS_CERTIFICATES'] = {
             'asdfg':path
+        }
+        settings.PUSH_NOTIFICATIONS_SETTINGS['APNS_HOSTS'] = {
+            'asdfg':"111.222.333"
+        }
+        settings.PUSH_NOTIFICATIONS_SETTINGS['APNS_PORTS'] = {
+            'asdfg':334
         }
         import ssl
         socket = mock.MagicMock()
@@ -265,6 +275,14 @@ class APNSModelWithSettingsTestCase(TestCase):
                 device.send_message("Hello world", expiration=1)
                 p.assert_called_once_with("abc", b'{"aps":{"alert":"Hello world"}}', 0, 1, 10)
                 s.assert_called_once_with(*s.call_args[0],ca_certs=None,certfile=path,ssl_version=ssl.PROTOCOL_TLSv1)
+                socket.connect.assert_called_with(("111.222.333",334))
+        socket = mock.MagicMock()
+        with mock.patch("ssl.wrap_socket",return_value=socket) as s:
+            with mock.patch("push_notifications.apns._apns_pack_frame") as p:
+                device2.send_message("Hello world", expiration=1)
+                p.assert_called_once_with("def", b'{"aps":{"alert":"Hello world"}}', 0, 1, 10)
+                s.assert_called_once_with(*s.call_args[0],ca_certs=None,certfile=path,ssl_version=ssl.PROTOCOL_TLSv1)
+                socket.connect.assert_called_with(("gateway.push.apple.com", 2195))
 
     def test_apns_send_multi_message_with_app_id(self):
         from django.conf import settings

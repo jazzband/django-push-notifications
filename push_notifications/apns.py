@@ -15,7 +15,7 @@ from binascii import unhexlify
 from django.core.exceptions import ImproperlyConfigured
 from . import NotificationError
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
-from .dynamic import get_apns_certificate
+from .dynamic import get_apns_certificate, get_apns_host, get_apns_port, get_apns_feedback_host, get_apns_feedback_port
 
 
 class APNSError(NotificationError):
@@ -77,11 +77,11 @@ def _apns_create_socket(address_tuple, application_id):
 
 
 def _apns_create_socket_to_push(application_id):
-	return _apns_create_socket((SETTINGS["APNS_HOST"], SETTINGS["APNS_PORT"]), application_id)
+	return _apns_create_socket((get_apns_host(application_id), get_apns_port(application_id)), application_id)
 
 
 def _apns_create_socket_to_feedback(application_id):
-	return _apns_create_socket((SETTINGS["APNS_FEEDBACK_HOST"], SETTINGS["APNS_FEEDBACK_PORT"]), application_id)
+	return _apns_create_socket((get_apns_feedback_host(application_id), get_apns_feedback_port(application_id)), application_id)
 
 
 def _apns_pack_frame(token_hex, payload, identifier, expiration, priority):
