@@ -175,7 +175,7 @@ ViewSets are available for both APNS and GCM devices in two permission flavors:
 	- Permissions are ``IsAuthenticated`` and custom permission ``IsOwner``, which will only allow the ``request.user`` to get and update devices that belong to that user
 	- Requires a user to be authenticated, so all devices will be associated with a user
 
-When creating an ``APNSDevice``, the ``registration_id`` is validated to be a 64-character hexadecimal string.
+When creating an ``APNSDevice``, the ``registration_id`` is validated to be a 64-character or 200-character hexadecimal string. Since 2016, device tokens are to be increased from 32 bytes to 100 bytes.
 
 Routes can be added one of two ways:
 
