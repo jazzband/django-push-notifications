@@ -72,6 +72,7 @@ For APNS, you are required to include ``APNS_CERTIFICATE``.
 - ``APNS_HOST``: The hostname used for the APNS sockets.
    - When ``DEBUG=True``, this defaults to ``gateway.sandbox.push.apple.com``.
    - When ``DEBUG=False``, this defaults to ``gateway.push.apple.com``.
+   - If you're running your app on a development device (i.e. not a build downloaded from the app store) you'll need to use the sandbox gateway regardless of whether DEBUG is True or False.
 - ``APNS_PORT``: The port used along with APNS_HOST. Defaults to 2195.
 - ``GCM_POST_URL``: The full url that GCM notifications will be POSTed to. Defaults to https://android.googleapis.com/gcm/send.
 - ``GCM_MAX_RECIPIENTS``: The maximum amount of recipients that can be contained per bulk message. If the ``registration_ids`` list is larger than that number, multiple bulk messages will be sent. Defaults to 1000 (the maximum amount supported by GCM).
