@@ -1,3 +1,8 @@
+v1.4.1 (2016-01-11)
+===================
+* APNS: Increased max device token size to 100 bytes (WWDC 2015, iOS 9)
+* BUGFIX: Fix an index error in the admin
+
 v1.4.0 (2015-12-13)
 ===================
 * BACKWARDS-INCOMPATIBLE: Drop support for Python<3.4
