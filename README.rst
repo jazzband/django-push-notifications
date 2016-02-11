@@ -47,7 +47,7 @@ Edit your settings.py file:
 	)
 
 	PUSH_NOTIFICATIONS_SETTINGS = {
-		"GCM_API_KEY": "<your api key>",
+		"GCM_API_KEY": "[your api key]",
 		"APNS_CERTIFICATE": "/path/to/your/certificate.pem",
 	}
 
@@ -91,6 +91,7 @@ For APNS, you are required to include ``APNS_CERTIFICATE``, ``APNS_CERTIFICATES`
 - ``APNS_PORT``: The port used along with APNS_HOST. Defaults to 2195.
 - ``GCM_POST_URL``: The full url that GCM notifications will be POSTed to. Defaults to https://android.googleapis.com/gcm/send.
 - ``GCM_MAX_RECIPIENTS``: The maximum amount of recipients that can be contained per bulk message. If the ``registration_ids`` list is larger than that number, multiple bulk messages will be sent. Defaults to 1000 (the maximum amount supported by GCM).
+- ``USER_MODEL``: Your user model of choice. Eg. ``myapp.User``. Defaults to ``settings.AUTH_USER_MODEL``.
 
 Sending messages
 ----------------
@@ -132,6 +133,19 @@ Sending messages in bulk
 
 Sending messages in bulk makes use of the bulk mechanics offered by GCM and APNS. It is almost always preferable to send
 bulk notifications instead of single ones.
+
+Sending messages to topic members
+---------------------------------
+GCM topic messaging allows your app server to send a message to multiple devices that have opted in to a particular topic. Based on the publish/subscribe model, topic messaging supports unlimited subscriptions per app. Developers can choose any topic name that matches the regular expression, "/topics/[a-zA-Z0-9-_.~%]+".
+
+.. code-block:: python
+
+	from push_notifications.gcm import gcm_send_message
+        
+        # First param is "None" because no Registration_id is needed, the message will be sent to all devices subscribed to the topic.
+        gcm_send_message(None, "Hello members of my_topic!", topic='/topics/my_topic')
+
+Reference: `GCM Documentation <https://developers.google.com/cloud-messaging/topic-messaging>`_
 
 Multiple mobile applications
 ----------------------------
@@ -200,6 +214,7 @@ together with a registration ID while registering, or your server should identif
 application, while the mobile application instance is registering itself on the server.
 You can use application access token for the purpose in the latter case.
 
+
 Administration
 --------------
 
@@ -258,7 +273,7 @@ ViewSets are available for both APNS and GCM devices in two permission flavors:
 	- Permissions are ``IsAuthenticated`` and custom permission ``IsOwner``, which will only allow the ``request.user`` to get and update devices that belong to that user
 	- Requires a user to be authenticated, so all devices will be associated with a user
 
-When creating an ``APNSDevice``, the ``registration_id`` is validated to be a 64-character hexadecimal string.
+When creating an ``APNSDevice``, the ``registration_id`` is validated to be a 64-character or 200-character hexadecimal string. Since 2016, device tokens are to be increased from 32 bytes to 100 bytes.
 
 Routes can be added one of two ways:
 

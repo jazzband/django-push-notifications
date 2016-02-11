@@ -6,7 +6,7 @@ from tests.mock_responses import GCM_DRF_INVALID_HEX_ERROR, GCM_DRF_OUT_OF_RANGE
 
 class APNSDeviceSerializerTestCase(TestCase):
 	def test_validation(self):
-		# valid data - upper case
+		# valid data - 32 bytes upper case
 		serializer = APNSDeviceSerializer(data={
 			"registration_id": "AEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAE",
 			"name": "Apple iPhone 6+",
@@ -15,12 +15,28 @@ class APNSDeviceSerializerTestCase(TestCase):
 		})
 		self.assertTrue(serializer.is_valid())
 
-		# valid data - lower case
+		# valid data - 32 bytes lower case
 		serializer = APNSDeviceSerializer(data={
 			"registration_id": "aeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeae",
 			"name": "Apple iPhone 6+",
 			"device_id": "ffffffffffffffffffffffffffffffff",
 			"application_id": "XXXXXXXXXXXXXXXXXXXX",
+		})
+		self.assertTrue(serializer.is_valid())
+
+		# valid data - 100 bytes upper case
+		serializer = APNSDeviceSerializer(data={
+			"registration_id": "AEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAE",
+			"name": "Apple iPhone 6+",
+			"device_id": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+		})
+		self.assertTrue(serializer.is_valid())
+
+		# valid data - 100 bytes lower case
+		serializer = APNSDeviceSerializer(data={
+			"registration_id": "aeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeae",
+			"name": "Apple iPhone 6+",
+			"device_id": "ffffffffffffffffffffffffffffffff",
 		})
 		self.assertTrue(serializer.is_valid())
 

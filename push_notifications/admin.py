@@ -1,18 +1,24 @@
+from django.apps import apps
 from django.contrib import admin, messages
-from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
 from .gcm import GCMError
 from .models import APNSDevice, GCMDevice, get_expired_tokens
+from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 
-User = get_user_model()
+User = apps.get_model(*SETTINGS["USER_MODEL"].split("."))
 
 
 class DeviceAdmin(admin.ModelAdmin):
 	list_display = ("__str__", "device_id", "user", "active", "date_created")
-	search_fields = ("name", "device_id", "user__%s" % (User.USERNAME_FIELD))
 	list_filter = ("active", )
 	actions = ("send_message", "send_bulk_message", "prune_devices", "enable", "disable")
+	raw_id_fields = ("user", )
+
+	if hasattr(User, "USERNAME_FIELD"):
+		search_fields = ("name", "device_id", "user__%s" % (User.USERNAME_FIELD))
+	else:
+		search_fields = ("name", "device_id")
 
 	def send_messages(self, request, queryset, bulk=False):
 		"""

@@ -1,11 +1,11 @@
 from __future__ import unicode_literals
 
-from django.conf import settings
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
 from .fields import HexIntegerField
+from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 try:
 	from django.db.models import UUIDField
@@ -18,7 +18,7 @@ class Device(models.Model):
 	name = models.CharField(max_length=255, verbose_name=_("Name"), blank=True, null=True)
 	active = models.BooleanField(verbose_name=_("Is active"), default=True,
 		help_text=_("Inactive devices will not be sent notifications"))
-	user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
+	user = models.ForeignKey(SETTINGS["USER_MODEL"], blank=True, null=True)
 	date_created = models.DateTimeField(verbose_name=_("Creation date"), auto_now_add=True, null=True)
 	application_id = models.CharField(max_length=64, verbose_name=_("Application ID"),
 		help_text=_("Opaque application identity, should be filled in for multiple key/certificate access"),
@@ -104,7 +104,7 @@ class APNSDeviceQuerySet(models.query.QuerySet):
 class APNSDevice(Device):
 	device_id = UUIDField(verbose_name=_("Device ID"), blank=True, null=True, db_index=True,
 		help_text="UDID / UIDevice.identifierForVendor()")
-	registration_id = models.CharField(verbose_name=_("Registration ID"), max_length=64, unique=True)
+	registration_id = models.CharField(verbose_name=_("Registration ID"), max_length=200, unique=True)
 
 	objects = APNSDeviceManager()
 
