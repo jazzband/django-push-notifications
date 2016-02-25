@@ -74,6 +74,21 @@ class ModelTestCase(TestCase):
                     "registration_ids": ["abc", "abc1"]
                 }, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json")
 
+    def test_gcm_send_message_with_no_reg_ids(self):
+        GCMDevice.objects.create(
+            registration_id="abc",
+            active=False,
+        )
+
+        GCMDevice.objects.create(
+            registration_id="abc1",
+            active=False
+        )
+
+        with mock.patch("push_notifications.gcm.gcm_send_bulk_message") as p:
+            GCMDevice.objects.all().send_message("Hello world")
+            assert p.called == False
+
     def test_gcm_send_message_active_devices(self):
         GCMDevice.objects.create(
             registration_id="abc",
