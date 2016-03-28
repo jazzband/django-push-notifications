@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+from django.shortcuts import get_object_or_404
+
 from rest_framework import permissions
 from rest_framework.serializers import ModelSerializer, ValidationError
 from rest_framework.viewsets import ModelViewSet
@@ -8,6 +10,7 @@ from rest_framework.fields import IntegerField
 from push_notifications.models import APNSDevice, GCMDevice
 from push_notifications.fields import hex_re
 from push_notifications.fields import UNSIGNED_64BIT_INT_MAX_VALUE
+from push_notifications.settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 # Fields
 
@@ -113,6 +116,17 @@ class IsOwner(permissions.BasePermission):
 # Mixins
 class DeviceViewSetMixin(object):
 	lookup_field = "registration_id"
+
+	def create(self, request, *args, **kwargs):
+		if SETTINGS["POST_RECREATE_USER"]:
+			try:
+				filter_kwargs = {self.lookup_field: self.request.data[self.lookup_field]}
+				obj = get_object_or_404(self.queryset, **filter_kwargs)
+				obj.delete()
+			except:
+				pass
+
+		return super(DeviceViewSetMixin, self).create(request, *args, **kwargs)
 
 	def perform_create(self, serializer):
 		if self.request.user.is_authenticated():
