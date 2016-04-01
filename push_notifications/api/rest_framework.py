@@ -119,6 +119,11 @@ class DeviceViewSetMixin(object):
 			serializer.save(user=self.request.user)
 		return super(DeviceViewSetMixin, self).perform_create(serializer)
 
+	def perform_update(self, serializer):
+		if self.request.user.is_authenticated():
+			serializer.save(user=self.request.user)
+		return super(DeviceViewSetMixin, self).perform_update(serializer)
+
 
 class AuthorizedMixin(object):
 	permission_classes = (permissions.IsAuthenticated, IsOwner)
