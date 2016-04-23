@@ -169,7 +169,8 @@ def gcm_send_message(registration_id, data, **kwargs):
 	https://developers.google.com/cloud-messaging/server-ref#downstream
 	"""
 
-	return _gcm_send_plain(registration_id, data, **kwargs)
+	if registration_id:
+		return _gcm_send_plain(registration_id, data, **kwargs)
 
 
 def gcm_send_bulk_message(registration_ids, data, **kwargs):
@@ -184,11 +185,12 @@ def gcm_send_bulk_message(registration_ids, data, **kwargs):
 
 	# GCM only allows up to 1000 reg ids per bulk message
 	# https://developer.android.com/google/gcm/gcm.html#request
-	max_recipients = SETTINGS.get("GCM_MAX_RECIPIENTS")
-	if len(registration_ids) > max_recipients:
-		ret = []
-		for chunk in _chunks(registration_ids, max_recipients):
-			ret.append(_gcm_send_json(chunk, data, **kwargs))
-		return ret
+	if registration_ids:
+		max_recipients = SETTINGS.get("GCM_MAX_RECIPIENTS")
+		if len(registration_ids) > max_recipients:
+			ret = []
+			for chunk in _chunks(registration_ids, max_recipients):
+				ret.append(_gcm_send_json(chunk, data, **kwargs))
+			return ret
 
-	return _gcm_send_json(registration_ids, data, **kwargs)
+		return _gcm_send_json(registration_ids, data, **kwargs)

@@ -7,7 +7,7 @@ from tests.mock_responses import ( GCM_PLAIN_RESPONSE,GCM_MULTIPLE_JSON_RESPONSE
                                    GCM_JSON_RESPONSE_ERROR, GCM_PLAIN_RESPONSE_ERROR_B, GCM_JSON_RESPONSE_ERROR_B,
                                    GCM_PLAIN_CANONICAL_ID_RESPONSE, GCM_JSON_CANONICAL_ID_RESPONSE,
                                    GCM_JSON_CANONICAL_ID_SAME_DEVICE_RESPONSE)
-from push_notifications.gcm import GCMError
+from push_notifications.gcm import GCMError, gcm_send_bulk_message
 
 
 class ModelTestCase(TestCase):
@@ -224,6 +224,19 @@ class ModelTestCase(TestCase):
         with mock.patch("push_notifications.apns._apns_pack_frame") as p:
             device.send_message("Hello world", extra={"foo": "bar"}, socket=socket, identifier=1, expiration=2, priority=5)
             p.assert_called_once_with("abc", b'{"aps":{"alert":"Hello world"},"foo":"bar"}', 1, 2, 5)
+
+    def test_send_message_with_no_reg_ids(self):
+        device_list = ['abc', 'abc1']
+        self.create_devices(device_list)
+
+        with mock.patch("push_notifications.gcm._gcm_send_plain", return_value='') as p:
+            GCMDevice.objects.filter(registration_id='xyz').send_message('Hello World')
+            p.assert_not_called()
+
+        with mock.patch("push_notifications.gcm._gcm_send_json", return_value='') as p:
+            reg_ids = [obj.registration_id for obj in GCMDevice.objects.all()]
+            gcm_send_bulk_message(reg_ids, {"message": "Hello World"})
+            p.assert_called_once_with([u"abc", u"abc1"], {"message": "Hello World"})
 
     def create_devices(self, devices):
         for device in devices:
