@@ -1,3 +1,8 @@
+v1.4.2 (2016-06-02)
+===================
+* Add DEBUG like attribute of PUSH_NOTIFICATIONS_SETTINGS
+* Now push_notification allows push to several apps
+
 v1.4.1 (2016-01-11)
 ===================
 * APNS: Increased max device token size to 100 bytes (WWDC 2015, iOS 9)
