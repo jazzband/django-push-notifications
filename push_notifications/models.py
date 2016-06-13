@@ -112,9 +112,9 @@ class WNSDeviceQuerySet(models.query.QuerySet):
 
 
 class WNSDevice(Device):
-    device_id = HexIntegerField(verbose_name=_("Device ID"), blank=True, null=True, db_index=True,
+    device_id = models.UUIDField(verbose_name=_("Device ID"), blank=True, null=True, db_index=True,
                                 help_text=_("GUID()"))
-    registration_id = models.TextField(name=_("Notification URI"))
+    registration_id = models.TextField(verbose_name=_("Notification URI"))
 
     objects = WNSDeviceManager()
 

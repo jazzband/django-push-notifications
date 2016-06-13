@@ -1,5 +1,6 @@
 """
 Windows Notification Service
+
 Documentation is available on the Windows Dev Center:
 https://msdn.microsoft.com/en-us/windows/uwp/controls-and-patterns/
 tiles-and-notifications-windows-push-notification-services--wns--overview
@@ -30,6 +31,11 @@ class WNSError(NotificationError):
 
 
 def _wns_authenticate():
+    """
+    Requests an Access token for WNS communication.
+
+    :return: dict: {'access_token': <String>, 'expires_in': <Int>, 'token_type': 'bearer'}
+    """
     package_id = SETTINGS.get("WNS_PACKAGE_SECURITY_ID")
     secret_key = SETTINGS.get("WNS_SECRET_KEY")
     if not package_id:
@@ -50,16 +56,27 @@ def _wns_authenticate():
     return json.loads(urlopen(request).read().decode("utf-8"))
 
 
-def _wns_send(uri, data, content_type="text/xml"):
-    access_token = _wns_authenticate()['access_token']
+def _wns_send(uri, data, wns_type="wns/raw"):
+    """
+    Sends a notification data and authentication to WNS.
 
-    authorization = 'Bearer %(token)s' % {'token': access_token}
+    :param uri: String: The device's unique notification URI
+    :param data: dict: The notification data to be sent.
+    :return:
+    """
+    access_token = _wns_authenticate()["access_token"]
+
+    authorization = "Bearer %(token)s" % {"token": access_token}
+
+    content_type = "application/octet-stream"
+    if wns_type != "wns_raw":
+        content_type = "text/xml"
 
     headers = {
-        "Content-Type": content_type,  # "text/xml" | "application/octet-stream" (raw)
+        "Content-Type": content_type,  # "text/xml" (toast/badge/tile) | "application/octet-stream" (raw)
         "Authorization": authorization,
         "Content-Length": str(len(data)),
-        "X-WNS-Type": "wns/toast",  # wns/toast | wns/badge | wns/tile | wns/raw
+        "X-WNS-Type": wns_type,  # wns/toast | wns/badge | wns/tile | wns/raw
     }
 
     request = Request(uri, data, headers)
@@ -67,6 +84,12 @@ def _wns_send(uri, data, content_type="text/xml"):
 
 
 def _wns_prepare_toast(data):
+    """
+    Creates the xml tree for a 'toast' notification
+
+    :param data: dict: The notification data to be converted to an xml tree.
+    :return: String
+    """
     root = ET.Element("toast")
     visual = ET.SubElement(root, "visual")
     binding = ET.SubElement(visual, "binding")
@@ -80,11 +103,16 @@ def _wns_prepare_toast(data):
             elem = ET.SubElement(binding, "img")
             elem.attrib["src"] = item
             elem.attrib["id"] = str(count)
-    content_type = "text/xml"
-    return tostring(root, encoding='utf-8'), content_type
+    return tostring(root, encoding='utf-8')
 
 
 def _wns_prepare_tile(data):
+    """
+    Creates the xml tree for a 'tile' notification
+
+    :param data: dict: The notification data to be converted to an xml tree.
+    :return: String
+    """
     root = ET.Element("tile")
     visual = ET.SubElement(root, "visual")
     binding = ET.SubElement(visual, "binding")
@@ -98,23 +126,39 @@ def _wns_prepare_tile(data):
             elem = ET.SubElement(binding, "img")
             elem.attrib["src"] = item
             elem.attrib["id"] = str(count)
-    content_type = "text/xml"
-    return tostring(root, encoding='utf-8'), content_type
+    return tostring(root, encoding='utf-8')
 
 
 def _wns_prepare_badge(data):
+    """
+    Creates the xml tree for a 'badge' notification
+
+    :param data: dict: The notification data to be converted to an xml tree.
+    :return: String
+    """
     root = ET.Element("badge")
     root.attrib["value"] = data["value"]
-    content_type = "text/xml"
-    return tostring(root, encoding='utf-8'), content_type
+    return tostring(root, encoding='utf-8')
 
 
 def _wns_prepare_raw(data):
-    content_type = "application/octet-stream"
-    return data, content_type
+    """
+    There is nothing that needs to be done to raw notification data(hence, the name), this is mostly a placeholder.
+
+    :param data: Notification data
+    :return:
+    """
+    return data
 
 
 def wns_send_message(uri, notification_type, data):
+    """
+    Sends a notification request to WNS. The data will be converted to the correct format per notification_type.
+
+    :param uri: String: The device's unique notification uri.
+    :param notification_type: String: The type of windows notification to be sent. [toast | badge | tile | raw]
+    :param data: String: The notification data to be sent.
+    """
     types = {
         "badge": _wns_prepare_badge,
         "toast": _wns_prepare_toast,
@@ -122,11 +166,20 @@ def wns_send_message(uri, notification_type, data):
         "raw": _wns_prepare_raw,
     }
 
-    prepared_data, content_type = types[notification_type](data=data)
-    _wns_send(uri=uri, data=prepared_data, content_type=content_type)
+    wns_type = 'wns/' + notification_type
+    prepared_data = types[notification_type](data=data)
+
+    _wns_send(uri=uri, data=prepared_data, wns_type=wns_type)
 
 
 def wns_send_bulk_message(uri_list, data, **kwargs):
+    """
+    WNS doesn't support bulk notification, so we loop through each uri.
+
+    :param uri_list: list: A list of each device's unique notification uri.
+    :param data: dict: The notification data to be sent.
+    :param kwargs:
+    """
     if uri_list:
         notification_type = kwargs.pop('notification_type', 'raw')
         for uri in uri_list:
