@@ -103,12 +103,8 @@ class WNSDeviceQuerySet(models.query.QuerySet):
 		if self:
 			from .wns import wns_send_bulk_message
 
-			data = kwargs.pop("extra", {})
-			if message is not None:
-				data["message"] = message
-
 			reg_ids = list(self.filter(active=True).values_list('registration_id', flat=True))
-			return wns_send_bulk_message(registration_ids=reg_ids, data=data, **kwargs)
+			return wns_send_bulk_message(uri_list=reg_ids, message=message, **kwargs)
 
 
 class WNSDevice(Device):
@@ -123,10 +119,8 @@ class WNSDevice(Device):
 
 	def send_message(self, message, **kwargs):
 		from .wns import wns_send_message
-		data = kwargs.pop("extra", {})
-		if message is not None:
-			data["message"] = message
-		return wns_send_message(uri=self.uri, data=data, **kwargs)
+
+		return wns_send_message(uri=self.registration_id, message=message, **kwargs)
 
 
 # This is an APNS-only function right now, but maybe GCM will implement it

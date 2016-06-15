@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from tastypie.authorization import Authorization
 from tastypie.authentication import BasicAuthentication
 from tastypie.resources import ModelResource
-from push_notifications.models import APNSDevice, GCMDevice, WSNDevice
+from push_notifications.models import APNSDevice, GCMDevice, WNSDevice
 
 
 class APNSDeviceResource(ModelResource):
@@ -20,11 +20,11 @@ class GCMDeviceResource(ModelResource):
 		resource_name = "device/gcm"
 
 
-class WSNDeviceResource(ModelResource):
+class WNSDeviceResource(ModelResource):
 	class Meta:
 		authorization = Authorization()
-		queryset = WSNDevice.objects.all()
-		resource_name = "device/wsn"
+		queryset = WNSDevice.objects.all()
+		resource_name = "device/wns"
 
 
 class APNSDeviceAuthenticatedResource(APNSDeviceResource):
@@ -51,13 +51,13 @@ class GCMDeviceAuthenticatedResource(GCMDeviceResource):
 		return super(GCMDeviceAuthenticatedResource, self).obj_create(bundle, user=bundle.request.user, **kwargs)
 
 
-class WSNDeviceAuthenticatedResource(WSNDeviceResource):
+class WNSDeviceAuthenticatedResource(WNSDeviceResource):
 	# user = ForeignKey(UserResource, "user")
 
-	class Meta(GCMDeviceResource.Meta):
+	class Meta(WNSDeviceResource.Meta):
 		authentication = BasicAuthentication()
 	# authorization = SameUserAuthorization()
 
 	def obj_create(self, bundle, **kwargs):
 		# See https://github.com/toastdriven/django-tastypie/issues/854
-		return super(WSNDeviceAuthenticatedResource, self).obj_create(bundle, user=bundle.request.user, **kwargs)
+		return super(WNSDeviceAuthenticatedResource, self).obj_create(bundle, user=bundle.request.user, **kwargs)
