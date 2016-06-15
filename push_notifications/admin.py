@@ -43,7 +43,7 @@ class DeviceAdmin(admin.ModelAdmin):
 
 		if errors:
 			self.message_user(request, _("Some messages could not be processed: %r" % (", ".join(errors))),
-							  level=messages.ERROR)
+								level=messages.ERROR)
 		if ret:
 			if not bulk:
 				ret = ", ".join(ret)

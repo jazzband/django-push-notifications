@@ -13,12 +13,9 @@ from xml.etree.ElementTree import tostring
 try:
 	from urllib.error import HTTPError
 	from urllib.request import Request, urlopen
-	from urllib.parse import urlencode
 except ImportError:
 	# Python 2 support
-	from urllib2.error import HTTPError
-	from urllib2 import Request, urlopen
-	from urllib import urlencode
+	from urllib2 import HTTPError, Request, urlopen
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -56,7 +53,7 @@ def _wns_authenticate():
 			'You need to set PUSH_NOTIFICATIONS_SETTINGS["WNS_SECRET_KEY"] to send messages through WNS.')
 
 	data = "grant_type=client_credentials&client_id=%(client_id)s&client_secret=%(client_secret)s" \
-		   "&scope=notify.windows.com" % {"client_id": package_id, "client_secret": secret_key}
+		"&scope=notify.windows.com" % {"client_id": package_id, "client_secret": secret_key}
 	data_bytes = bytes(data, "utf-8")
 	headers = {
 		"Content-Type": "application/x-www-form-urlencoded",
@@ -107,18 +104,18 @@ def _wns_send(uri, data, wns_type="wns/toast"):
 	except HTTPError as err:
 		if err.code == 400:
 			raise WNSNotificationResponseError("HTTP 400: One or more headers were specified incorrectly or conflict "
-											   "with another header.")
+												"with another header.")
 		elif err.code == 401:
 			raise WNSNotificationResponseError("HTTP 401: The cloud service did not present a valid authentication "
-											   "ticket. Access token may be invalid.")
+												"ticket. Access token may be invalid.")
 		elif err.code == 403:
 			raise WNSNotificationResponseError("HTTP 403: The cloud service is not authorized to send a notification to"
-											   " this URI even though they are authenticated.")
+												" this URI even though they are authenticated.")
 		elif err.code == 404:
 			raise WNSNotificationResponseError("HTTP 404: The channel URI is not valid or is not recognized by WNS.")
 		elif err.code == 405:
 			raise WNSNotificationResponseError("HTTP 405: Invalid method (GET, CREATE); only POST (Windows or Windows "
-											   "Phone) or DELETE (Windows Phone only) is allowed.")
+												"Phone) or DELETE (Windows Phone only) is allowed.")
 		elif err.code == 406:
 			raise WNSNotificationResponseError("HTTP 406: The cloud service exceeded its throttle limit.")
 		elif err.code == 410:

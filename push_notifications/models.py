@@ -12,7 +12,7 @@ from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 class Device(models.Model):
 	name = models.CharField(max_length=255, verbose_name=_("Name"), blank=True, null=True)
 	active = models.BooleanField(verbose_name=_("Is active"), default=True,
-								 help_text=_("Inactive devices will not be sent notifications"))
+									help_text=_("Inactive devices will not be sent notifications"))
 	user = models.ForeignKey(SETTINGS["USER_MODEL"], blank=True, null=True)
 	date_created = models.DateTimeField(verbose_name=_("Creation date"), auto_now_add=True, null=True)
 
@@ -21,8 +21,8 @@ class Device(models.Model):
 
 	def __str__(self):
 		return self.name or \
-			   str(self.device_id or "") or \
-			   "%s for %s" % (self.__class__.__name__, self.user or "unknown user")
+				str(self.device_id or "") or \
+				"%s for %s" % (self.__class__.__name__, self.user or "unknown user")
 
 
 class GCMDeviceManager(models.Manager):
@@ -79,7 +79,7 @@ class APNSDeviceQuerySet(models.query.QuerySet):
 
 class APNSDevice(Device):
 	device_id = models.UUIDField(verbose_name=_("Device ID"), blank=True, null=True, db_index=True,
-								 help_text="UDID / UIDevice.identifierForVendor()")
+									help_text="UDID / UIDevice.identifierForVendor()")
 	registration_id = models.CharField(verbose_name=_("Registration ID"), max_length=200, unique=True)
 
 	objects = APNSDeviceManager()
@@ -109,7 +109,7 @@ class WNSDeviceQuerySet(models.query.QuerySet):
 
 class WNSDevice(Device):
 	device_id = models.UUIDField(verbose_name=_("Device ID"), blank=True, null=True, db_index=True,
-								 help_text=_("GUID()"))
+									help_text=_("GUID()"))
 	registration_id = models.TextField(verbose_name=_("Notification URI"))
 
 	objects = WNSDeviceManager()

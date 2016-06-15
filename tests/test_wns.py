@@ -1,10 +1,12 @@
-from unittest.mock import patch
 import xml.etree.ElementTree as ET
 
 from django.test import TestCase
 
 from push_notifications.wns import dict_to_xml_schema, wns_send_bulk_message, wns_send_message
-
+try:
+	from mock import patch
+except ImportError:
+	from unittest.mock import patch
 
 class WNSSendMessageTestCase(TestCase):
 	def setUp(self):
