@@ -171,31 +171,40 @@ def wns_send_message(uri, message=None, xml_data=None, raw_data=None, **kwargs):
 	See docs for more information:
 	https://msdn.microsoft.com/en-us/library/windows/apps/br212853.aspx
 
-	There are three ways to input notification data:
+	There are multiple ways to input notification data:
 
-	1. The simplest and least custom notification to send is to just pass a string to message. This will create a toast
+	1. The simplest and least custom notification to send is to just pass a string to 'message'. This will create a toast
 	notification with one text element.
 		e.g.:
 			"This is my notification title"
 
-	2. Passing a dictionary to xml_data will create one of three types of notifications depending on the
+	2. You can also pass a dictionary to 'message': it can only contain one or both keys: ['text', 'image']. The
+	value of each key must be a list with the text and src respectively.
+		e.g.:
+			{
+				'text': ['text1', 'text2'],
+				'image': ['src1', 'src2'],
+			}
+
+	3. Passing a dictionary to 'xml_data' will create one of three types of notifications depending on the
 	dictionary data (toast, tile, badge).
 		See 'dict_to_xml_schema' docs for more information on dictionary formatting.
 
-	3. Passing a value to raw_data will create a 'raw' notification and send the input data as is.
+	4. Passing a value to 'raw_data' will create a 'raw' notification and send the input data as is.
 
 	:param uri: str: The device's unique notification uri.
-	:param message: str: The notification data to be sent.
+	:param message: str|dict: The notification data to be sent.
 	:param xml_data: dict: A dictionary containing data to be converted to an xml tree.
 	:param raw_data: str: Data to be sent via a 'raw' notification.
 	"""
 	# Create a simple toast notification
 	if message:
 		wns_type = "wns/toast"
-		data = {
-			"text": [message, ],
-		}
-		prepared_data = _wns_prepare_toast(data=data, **kwargs)
+		if isinstance(message, str):
+			message = {
+				"text": [message, ],
+			}
+		prepared_data = _wns_prepare_toast(data=message, **kwargs)
 	# Create a toast/tile/badge notification from a dictionary
 	elif xml_data:
 		xml = dict_to_xml_schema(xml_data)

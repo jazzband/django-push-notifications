@@ -2,11 +2,9 @@ from django.conf import settings
 
 PUSH_NOTIFICATIONS_SETTINGS = getattr(settings, "PUSH_NOTIFICATIONS_SETTINGS", {})
 
-
 # GCM
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("GCM_POST_URL", "https://android.googleapis.com/gcm/send")
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("GCM_MAX_RECIPIENTS", 1000)
-
 
 # APNS
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("APNS_PORT", 2195)
@@ -20,11 +18,9 @@ else:
 	PUSH_NOTIFICATIONS_SETTINGS.setdefault("APNS_HOST", "gateway.push.apple.com")
 	PUSH_NOTIFICATIONS_SETTINGS.setdefault("APNS_FEEDBACK_HOST", "feedback.push.apple.com")
 
-
 # WNS
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("WNS_PACKAGE_SECURITY_ID", None)
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("WNS_SECRET_KEY", None)
-
 
 # User model
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("USER_MODEL", settings.AUTH_USER_MODEL)

@@ -5,15 +5,14 @@ from .gcm import GCMError
 from .models import APNSDevice, GCMDevice, WNSDevice, get_expired_tokens
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
-
 User = apps.get_model(*SETTINGS["USER_MODEL"].split("."))
 
 
 class DeviceAdmin(admin.ModelAdmin):
 	list_display = ("__str__", "device_id", "user", "active", "date_created")
-	list_filter = ("active", )
+	list_filter = ("active",)
 	actions = ("send_message", "send_bulk_message", "prune_devices", "enable", "disable")
-	raw_id_fields = ("user", )
+	raw_id_fields = ("user",)
 
 	if hasattr(User, "USERNAME_FIELD"):
 		search_fields = ("name", "device_id", "user__%s" % (User.USERNAME_FIELD))
@@ -43,7 +42,8 @@ class DeviceAdmin(admin.ModelAdmin):
 				break
 
 		if errors:
-			self.message_user(request, _("Some messages could not be processed: %r" % (", ".join(errors))), level=messages.ERROR)
+			self.message_user(request, _("Some messages could not be processed: %r" % (", ".join(errors))),
+							  level=messages.ERROR)
 		if ret:
 			if not bulk:
 				ret = ", ".join(ret)
@@ -55,18 +55,22 @@ class DeviceAdmin(admin.ModelAdmin):
 
 	def send_message(self, request, queryset):
 		self.send_messages(request, queryset)
+
 	send_message.short_description = _("Send test message")
 
 	def send_bulk_message(self, request, queryset):
 		self.send_messages(request, queryset, True)
+
 	send_bulk_message.short_description = _("Send test message in bulk")
 
 	def enable(self, request, queryset):
 		queryset.update(active=True)
+
 	enable.short_description = _("Enable selected devices")
 
 	def disable(self, request, queryset):
 		queryset.update(active=False)
+
 	disable.short_description = _("Disable selected devices")
 
 	def prune_devices(self, request, queryset):
