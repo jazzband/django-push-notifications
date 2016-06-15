@@ -142,7 +142,7 @@ def _wns_prepare_toast(data, **kwargs):
 
 	{
 		'text': ['Title text', 'Message Text', 'Another message!'],
-		'image': [],
+		'image': ['src1', 'src2'],
 	}
 
 	:return: str
@@ -171,25 +171,18 @@ def wns_send_message(uri, message=None, xml_data=None, raw_data=None, **kwargs):
 	See docs for more information:
 	https://msdn.microsoft.com/en-us/library/windows/apps/br212853.aspx
 
-	There are three ways to format the data, each format allows for it's own level of customization.
+	There are three ways to input notification data:
 
-	1. The simplest and least custom notification to send is to just pass a string. This will create a toast
+	1. The simplest and least custom notification to send is to just pass a string to message. This will create a toast
 	notification with one text element.
 		e.g.:
 			"This is my notification title"
 
-	2. The second form allows you to specify the notification type and multiple items(text/image) limited by the
-	notification type; badge only has two customizable attributes. The first
-		e.g.:
-			{
-				"toast": {
-					"text": ['title', 'msg'],
-					"images": ['src1', 'src2']
-				}
-			}
-		Sensible defaults will be added where needed.
+	2. Passing a dictionary to xml_data will create one of three types of notifications depending on the
+	dictionary data (toast, tile, badge).
+		See 'dict_to_xml_schema' docs for more information on dictionary formatting.
 
-	3. The third form allows complete control, but does not add ANY required or optional defaults.
+	3. Passing a value to raw_data will create a 'raw' notification and send the input data as is.
 
 	:param uri: str: The device's unique notification uri.
 	:param message: str: The notification data to be sent.
@@ -200,7 +193,7 @@ def wns_send_message(uri, message=None, xml_data=None, raw_data=None, **kwargs):
 	if message:
 		wns_type = "wns/toast"
 		data = {
-			"text": message,
+			"text": [message, ],
 		}
 		prepared_data = _wns_prepare_toast(data=data, **kwargs)
 	# Create a toast/tile/badge notification from a dictionary
@@ -256,8 +249,9 @@ def dict_to_xml_schema(data):
 
 	The 'children' key is required.
 	If the value is a dict it must contain one or more keys which will be used as the sub-element names. Each
-	sub-element must have a value of a sub-element dictionary(see above).
+	sub-element must have a value of a sub-element dictionary(see above) or a list of sub-element dictionaries.
 	If the value is not a dict, it will be the value of the element.
+	If the value is a list, multiple elements of the same tag will be created from each sub-element dict in the list.
 
 	:param data: dict: Used to create an XML tree.
 		e.g.:
@@ -275,12 +269,20 @@ def dict_to_xml_schema(data):
 										'template': 'ToastText01',
 									},
 									'children': {
-										'text': {
-											'attrs': {
-												'id': '1',
+										'text': [
+											{
+												'attrs': {
+													'id': '1',
+												},
+												'children': 'text1',
 											},
-											'children': 'Sample text',
-										},
+											{
+												'attrs': {
+													'id': '2',
+												},
+												'children': 'text2',
+											},
+										],
 									},
 								},
 							},
@@ -317,13 +319,23 @@ def _add_sub_elements_from_dict(parent, sub_dict):
 				}
 	"""
 	for key, value in sub_dict.items():
-		sub_element = ET.SubElement(parent, key)
-		_add_element_attrs(sub_element, value.get('attrs', {}))
-		children = value.get('children', None)
-		if isinstance(children, dict):
-			_add_sub_elements_from_dict(sub_element, children)
-		elif isinstance(children, str):
-			sub_element.text = children
+		if isinstance(value, list):
+			for repeated_element in value:
+				sub_element = ET.SubElement(parent, key)
+				_add_element_attrs(sub_element, repeated_element.get('attrs', {}))
+				children = repeated_element.get('children', None)
+				if isinstance(children, dict):
+					_add_sub_elements_from_dict(sub_element, children)
+				elif isinstance(children, str):
+					sub_element.text = children
+		else:
+			sub_element = ET.SubElement(parent, key)
+			_add_element_attrs(sub_element, value.get('attrs', {}))
+			children = value.get('children', None)
+			if isinstance(children, dict):
+				_add_sub_elements_from_dict(sub_element, children)
+			elif isinstance(children, str):
+				sub_element.text = children
 
 
 def _add_element_attrs(elem, attrs):
