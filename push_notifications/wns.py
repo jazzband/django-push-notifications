@@ -35,14 +35,15 @@ class WNSNotificationResponseError(WNSError):
 	pass
 
 
-def _wns_authenticate():
+def _wns_authenticate(package_id=None, secret_key=None):
 	"""
 	Requests an Access token for WNS communication.
 
+	:param kwargs
 	:return: dict: {'access_token': <str>, 'expires_in': <int>, 'token_type': 'bearer'}
 	"""
-	package_id = SETTINGS.get("WNS_PACKAGE_SECURITY_ID")
-	secret_key = SETTINGS.get("WNS_SECRET_KEY")
+	package_id = SETTINGS.get("WNS_PACKAGE_SECURITY_ID") if not package_id else package_id
+	secret_key = SETTINGS.get("WNS_SECRET_KEY") if not secret_key else secret_key
 	if not package_id:
 		raise ImproperlyConfigured(
 			'You need to set PUSH_NOTIFICATIONS_SETTINGS["WNS_PACKAGE_SECURITY_ID"] to send messages through WNS.')
@@ -69,15 +70,16 @@ def _wns_authenticate():
 	return json.loads(response.read().decode("utf-8"))
 
 
-def _wns_send(uri, data, wns_type="wns/toast"):
+def _wns_send(uri, data, wns_type="wns/toast", package_id=None, secret_key=None):
 	"""
 	Sends a notification data and authentication to WNS.
 
 	:param uri: str: The device's unique notification URI
 	:param data: dict: The notification data to be sent.
+	:param kwargs
 	:return:
 	"""
-	access_token = _wns_authenticate()["access_token"]
+	access_token = _wns_authenticate(package_id=package_id, secret_key=secret_key)["access_token"]
 
 	authorization = "Bearer %(token)s" % {"token": access_token}
 
@@ -159,7 +161,7 @@ def _wns_prepare_toast(data, **kwargs):
 	return tostring(root)
 
 
-def wns_send_message(uri, message=None, xml_data=None, raw_data=None, **kwargs):
+def wns_send_message(uri, message=None, xml_data=None, raw_data=None, package_id=None, secret_key=None, **kwargs):
 	"""
 	Sends a notification request to WNS. There are four notification types that WNS can send: toast, tile, badge,
 	and raw. Toast, tile, and badge can all be customized to use different templates/icons/sounds/launch params/etc.
@@ -191,6 +193,8 @@ def wns_send_message(uri, message=None, xml_data=None, raw_data=None, **kwargs):
 	:param message: str|dict: The notification data to be sent.
 	:param xml_data: dict: A dictionary containing data to be converted to an xml tree.
 	:param raw_data: str: Data to be sent via a 'raw' notification.
+	:param package_id: str: The package security id.
+	:param secret_key: str: The application's secret key.
 	"""
 	# Create a simple toast notification
 	if message:
@@ -213,10 +217,11 @@ def wns_send_message(uri, message=None, xml_data=None, raw_data=None, **kwargs):
 		raise TypeError("At least one of the following parameters cannot be None type: "
 						"['message', 'xml_data', 'raw_data']")
 
-	_wns_send(uri=uri, data=prepared_data, wns_type=wns_type)
+	_wns_send(uri=uri, data=prepared_data, wns_type=wns_type, package_id=package_id, secret_key=secret_key)
 
 
-def wns_send_bulk_message(uri_list, message=None, xml_data=None, raw_data=None, **kwargs):
+def wns_send_bulk_message(uri_list, message=None, xml_data=None, raw_data=None, package_id=None, secret_key=None,
+							**kwargs):
 	"""
 	WNS doesn't support bulk notification, so we loop through each uri.
 
@@ -224,10 +229,13 @@ def wns_send_bulk_message(uri_list, message=None, xml_data=None, raw_data=None, 
 	:param message: str: The notification data to be sent.
 	:param xml_data: dict: A dictionary containing data to be converted to an xml tree.
 	:param raw_data: str: Data to be sent via a 'raw' notification.
+	:param package_id: str: The package security id.
+	:param secret_key: str: The application's secret key.
 	"""
 	if uri_list:
 		for uri in uri_list:
-			wns_send_message(uri=uri, message=message, xml_data=xml_data, raw_data=raw_data, **kwargs)
+			wns_send_message(uri=uri, message=message, xml_data=xml_data, raw_data=raw_data, package_id=package_id,
+							secret_key=secret_key, **kwargs)
 
 
 def dict_to_xml_schema(data):
