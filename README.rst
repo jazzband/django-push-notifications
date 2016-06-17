@@ -53,7 +53,7 @@ Edit your settings.py file:
 	If you are planning on running your project with ``DEBUG=True``, then make sure you have set the
 	*development* certificate as your ``APNS_CERTIFICATE``. Otherwise the app will not be able to connect to the correct host. See settings_ for details.
 
-You can learn more about APNS certificates `here <https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/ProvisioningDevelopment.html>`_.
+You can learn more about APNS certificates `here <https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/ApplePushService.html>`_.
 
 Native Django migrations are in use. ``manage.py migrate`` will install and migrate all models.
 
