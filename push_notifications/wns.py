@@ -22,8 +22,6 @@ from django.core.exceptions import ImproperlyConfigured
 from . import NotificationError
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
-WNS_ACCESS_URL = "https://login.live.com/accesstoken.srf"
-
 
 class WNSError(NotificationError):
 	pass
@@ -59,7 +57,7 @@ def _wns_authenticate():
 		"Content-Type": "application/x-www-form-urlencoded",
 	}
 
-	request = Request(WNS_ACCESS_URL, data=data_bytes, headers=headers)
+	request = Request(SETTINGS.WNS_ACCESS_URL, data=data_bytes, headers=headers)
 	try:
 		response = urlopen(request)
 	except HTTPError as err:

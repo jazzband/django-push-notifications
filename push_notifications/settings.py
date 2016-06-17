@@ -21,6 +21,7 @@ else:
 # WNS
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("WNS_PACKAGE_SECURITY_ID", None)
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("WNS_SECRET_KEY", None)
+PUSH_NOTIFICATIONS_SETTINGS.setdefault("WNS_ACCESS_URL", "https://login.live.com/accesstoken.srf")
 
 # User model
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("USER_MODEL", settings.AUTH_USER_MODEL)
