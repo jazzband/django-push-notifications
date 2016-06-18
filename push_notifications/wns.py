@@ -2,8 +2,7 @@
 Windows Notification Service
 
 Documentation is available on the Windows Dev Center:
-https://msdn.microsoft.com/en-us/windows/uwp/controls-and-patterns/
-tiles-and-notifications-windows-push-notification-services--wns--overview
+https://msdn.microsoft.com/en-us/windows/uwp/controls-and-patterns/tiles-and-notifications-windows-push-notification-services--wns--overview
 """
 
 import json
