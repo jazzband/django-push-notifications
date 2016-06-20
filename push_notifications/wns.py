@@ -58,7 +58,7 @@ def _wns_authenticate(package_id=None, secret_key=None):
 		"Content-Type": "application/x-www-form-urlencoded",
 	}
 
-	request = Request(SETTINGS.WNS_ACCESS_URL, data=data_bytes, headers=headers)
+	request = Request(SETTINGS['WNS_ACCESS_URL'], data=data_bytes, headers=headers)
 	try:
 		response = urlopen(request)
 	except HTTPError as err:

@@ -231,7 +231,7 @@ def apns_send_message(registration_id, alert, **kwargs):
 	_apns_send(registration_id, alert, **kwargs)
 
 
-def apns_send_bulk_message(registration_ids, alert, **kwargs):
+def apns_send_bulk_message(registration_ids, alert, ca_certs=None, certfile=None):
 	"""
 	Sends an APNS notification to one or more registration_ids.
 	The registration_ids argument needs to be a list.
@@ -240,18 +240,18 @@ def apns_send_bulk_message(registration_ids, alert, **kwargs):
 	it won't be included in the notification. You will need to pass None
 	to this for silent notifications.
 	"""
-	with closing(_apns_create_socket_to_push(**kwargs)) as socket:
+	with closing(_apns_create_socket_to_push(ca_certs=ca_certs, certfile=certfile)) as socket:
 		for identifier, registration_id in enumerate(registration_ids):
 			_apns_send(registration_id, alert, identifier=identifier, socket=socket, **kwargs)
 		_apns_check_errors(socket)
 
 
-def apns_fetch_inactive_ids(**kwargs):
+def apns_fetch_inactive_ids(ca_certs=None, certfile=None):
 	"""
 	Queries the APNS server for id's that are no longer active since
 	the last fetch
 	"""
-	with closing(_apns_create_socket_to_feedback(**kwargs)) as socket:
+	with closing(_apns_create_socket_to_feedback(ca_certs=ca_certs, certfile=certfile)) as socket:
 		inactive_ids = []
 		# Maybe we should have a flag to return the timestamp?
 		# It doesn't seem that useful right now, though.

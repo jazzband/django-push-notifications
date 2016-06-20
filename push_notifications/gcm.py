@@ -35,6 +35,7 @@ def _chunks(l, n):
 
 
 def _gcm_send(data, content_type, key=None):
+	# Make sure key overrides the settings, if provided.
 	key = SETTINGS.get("GCM_API_KEY") if not key else key
 	if not key:
 		raise ImproperlyConfigured('You need to set PUSH_NOTIFICATIONS_SETTINGS["GCM_API_KEY"] to send messages through GCM.')
