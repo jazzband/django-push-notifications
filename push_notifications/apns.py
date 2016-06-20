@@ -231,7 +231,7 @@ def apns_send_message(registration_id, alert, **kwargs):
 	_apns_send(registration_id, alert, **kwargs)
 
 
-def apns_send_bulk_message(registration_ids, alert, ca_certs=None, certfile=None):
+def apns_send_bulk_message(registration_ids, alert, ca_certs=None, certfile=None, **kwargs):
 	"""
 	Sends an APNS notification to one or more registration_ids.
 	The registration_ids argument needs to be a list.
