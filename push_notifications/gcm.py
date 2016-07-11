@@ -34,14 +34,15 @@ def _chunks(l, n):
 		yield l[i:i + n]
 
 
-def _gcm_send(data, content_type):
-	key = SETTINGS.get("GCM_API_KEY")
+def _gcm_send(data, content_type, key=None):
+	# Make sure key overrides the settings, if provided.
+	key = SETTINGS.get("GCM_API_KEY") if not key else key
 	if not key:
 		raise ImproperlyConfigured('You need to set PUSH_NOTIFICATIONS_SETTINGS["GCM_API_KEY"] to send messages through GCM.')
 
 	headers = {
 		"Content-Type": content_type,
-		"Authorization": "key=%s" % (key),
+		"Authorization": "key=%s" % key,
 		"Content-Length": str(len(data)),
 	}
 
@@ -49,7 +50,7 @@ def _gcm_send(data, content_type):
 	return urlopen(request).read().decode("utf-8")
 
 
-def _gcm_send_plain(registration_id, data, **kwargs):
+def _gcm_send_plain(registration_id, data, key=None, **kwargs):
 	"""
 	Sends a GCM notification to a single registration_id or to a topic (If "topic" included in the kwargs).
 	This will send the notification as form data.
@@ -71,7 +72,7 @@ def _gcm_send_plain(registration_id, data, **kwargs):
 
 	data = urlencode(sorted(values.items())).encode("utf-8")  # sorted items for tests
 
-	result = _gcm_send(data, "application/x-www-form-urlencoded;charset=UTF-8")
+	result = _gcm_send(data, "application/x-www-form-urlencoded;charset=UTF-8", key=key)
 
 	# Information about handling response from Google docs (https://developers.google.com/cloud-messaging/http):
 	# If first line starts with id, check second line:
@@ -96,7 +97,7 @@ def _gcm_send_plain(registration_id, data, **kwargs):
 	return result
 
 
-def _gcm_send_json(registration_ids, data, **kwargs):
+def _gcm_send_json(registration_ids, data, key=None, **kwargs):
 	"""
 	Sends a GCM notification to one or more registration_ids. The registration_ids
 	needs to be a list.
@@ -114,7 +115,7 @@ def _gcm_send_json(registration_ids, data, **kwargs):
 
 	data = json.dumps(values, separators=(",", ":"), sort_keys=True).encode("utf-8")  # keys sorted for tests
 
-	response = json.loads(_gcm_send(data, "application/json"))
+	response = json.loads(_gcm_send(data, "application/json", key=key))
 	if response["failure"] or response["canonical_ids"]:
 		ids_to_remove, old_new_ids = [], []
 		throw_error = False
