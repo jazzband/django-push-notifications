@@ -1,3 +1,7 @@
+v1.4.3 (2016-07-21)
+===================
+* Add GCM_ERROR_TIMEOUT
+
 v1.4.2 (2016-06-02)
 ===================
 * Add DEBUG like attribute of PUSH_NOTIFICATIONS_SETTINGS
