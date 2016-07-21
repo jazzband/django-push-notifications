@@ -44,9 +44,8 @@ def _gcm_send(data, content_type):
 		"Authorization": "key=%s" % (key),
 		"Content-Length": str(len(data)),
 	}
-
 	request = Request(SETTINGS["GCM_POST_URL"], data, headers)
-	return urlopen(request).read().decode("utf-8")
+	return urlopen(request, timeout=SETTINGS["GCM_ERROR_TIMEOUT"]).read().decode("utf-8")
 
 
 def _gcm_send_plain(registration_id, data, **kwargs):
