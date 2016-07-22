@@ -238,6 +238,14 @@ class ModelTestCase(TestCase):
             gcm_send_bulk_message(reg_ids, {"message": "Hello World"})
             p.assert_called_once_with([u"abc", u"abc1"], {"message": "Hello World"})
 
+    def test_can_save_wsn_device(self):
+        device = GCMDevice.objects.create(
+            registration_id="a valid registration id"
+        )
+        self.assertIsNotNone(device.pk)
+        self.assertIsNotNone(device.date_created)
+        self.assertEquals(device.date_created.date(), timezone.now().date())
+
     def create_devices(self, devices):
         for device in devices:
             GCMDevice.objects.create(

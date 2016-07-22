@@ -5,9 +5,10 @@ from rest_framework.serializers import ModelSerializer, ValidationError
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.fields import IntegerField
 
-from push_notifications.models import APNSDevice, GCMDevice
+from push_notifications.models import APNSDevice, GCMDevice, WNSDevice
 from push_notifications.fields import hex_re
 from push_notifications.fields import UNSIGNED_64BIT_INT_MAX_VALUE
+
 
 # Fields
 
@@ -34,14 +35,13 @@ class HexIntegerField(IntegerField):
 class DeviceSerializerMixin(ModelSerializer):
 	class Meta:
 		fields = ("id", "name", "registration_id", "device_id", "active", "date_created")
-		read_only_fields = ("date_created", )
+		read_only_fields = ("date_created",)
 
 		# See https://github.com/tomchristie/django-rest-framework/issues/1101
 		extra_kwargs = {"active": {"default": True}}
 
 
 class APNSDeviceSerializer(ModelSerializer):
-
 	class Meta(DeviceSerializerMixin.Meta):
 		model = APNSDevice
 
@@ -103,6 +103,39 @@ class GCMDeviceSerializer(ModelSerializer):
 		return attrs
 
 
+class WNSDeviceSerializer(ModelSerializer):
+	class Meta(DeviceSerializerMixin.Meta):
+		model = WNSDevice
+
+	def validate(self, attrs):
+		devices = None
+		primary_key = None
+		request_method = None
+
+		if self.initial_data.get("registration_id", None):
+			if self.instance:
+				request_method = "update"
+				primary_key = self.instance.id
+			else:
+				request_method = "create"
+		else:
+			if self.context["request"].method in ["PUT", "PATCH"]:
+				request_method = "update"
+				primary_key = attrs["id"]
+			elif self.context["request"].method == "POST":
+				request_method = "create"
+
+		if request_method == "update":
+			devices = WNSDevice.objects.filter(registration_id=attrs["registration_id"]) \
+				.exclude(id=primary_key)
+		elif request_method == "create":
+			devices = WNSDevice.objects.filter(registration_id=attrs["registration_id"])
+
+		if devices:
+			raise ValidationError({'registration_id': 'This field must be unique.'})
+		return attrs
+
+
 # Permissions
 class IsOwner(permissions.BasePermission):
 	def has_object_permission(self, request, view, obj):
@@ -149,4 +182,13 @@ class GCMDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
 
 
 class GCMDeviceAuthorizedViewSet(AuthorizedMixin, GCMDeviceViewSet):
+	pass
+
+
+class WNSDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
+	queryset = WNSDevice.objects.all()
+	serializer_class = WNSDeviceSerializer
+
+
+class WNSDeviceAuthorizedViewSet(AuthorizedMixin, WNSDeviceViewSet):
 	pass
