@@ -75,6 +75,8 @@ For APNS, you are required to include ``APNS_CERTIFICATE``.
 - ``APNS_PORT``: The port used along with APNS_HOST. Defaults to 2195.
 - ``GCM_POST_URL``: The full url that GCM notifications will be POSTed to. Defaults to https://android.googleapis.com/gcm/send.
 - ``GCM_MAX_RECIPIENTS``: The maximum amount of recipients that can be contained per bulk message. If the ``registration_ids`` list is larger than that number, multiple bulk messages will be sent. Defaults to 1000 (the maximum amount supported by GCM).
+- ``APNS_ERROR_TIMEOUT``: The timeout on APNS sockets.
+- ``GCM_ERROR_TIMEOUT``: The timeout on GCM POSTs.
 - ``USER_MODEL``: Your user model of choice. Eg. ``myapp.User``. Defaults to ``settings.AUTH_USER_MODEL``.
 
 Sending messages
@@ -126,7 +128,7 @@ GCM topic messaging allows your app server to send a message to multiple devices
 .. code-block:: python
 
 	from push_notifications.gcm import gcm_send_message
-        
+
         # First param is "None" because no Registration_id is needed, the message will be sent to all devices subscribed to the topic.
         gcm_send_message(None, "Hello members of my_topic!", topic='/topics/my_topic')
 
