@@ -1,0 +1,16 @@
+# EditorConfig: http://editorconfig.org
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_size = 4
+indent_style = tab
+quote_type = double
+insert_final_newline = true
+tab_width = 4
+trim_trailing_whitespace = true
+
+[*.py]
+spaces_around_brackets = none
+spaces_around_operators = true

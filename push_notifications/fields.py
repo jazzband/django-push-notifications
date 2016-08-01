@@ -48,7 +48,9 @@ class HexadecimalField(forms.CharField):
 	A form field that accepts only hexadecimal numbers
 	"""
 	def __init__(self, *args, **kwargs):
-		self.default_validators = [RegexValidator(hex_re, _("Enter a valid hexadecimal number"), "invalid")]
+		self.default_validators = [
+			RegexValidator(hex_re, _("Enter a valid hexadecimal number"), "invalid")
+		]
 		super(HexadecimalField, self).__init__(*args, **kwargs)
 
 	def prepare_value(self, value):

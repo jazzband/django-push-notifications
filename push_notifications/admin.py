@@ -42,8 +42,10 @@ class DeviceAdmin(admin.ModelAdmin):
 				break
 
 		if errors:
-			self.message_user(request, _("Some messages could not be processed: %r" % (", ".join(errors))),
-								level=messages.ERROR)
+			self.message_user(
+				request, _("Some messages could not be processed: %r" % (", ".join(errors))),
+				level=messages.ERROR
+			)
 		if ret:
 			if not bulk:
 				ret = ", ".join(ret)

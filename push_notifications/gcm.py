@@ -37,7 +37,9 @@ def _chunks(l, n):
 def _gcm_send(data, content_type):
 	key = SETTINGS.get("GCM_API_KEY")
 	if not key:
-		raise ImproperlyConfigured('You need to set PUSH_NOTIFICATIONS_SETTINGS["GCM_API_KEY"] to send messages through GCM.')
+		raise ImproperlyConfigured(
+			'You need to set PUSH_NOTIFICATIONS_SETTINGS["GCM_API_KEY"] to send messages through GCM.'
+		)
 
 	headers = {
 		"Content-Type": content_type,
@@ -50,7 +52,8 @@ def _gcm_send(data, content_type):
 
 def _gcm_send_plain(registration_id, data, **kwargs):
 	"""
-	Sends a GCM notification to a single registration_id or to a topic (If "topic" included in the kwargs).
+	Sends a GCM notification to a single registration_id or to a
+	topic (If "topic" included in the kwargs).
 	This will send the notification as form data.
 	If sending multiple notifications, it is more efficient to use
 	gcm_send_bulk_message() with a list of registration_ids
@@ -72,9 +75,11 @@ def _gcm_send_plain(registration_id, data, **kwargs):
 
 	result = _gcm_send(data, "application/x-www-form-urlencoded;charset=UTF-8")
 
-	# Information about handling response from Google docs (https://developers.google.com/cloud-messaging/http):
+	# Information about handling response from Google docs
+	# (https://developers.google.com/cloud-messaging/http):
 	# If first line starts with id, check second line:
-	# If second line starts with registration_id, gets its value and replace the registration tokens in your
+	# If second line starts with registration_id, gets its
+	# value and replace the registration tokens in your
 	# server database. Otherwise, get the value of Error
 
 	if result.startswith("id"):
@@ -111,7 +116,8 @@ def _gcm_send_json(registration_ids, data, **kwargs):
 		if v:
 			values[k] = v
 
-	data = json.dumps(values, separators=(",", ":"), sort_keys=True).encode("utf-8")  # keys sorted for tests
+	# Sort the keys for deterministic output (useful for tests)
+	data = json.dumps(values, separators=(",", ":"), sort_keys=True).encode("utf-8")
 
 	response = json.loads(_gcm_send(data, "application/json"))
 	if response["failure"] or response["canonical_ids"]:
@@ -120,17 +126,22 @@ def _gcm_send_json(registration_ids, data, **kwargs):
 		for index, result in enumerate(response["results"]):
 			error = result.get("error")
 			if error:
-				# Information from Google docs (https://developers.google.com/cloud-messaging/http)
-				# If error is NotRegistered or InvalidRegistration, then we will deactivate devices because this
-				# registration ID is no more valid and can't be used to send messages, otherwise raise error
+				# Information from Google docs
+				# https://developers.google.com/cloud-messaging/http
+				# If error is NotRegistered or InvalidRegistration,
+				# then we will deactivate devices because this
+				# registration ID is no more valid and can't be used
+				# to send messages, otherwise raise error
 				if error in ("NotRegistered", "InvalidRegistration"):
 					ids_to_remove.append(registration_ids[index])
 				else:
 					throw_error = True
 
-			# If registration_id is set, replace the original ID with the new value (canonical ID) in your
-			# server database. Note that the original ID is not part of the result, so you need to obtain it
-			# from the list of registration_ids passed in the request (using the same index).
+			# If registration_id is set, replace the original ID with
+			# the new value (canonical ID) in your server database.
+			# Note that the original ID is not part of the result, so
+			# you need to obtain it from the list of registration_ids
+			# passed in the request (using the same index).
 			new_id = result.get("registration_id")
 			if new_id:
 				old_new_ids.append((registration_ids[index], new_id))
