@@ -1,7 +1,7 @@
-import mock
 from django.test import TestCase
 from push_notifications.gcm import gcm_send_message, gcm_send_bulk_message
-from tests.mock_responses import GCM_PLAIN_RESPONSE, GCM_JSON_RESPONSE
+from tests.test_models import GCM_PLAIN_RESPONSE, GCM_JSON_RESPONSE
+from ._mock import mock
 
 
 class GCMPushPayloadTest(TestCase):

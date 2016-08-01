@@ -1,6 +1,6 @@
-import mock
 from django.core.management import call_command
 from django.test import TestCase
+from ._mock import mock
 
 
 class CommandsTestCase(TestCase):

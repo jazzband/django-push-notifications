@@ -1,9 +1,9 @@
-import mock
 import os
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase
 from push_notifications.models import APNSDevice
+from ._mock import mock
 
 
 class APNSCertfileTestCase(TestCase):

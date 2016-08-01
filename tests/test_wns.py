@@ -1,9 +1,9 @@
-import mock
 import xml.etree.ElementTree as ET
 from django.test import TestCase
 from push_notifications.wns import (
 	dict_to_xml_schema, wns_send_bulk_message, wns_send_message
 )
+from ._mock import mock
 
 
 class WNSSendMessageTestCase(TestCase):

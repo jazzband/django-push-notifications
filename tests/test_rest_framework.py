@@ -1,7 +1,10 @@
 from django.test import TestCase
-from push_notifications.api.rest_framework import APNSDeviceSerializer, GCMDeviceSerializer
 from rest_framework.serializers import ValidationError
-from tests.mock_responses import GCM_DRF_INVALID_HEX_ERROR, GCM_DRF_OUT_OF_RANGE_ERROR
+from push_notifications.api.rest_framework import APNSDeviceSerializer, GCMDeviceSerializer
+
+
+GCM_DRF_INVALID_HEX_ERROR = {'device_id': [u"Device ID is not a valid hex number"]}
+GCM_DRF_OUT_OF_RANGE_ERROR = {'device_id': [u"Device ID is out of range"]}
 
 
 class APNSDeviceSerializerTestCase(TestCase):

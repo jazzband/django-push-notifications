@@ -1,10 +1,39 @@
 import json
-import mock
 from django.test import TestCase
 from django.utils import timezone
-from push_notifications.models import GCMDevice, APNSDevice
-from tests.mock_responses import mock_responses as r
 from push_notifications.gcm import GCMError, gcm_send_bulk_message
+from push_notifications.models import GCMDevice, APNSDevice
+from ._mock import mock
+
+
+# Mock responses
+
+GCM_PLAIN_RESPONSE = "id=1:08"
+GCM_JSON_RESPONSE = '{"multicast_id":108,"success":1,"failure":0,"canonical_ids":0,"results":[{"message_id":"1:08"}]}'
+GCM_MULTIPLE_JSON_RESPONSE = (
+	'{"multicast_id":108,"success":2,"failure":0,"canonical_ids":0,"results":'
+	'[{"message_id":"1:08"}, {"message_id": "1:09"}]}'
+)
+GCM_JSON_RESPONSE_ERROR = (
+	'{"success":1, "failure": 2, "canonical_ids": 0, "cast_id": 6358665107659088804, "results":'
+	' [{"error": "NotRegistered"}, {"message_id": "0:1433830664381654%3449593ff9fd7ecd"}, '
+	'{"error": "InvalidRegistration"}]}'
+)
+GCM_JSON_RESPONSE_ERROR_B = (
+	'{"success":1, "failure": 2, "canonical_ids": 0, "cast_id": 6358665107659088804, '
+	'"results": [{"error": "MismatchSenderId"}, {"message_id": '
+	'"0:1433830664381654%3449593ff9fd7ecd"}, {"error": "InvalidRegistration"}]}'
+)
+GCM_JSON_CANONICAL_ID_RESPONSE = (
+	'{"failure":0,"canonical_ids":1,"success":2,"multicast_id":7173139966327257000,"results":'
+	'[{"registration_id":"NEW_REGISTRATION_ID","message_id":"0:1440068396670935%6868637df9fd7ecd"},'
+	'{"message_id":"0:1440068396670937%6868637df9fd7ecd"}]}'
+)
+GCM_JSON_CANONICAL_ID_SAME_DEVICE_RESPONSE = (
+	'{"failure":0,"canonical_ids":1,"success":2,"multicast_id":7173139966327257000,'
+	'"results":[{"registration_id":"bar","message_id":"0:1440068396670935%6868637df9fd7ecd"}'
+	',{"message_id":"0:1440068396670937%6868637df9fd7ecd"}]}'
+)
 
 
 class ModelTestCase(TestCase):
@@ -27,7 +56,7 @@ class ModelTestCase(TestCase):
 	def test_gcm_send_message(self):
 		device = GCMDevice.objects.create(registration_id="abc")
 		with mock.patch(
-			"push_notifications.gcm._gcm_send", return_value=r.GCM_PLAIN_RESPONSE
+			"push_notifications.gcm._gcm_send", return_value=GCM_PLAIN_RESPONSE
 		) as p:
 				device.send_message("Hello world")
 				p.assert_called_once_with(
@@ -38,7 +67,7 @@ class ModelTestCase(TestCase):
 	def test_gcm_send_message_extra(self):
 		device = GCMDevice.objects.create(registration_id="abc")
 		with mock.patch(
-			"push_notifications.gcm._gcm_send", return_value=r.GCM_PLAIN_RESPONSE
+			"push_notifications.gcm._gcm_send", return_value=GCM_PLAIN_RESPONSE
 		) as p:
 			device.send_message("Hello world", extra={"foo": "bar"})
 			p.assert_called_once_with(
@@ -49,7 +78,7 @@ class ModelTestCase(TestCase):
 	def test_gcm_send_message_collapse_key(self):
 		device = GCMDevice.objects.create(registration_id="abc")
 		with mock.patch(
-			"push_notifications.gcm._gcm_send", return_value=r.GCM_PLAIN_RESPONSE
+			"push_notifications.gcm._gcm_send", return_value=GCM_PLAIN_RESPONSE
 		) as p:
 			device.send_message("Hello world", collapse_key="test_key")
 			p.assert_called_once_with(
@@ -61,7 +90,7 @@ class ModelTestCase(TestCase):
 		self._create_devices(["abc", "abc1"])
 
 		with mock.patch(
-			"push_notifications.gcm._gcm_send", return_value=r.GCM_MULTIPLE_JSON_RESPONSE
+			"push_notifications.gcm._gcm_send", return_value=GCM_MULTIPLE_JSON_RESPONSE
 		) as p:
 			GCMDevice.objects.all().send_message("Hello world")
 			p.assert_called_once_with(
@@ -75,7 +104,7 @@ class ModelTestCase(TestCase):
 		GCMDevice.objects.create(registration_id="xyz", active=False)
 
 		with mock.patch(
-			"push_notifications.gcm._gcm_send", return_value=r.GCM_MULTIPLE_JSON_RESPONSE
+			"push_notifications.gcm._gcm_send", return_value=GCM_MULTIPLE_JSON_RESPONSE
 		) as p:
 			GCMDevice.objects.all().send_message("Hello world")
 			p.assert_called_once_with(
@@ -88,7 +117,7 @@ class ModelTestCase(TestCase):
 		self._create_devices(["abc", "abc1"])
 
 		with mock.patch(
-			"push_notifications.gcm._gcm_send", return_value=r.GCM_MULTIPLE_JSON_RESPONSE
+			"push_notifications.gcm._gcm_send", return_value=GCM_MULTIPLE_JSON_RESPONSE
 		) as p:
 				GCMDevice.objects.all().send_message("Hello world", collapse_key="test_key")
 				p.assert_called_once_with(
@@ -103,7 +132,8 @@ class ModelTestCase(TestCase):
 		devices = ["abc", "abc1"]
 		self._create_devices(devices)
 
-		for index, error in enumerate(r.GCM_PLAIN_RESPONSE_ERROR):
+		errors = ["Error=NotRegistered", "Error=InvalidRegistration"]
+		for index, error in enumerate(errors):
 			with mock.patch(
 				"push_notifications.gcm._gcm_send", return_value=error):
 				device = GCMDevice.objects.get(registration_id=devices[index])
@@ -114,7 +144,7 @@ class ModelTestCase(TestCase):
 		device = GCMDevice.objects.create(registration_id="abc")
 
 		with mock.patch(
-			"push_notifications.gcm._gcm_send", return_value=r.GCM_PLAIN_RESPONSE_ERROR_B
+			"push_notifications.gcm._gcm_send", return_value="Error=MismatchSenderId"
 		):
 			# these errors are not device specific, GCMError should be thrown
 			with self.assertRaises(GCMError):
@@ -124,7 +154,7 @@ class ModelTestCase(TestCase):
 	def test_gcm_send_message_to_multiple_devices_with_error(self):
 		self._create_devices(["abc", "abc1", "abc2"])
 		with mock.patch(
-			"push_notifications.gcm._gcm_send", return_value=r.GCM_JSON_RESPONSE_ERROR
+			"push_notifications.gcm._gcm_send", return_value=GCM_JSON_RESPONSE_ERROR
 		):
 			devices = GCMDevice.objects.all()
 			devices.send_message("Hello World")
@@ -136,7 +166,7 @@ class ModelTestCase(TestCase):
 		self._create_devices(["abc", "abc1", "abc2"])
 
 		with mock.patch(
-			"push_notifications.gcm._gcm_send", return_value=r.GCM_JSON_RESPONSE_ERROR_B
+			"push_notifications.gcm._gcm_send", return_value=GCM_JSON_RESPONSE_ERROR_B
 		):
 			devices = GCMDevice.objects.all()
 			with self.assertRaises(GCMError):
@@ -148,7 +178,7 @@ class ModelTestCase(TestCase):
 	def test_gcm_send_message_to_multiple_devices_with_canonical_id(self):
 		self._create_devices(["foo", "bar"])
 		with mock.patch(
-			"push_notifications.gcm._gcm_send", return_value=r.GCM_JSON_CANONICAL_ID_RESPONSE
+			"push_notifications.gcm._gcm_send", return_value=GCM_JSON_CANONICAL_ID_RESPONSE
 		):
 			GCMDevice.objects.all().send_message("Hello World")
 			assert not GCMDevice.objects.filter(registration_id="foo").exists()
@@ -159,9 +189,8 @@ class ModelTestCase(TestCase):
 		old_registration_id = "foo"
 		self._create_devices([old_registration_id])
 
-		with mock.patch(
-			"push_notifications.gcm._gcm_send", return_value=r.GCM_PLAIN_CANONICAL_ID_RESPONSE
-		):
+		gcm_reg_blob = "id=1:2342\nregistration_id=NEW_REGISTRATION_ID"
+		with mock.patch("push_notifications.gcm._gcm_send", return_value=gcm_reg_blob):
 			GCMDevice.objects.get(registration_id=old_registration_id).send_message("Hello World")
 			assert not GCMDevice.objects.filter(registration_id=old_registration_id).exists()
 			assert GCMDevice.objects.filter(registration_id="NEW_REGISTRATION_ID").exists()
@@ -172,7 +201,7 @@ class ModelTestCase(TestCase):
 
 		with mock.patch(
 			"push_notifications.gcm._gcm_send",
-			return_value=r.GCM_JSON_CANONICAL_ID_SAME_DEVICE_RESPONSE
+			return_value=GCM_JSON_CANONICAL_ID_SAME_DEVICE_RESPONSE
 		):
 			GCMDevice.objects.all().send_message("Hello World")
 

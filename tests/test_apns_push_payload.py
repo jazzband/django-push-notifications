@@ -1,6 +1,6 @@
-import mock
 from django.test import TestCase
 from push_notifications.apns import _apns_send, APNSDataOverflow
+from ._mock import mock
 
 
 class APNSPushPayloadTest(TestCase):
