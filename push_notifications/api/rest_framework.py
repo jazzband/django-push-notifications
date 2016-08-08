@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from rest_framework import permissions
-from rest_framework.serializers import ModelSerializer, ValidationError
+from rest_framework.serializers import Serializer, ModelSerializer, ValidationError
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.fields import IntegerField
 
@@ -55,7 +55,38 @@ class APNSDeviceSerializer(ModelSerializer):
 		return value
 
 
-class GCMDeviceSerializer(ModelSerializer):
+class UniqueRegistrationSerializerMixin(Serializer):
+	def validate(self, attrs):
+		devices = None
+		primary_key = None
+		request_method = None
+
+		if self.initial_data.get("registration_id", None):
+			if self.instance:
+				request_method = "update"
+				primary_key = self.instance.id
+			else:
+				request_method = "create"
+		else:
+			if self.context["request"].method in ["PUT", "PATCH"]:
+				request_method = "update"
+				primary_key = attrs["id"]
+			elif self.context["request"].method == "POST":
+				request_method = "create"
+
+		Device = self.Meta.model
+		if request_method == "update":
+			devices = Device.objects.filter(registration_id=attrs["registration_id"]) \
+				.exclude(id=primary_key)
+		elif request_method == "create":
+			devices = Device.objects.filter(registration_id=attrs["registration_id"])
+
+		if devices:
+			raise ValidationError({'registration_id': 'This field must be unique.'})
+		return attrs
+
+
+class GCMDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
 	device_id = HexIntegerField(
 		help_text="ANDROID_ID / TelephonyManager.getDeviceId() (e.g: 0x01)",
 		style={"input_type": "text"},
@@ -74,66 +105,10 @@ class GCMDeviceSerializer(ModelSerializer):
 			raise ValidationError("Device ID is out of range")
 		return value
 
-	def validate(self, attrs):
-		devices = None
-		primary_key = None
-		request_method = None
 
-		if self.initial_data.get("registration_id", None):
-			if self.instance:
-				request_method = "update"
-				primary_key = self.instance.id
-			else:
-				request_method = "create"
-		else:
-			if self.context["request"].method in ["PUT", "PATCH"]:
-				request_method = "update"
-				primary_key = attrs["id"]
-			elif self.context["request"].method == "POST":
-				request_method = "create"
-
-		if request_method == "update":
-			devices = GCMDevice.objects.filter(registration_id=attrs["registration_id"]) \
-				.exclude(id=primary_key)
-		elif request_method == "create":
-			devices = GCMDevice.objects.filter(registration_id=attrs["registration_id"])
-
-		if devices:
-			raise ValidationError({'registration_id': 'This field must be unique.'})
-		return attrs
-
-
-class WNSDeviceSerializer(ModelSerializer):
+class WNSDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
 	class Meta(DeviceSerializerMixin.Meta):
 		model = WNSDevice
-
-	def validate(self, attrs):
-		devices = None
-		primary_key = None
-		request_method = None
-
-		if self.initial_data.get("registration_id", None):
-			if self.instance:
-				request_method = "update"
-				primary_key = self.instance.id
-			else:
-				request_method = "create"
-		else:
-			if self.context["request"].method in ["PUT", "PATCH"]:
-				request_method = "update"
-				primary_key = attrs["id"]
-			elif self.context["request"].method == "POST":
-				request_method = "create"
-
-		if request_method == "update":
-			devices = WNSDevice.objects.filter(registration_id=attrs["registration_id"]) \
-				.exclude(id=primary_key)
-		elif request_method == "create":
-			devices = WNSDevice.objects.filter(registration_id=attrs["registration_id"])
-
-		if devices:
-			raise ValidationError({'registration_id': 'This field must be unique.'})
-		return attrs
 
 
 # Permissions
