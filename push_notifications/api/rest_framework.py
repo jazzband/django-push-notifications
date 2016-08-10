@@ -106,7 +106,6 @@ class GCMDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
 		return value
 
 
-
 class WNSDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
 	class Meta(DeviceSerializerMixin.Meta):
 		model = WNSDevice
