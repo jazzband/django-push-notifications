@@ -5,7 +5,7 @@ from rest_framework.serializers import Serializer, ModelSerializer, ValidationEr
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.fields import IntegerField
 
-from push_notifications.models import APNSDevice, GCMDevice, WNSDevice
+from push_notifications.models import APNSDevice, GCMDevice, WNSDevice, FCMDevice
 from push_notifications.fields import hex_re
 from push_notifications.fields import UNSIGNED_64BIT_INT_MAX_VALUE
 
@@ -105,6 +105,25 @@ class GCMDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
 			raise ValidationError("Device ID is out of range")
 		return value
 
+class FCMDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
+	device_id = HexIntegerField(
+		help_text="ANDROID_ID / TelephonyManager.getDeviceId() (e.g: 0x01)",
+		style={"input_type": "text"},
+		required=False,
+		allow_null=True
+	)
+
+	class Meta(DeviceSerializerMixin.Meta):
+		model = FCMDevice
+
+		extra_kwargs = {"id": {"read_only": False, "required": False}}
+
+	def validate_device_id(self, value):
+		# device ids are 64 bit unsigned values
+		if value and value > UNSIGNED_64BIT_INT_MAX_VALUE:
+			raise ValidationError("Device ID is out of range")
+		return value
+
 
 class WNSDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
 	class Meta(DeviceSerializerMixin.Meta):
@@ -154,6 +173,10 @@ class APNSDeviceAuthorizedViewSet(AuthorizedMixin, APNSDeviceViewSet):
 class GCMDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
 	queryset = GCMDevice.objects.all()
 	serializer_class = GCMDeviceSerializer
+
+class FCMDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
+	queryset = FCMDevice.objects.all()
+	serializer_class = FCMDeviceSerializer
 
 
 class GCMDeviceAuthorizedViewSet(AuthorizedMixin, GCMDeviceViewSet):
