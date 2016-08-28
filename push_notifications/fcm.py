@@ -79,7 +79,7 @@ def _fcm_send_message(params):
 				# registration ID is no more valid and can't be used
 				# to send messages, otherwise raise error
 				if error in ("NotRegistered", "InvalidRegistration"):
-					ids_to_remove.append(registration_ids[index])
+					ids_to_remove.append(params['to'])
 				else:
 					throw_error = True
 
@@ -90,7 +90,7 @@ def _fcm_send_message(params):
 			# passed in the request (using the same index).
 			new_id = result.get("registration_id")
 			if new_id:
-				old_new_ids.append((registration_ids[index], new_id))
+				old_new_ids.append((params['to'], new_id))
 
 		if ids_to_remove:
 			removed = FCMDevice.objects.filter(registration_id__in=ids_to_remove)

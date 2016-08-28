@@ -120,7 +120,7 @@ class FCMDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
 
 	def validate_device_id(self, value):
 		# device ids are 64 bit unsigned values
-		if value > UNSIGNED_64BIT_INT_MAX_VALUE:
+		if value and value > UNSIGNED_64BIT_INT_MAX_VALUE:
 			raise ValidationError("Device ID is out of range")
 		return value
 
