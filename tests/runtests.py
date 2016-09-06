@@ -5,10 +5,6 @@ import unittest
 
 
 def setup():
-	"""
-	set up test environment
-	"""
-
 	# add test/src folders to sys path
 	test_folder = os.path.abspath(os.path.dirname(__file__))
 	src_folder = os.path.abspath(os.path.join(test_folder, os.pardir))
@@ -34,10 +30,6 @@ def setup():
 
 
 def tear_down():
-	"""
-	tear down test environment
-	"""
-
 	# destroy test database
 	from django.db import connection
 	connection.creation.destroy_test_db("not_needed")

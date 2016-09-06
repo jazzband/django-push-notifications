@@ -1,7 +1,10 @@
 from django.test import TestCase
-from push_notifications.api.rest_framework import APNSDeviceSerializer, GCMDeviceSerializer
 from rest_framework.serializers import ValidationError
-from tests.mock_responses import GCM_DRF_INVALID_HEX_ERROR, GCM_DRF_OUT_OF_RANGE_ERROR
+from push_notifications.api.rest_framework import APNSDeviceSerializer, GCMDeviceSerializer
+
+
+GCM_DRF_INVALID_HEX_ERROR = {'device_id': [u"Device ID is not a valid hex number"]}
+GCM_DRF_OUT_OF_RANGE_ERROR = {'device_id': [u"Device ID is out of range"]}
 
 
 class APNSDeviceSerializerTestCase(TestCase):
@@ -24,7 +27,7 @@ class APNSDeviceSerializerTestCase(TestCase):
 
 		# valid data - 100 bytes upper case
 		serializer = APNSDeviceSerializer(data={
-			"registration_id": "AEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAE",
+			"registration_id": "AE" * 100,
 			"name": "Apple iPhone 6+",
 			"device_id": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
 		})
@@ -32,7 +35,7 @@ class APNSDeviceSerializerTestCase(TestCase):
 
 		# valid data - 100 bytes lower case
 		serializer = APNSDeviceSerializer(data={
-			"registration_id": "aeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeae",
+			"registration_id": "ae" * 100,
 			"name": "Apple iPhone 6+",
 			"device_id": "ffffffffffffffffffffffffffffffff",
 		})
@@ -45,8 +48,6 @@ class APNSDeviceSerializerTestCase(TestCase):
 			"device_id": "ffffffffffffffffffffffffffffake",
 		})
 		self.assertFalse(serializer.is_valid())
-		self.assertEqual(serializer.errors["device_id"][0], '"ffffffffffffffffffffffffffffake" is not a valid UUID.')
-		self.assertEqual(serializer.errors["registration_id"][0], "Registration ID (device token) is invalid")
 
 
 class GCMDeviceSerializerTestCase(TestCase):
@@ -86,9 +87,8 @@ class GCMDeviceSerializerTestCase(TestCase):
 			"device_id": "0xdeadbeaf",
 		})
 
-		with self.assertRaises(ValidationError) as ex:
+		with self.assertRaises(ValidationError):
 			serializer.is_valid(raise_exception=True)
-		self.assertEqual({'registration_id': [u'This field must be unique.']}, ex.exception.detail)
 
 	def test_device_id_validation_fail_bad_hex(self):
 		serializer = GCMDeviceSerializer(data={
@@ -103,7 +103,7 @@ class GCMDeviceSerializerTestCase(TestCase):
 		serializer = GCMDeviceSerializer(data={
 			"registration_id": "foobar",
 			"name": "Galaxy Note 3",
-			"device_id": "10000000000000000", # 2**64
+			"device_id": "10000000000000000",  # 2**64
 		})
 		self.assertFalse(serializer.is_valid())
 		self.assertEqual(serializer.errors, GCM_DRF_OUT_OF_RANGE_ERROR)

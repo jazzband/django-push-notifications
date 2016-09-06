@@ -1,13 +1,18 @@
 from __future__ import absolute_import
 
 from rest_framework import permissions
-from rest_framework.serializers import ModelSerializer, ValidationError
+from rest_framework.serializers import Serializer, ModelSerializer, ValidationError
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.fields import IntegerField
 
+<<<<<<< HEAD
 from push_notifications.models import APNSDevice, GCMDevice, FirefoxDevice
+=======
+from push_notifications.models import APNSDevice, GCMDevice, WNSDevice
+>>>>>>> 7617cf8f36d0946dbafed3bcf2c34d341ce34d69
 from push_notifications.fields import hex_re
 from push_notifications.fields import UNSIGNED_64BIT_INT_MAX_VALUE
+
 
 # Fields
 
@@ -34,14 +39,13 @@ class HexIntegerField(IntegerField):
 class DeviceSerializerMixin(ModelSerializer):
 	class Meta:
 		fields = ("id", "name", "registration_id", "device_id", "active", "date_created")
-		read_only_fields = ("date_created", )
+		read_only_fields = ("date_created",)
 
 		# See https://github.com/tomchristie/django-rest-framework/issues/1101
 		extra_kwargs = {"active": {"default": True}}
 
 
 class APNSDeviceSerializer(ModelSerializer):
-
 	class Meta(DeviceSerializerMixin.Meta):
 		model = APNSDevice
 
@@ -55,25 +59,7 @@ class APNSDeviceSerializer(ModelSerializer):
 		return value
 
 
-class GCMDeviceSerializer(ModelSerializer):
-	device_id = HexIntegerField(
-		help_text="ANDROID_ID / TelephonyManager.getDeviceId() (e.g: 0x01)",
-		style={"input_type": "text"},
-		required=False,
-		allow_null=True
-	)
-
-	class Meta(DeviceSerializerMixin.Meta):
-		model = GCMDevice
-
-		extra_kwargs = {"id": {"read_only": False, "required": False}}
-
-	def validate_device_id(self, value):
-		# device ids are 64 bit unsigned values
-		if value > UNSIGNED_64BIT_INT_MAX_VALUE:
-			raise ValidationError("Device ID is out of range")
-		return value
-
+class UniqueRegistrationSerializerMixin(Serializer):
 	def validate(self, attrs):
 		devices = None
 		primary_key = None
@@ -92,20 +78,47 @@ class GCMDeviceSerializer(ModelSerializer):
 			elif self.context["request"].method == "POST":
 				request_method = "create"
 
+		Device = self.Meta.model
 		if request_method == "update":
-			devices = GCMDevice.objects.filter(registration_id=attrs["registration_id"]) \
+			devices = Device.objects.filter(registration_id=attrs["registration_id"]) \
 				.exclude(id=primary_key)
 		elif request_method == "create":
-			devices = GCMDevice.objects.filter(registration_id=attrs["registration_id"])
+			devices = Device.objects.filter(registration_id=attrs["registration_id"])
 
 		if devices:
 			raise ValidationError({'registration_id': 'This field must be unique.'})
 		return attrs
 
 
+<<<<<<< HEAD
 class FirefoxDeviceSerializer(ModelSerializer):
 	class Meta(DeviceSerializerMixin.Meta):
 		model = FirefoxDevice
+=======
+class GCMDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
+	device_id = HexIntegerField(
+		help_text="ANDROID_ID / TelephonyManager.getDeviceId() (e.g: 0x01)",
+		style={"input_type": "text"},
+		required=False,
+		allow_null=True
+	)
+
+	class Meta(DeviceSerializerMixin.Meta):
+		model = GCMDevice
+
+		extra_kwargs = {"id": {"read_only": False, "required": False}}
+
+	def validate_device_id(self, value):
+		# device ids are 64 bit unsigned values
+		if value > UNSIGNED_64BIT_INT_MAX_VALUE:
+			raise ValidationError("Device ID is out of range")
+		return value
+
+
+class WNSDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
+	class Meta(DeviceSerializerMixin.Meta):
+		model = WNSDevice
+>>>>>>> 7617cf8f36d0946dbafed3bcf2c34d341ce34d69
 
 
 # Permissions
@@ -163,4 +176,13 @@ class FirefoxDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
 
 
 class FirefoxDeviceAuthorizedViewSet(AuthorizedMixin, FirefoxDeviceViewSet):
+	pass
+
+
+class WNSDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
+	queryset = WNSDevice.objects.all()
+	serializer_class = WNSDeviceSerializer
+
+
+class WNSDeviceAuthorizedViewSet(AuthorizedMixin, WNSDeviceViewSet):
 	pass

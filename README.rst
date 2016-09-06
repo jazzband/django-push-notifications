@@ -3,18 +3,18 @@ django-push-notifications
 .. image:: https://api.travis-ci.org/jleclanche/django-push-notifications.png
 	:target: https://travis-ci.org/jleclanche/django-push-notifications
 
-A minimal Django app that implements Device models that can send messages through APNS and GCM.
+A minimal Django app that implements Device models that can send messages through APNS, GCM and WNS.
 
-The app implements two models: ``GCMDevice`` and ``APNSDevice``. Those models share the same attributes:
+The app implements three models: ``GCMDevice``, ``APNSDevice`` and ``WNSDevice``. Those models share the same attributes:
  - ``name`` (optional): A name for the device.
  - ``active`` (default True): A boolean that determines whether the device will be sent notifications.
  - ``user`` (optional): A foreign key to auth.User, if you wish to link the device to a specific user.
- - ``device_id`` (optional): A UUID for the device obtained from Android/iOS APIs, if you wish to uniquely identify it.
+ - ``device_id`` (optional): A UUID for the device obtained from Android/iOS/Windows APIs, if you wish to uniquely identify it.
  - ``registration_id`` (required): The GCM registration id or the APNS token for the device.
 
 
 The app also implements an admin panel, through which you can test single and bulk notifications. Select one or more
-GCM or APNS devices and in the action dropdown, select "Send test message" or "Send test message in bulk", accordingly.
+GCM, APNS or WNS devices and in the action dropdown, select "Send test message" or "Send test message in bulk", accordingly.
 Note that sending a non-bulk test message to more than one device will just iterate over the devices and send multiple
 single messages.
 
@@ -47,13 +47,15 @@ Edit your settings.py file:
 	PUSH_NOTIFICATIONS_SETTINGS = {
 		"GCM_API_KEY": "[your api key]",
 		"APNS_CERTIFICATE": "/path/to/your/certificate.pem",
+		"WNS_PACKAGE_SECURITY_ID": "[your package security id, e.g: 'ms-app://e-3-4-6234...']",
+		"WNS_SECRET_KEY": "[your app secret key, e.g.: 'KDiejnLKDUWodsjmewuSZkk']",
 	}
 
 .. note::
 	If you are planning on running your project with ``DEBUG=True``, then make sure you have set the
 	*development* certificate as your ``APNS_CERTIFICATE``. Otherwise the app will not be able to connect to the correct host. See settings_ for details.
 
-You can learn more about APNS certificates `here <https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/ProvisioningDevelopment.html>`_.
+You can learn more about APNS certificates `here <https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/ApplePushService.html>`_.
 
 Native Django migrations are in use. ``manage.py migrate`` will install and migrate all models.
 
@@ -65,16 +67,21 @@ All settings are contained in a ``PUSH_NOTIFICATIONS_SETTINGS`` dict.
 
 In order to use GCM, you are required to include ``GCM_API_KEY``.
 For APNS, you are required to include ``APNS_CERTIFICATE``.
+For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY``.
 
 - ``APNS_CERTIFICATE``: Absolute path to your APNS certificate file. Certificates with passphrases are not supported.
 - ``APNS_CA_CERTIFICATES``: Absolute path to a CA certificates file for APNS. Optional - do not set if not needed. Defaults to None.
 - ``GCM_API_KEY``: Your API key for GCM.
+- ``WNS_PACKAGE_SECURITY_KEY``: TODO
+- ``WNS_SECRET_KEY``: TODO
 - ``APNS_HOST``: The hostname used for the APNS sockets.
    - When ``DEBUG=True``, this defaults to ``gateway.sandbox.push.apple.com``.
    - When ``DEBUG=False``, this defaults to ``gateway.push.apple.com``.
 - ``APNS_PORT``: The port used along with APNS_HOST. Defaults to 2195.
 - ``GCM_POST_URL``: The full url that GCM notifications will be POSTed to. Defaults to https://android.googleapis.com/gcm/send.
 - ``GCM_MAX_RECIPIENTS``: The maximum amount of recipients that can be contained per bulk message. If the ``registration_ids`` list is larger than that number, multiple bulk messages will be sent. Defaults to 1000 (the maximum amount supported by GCM).
+- ``APNS_ERROR_TIMEOUT``: The timeout on APNS sockets.
+- ``GCM_ERROR_TIMEOUT``: The timeout on GCM POSTs.
 - ``USER_MODEL``: Your user model of choice. Eg. ``myapp.User``. Defaults to ``settings.AUTH_USER_MODEL``.
 
 Sending messages
@@ -126,7 +133,7 @@ GCM topic messaging allows your app server to send a message to multiple devices
 .. code-block:: python
 
 	from push_notifications.gcm import gcm_send_message
-        
+
         # First param is "None" because no Registration_id is needed, the message will be sent to all devices subscribed to the topic.
         gcm_send_message(None, "Hello members of my_topic!", topic='/topics/my_topic')
 
