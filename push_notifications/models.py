@@ -114,7 +114,7 @@ class FirefoxDeviceQuerySet(models.query.QuerySet):
 
 	def send_message(self, message, **kwargs):
 		for device in self:
-			device.send_message(message, kwargs)
+			device.send_message(message, **kwargs)
 
 
 class FirefoxDevice(Device):
@@ -123,6 +123,11 @@ class FirefoxDevice(Device):
 							  blank=True, null=True, db_index=True,
 							  help_text=_("Only for compatibility"),
 							  editable=False)
+
+	objects = FirefoxDeviceManager()
+
+	class Meta:
+		verbose_name = _("Firefox device")
 
 	def send_message(self, message, **kwargs):
 		from .firefox import firefox_send_message
