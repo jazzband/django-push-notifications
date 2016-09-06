@@ -128,7 +128,6 @@ def _apns_check_errors(sock):
 def _apns_send(
 	token, alert, badge=None, sound=None, category=None, content_available=False,
 	action_loc_key=None, loc_key=None, loc_args=[], extra={}, identifier=0,
-	expiration=None, priority=10, socket=None, certfile=None):
 	expiration=None, priority=10, socket=None, certfile=None
 ):
 	data = {}
