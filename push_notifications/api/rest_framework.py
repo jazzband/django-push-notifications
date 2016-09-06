@@ -5,7 +5,7 @@ from rest_framework.serializers import ModelSerializer, ValidationError
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.fields import IntegerField
 
-from push_notifications.models import APNSDevice, GCMDevice
+from push_notifications.models import APNSDevice, GCMDevice, FirefoxDevice
 from push_notifications.fields import hex_re
 from push_notifications.fields import UNSIGNED_64BIT_INT_MAX_VALUE
 
@@ -103,6 +103,11 @@ class GCMDeviceSerializer(ModelSerializer):
 		return attrs
 
 
+class FirefoxDeviceSerializer(ModelSerializer):
+	class Meta(DeviceSerializerMixin.Meta):
+		model = FirefoxDevice
+
+
 # Permissions
 class IsOwner(permissions.BasePermission):
 	def has_object_permission(self, request, view, obj):
@@ -149,4 +154,13 @@ class GCMDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
 
 
 class GCMDeviceAuthorizedViewSet(AuthorizedMixin, GCMDeviceViewSet):
+	pass
+
+
+class FirefoxDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
+	queryset = FirefoxDevice.objects.all()
+	serializer_class = FirefoxDeviceSerializer
+
+
+class FirefoxDeviceAuthorizedViewSet(AuthorizedMixin, FirefoxDeviceViewSet):
 	pass
