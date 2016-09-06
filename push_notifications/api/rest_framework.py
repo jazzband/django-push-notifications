@@ -5,7 +5,7 @@ from rest_framework.serializers import Serializer, ModelSerializer, ValidationEr
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.fields import IntegerField
 
-from push_notifications.models import APNSDevice, GCMDevice, WNSDevice
+from push_notifications.models import APNSDevice, GCMDevice, FirefoxDevice, WNSDevice
 from push_notifications.fields import hex_re
 from push_notifications.fields import UNSIGNED_64BIT_INT_MAX_VALUE
 
@@ -86,6 +86,11 @@ class UniqueRegistrationSerializerMixin(Serializer):
 		return attrs
 
 
+class FirefoxDeviceSerializer(ModelSerializer):
+	class Meta(DeviceSerializerMixin.Meta):
+		model = FirefoxDevice
+
+
 class GCMDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
 	device_id = HexIntegerField(
 		help_text="ANDROID_ID / TelephonyManager.getDeviceId() (e.g: 0x01)",
@@ -157,6 +162,15 @@ class GCMDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
 
 
 class GCMDeviceAuthorizedViewSet(AuthorizedMixin, GCMDeviceViewSet):
+	pass
+
+
+class FirefoxDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
+	queryset = FirefoxDevice.objects.all()
+	serializer_class = FirefoxDeviceSerializer
+
+
+class FirefoxDeviceAuthorizedViewSet(AuthorizedMixin, FirefoxDeviceViewSet):
 	pass
 
 

@@ -1,3 +1,24 @@
+v1.5.2 (2016-09-06)
+===================
+* Fix APNS syntax error
+
+v1.5.1 (2016-09-06)
+===================
+* Firefox details
+
+v1.5.0 (2016-09-06)
+===================
+* Firefox support
+
+v1.4.3 (2016-07-21)
+===================
+* Add GCM_ERROR_TIMEOUT
+
+v1.4.2 (2016-06-02)
+===================
+* Add DEBUG like attribute of PUSH_NOTIFICATIONS_SETTINGS
+* Now push_notification allows push to several apps
+
 v1.4.1 (2016-01-11)
 ===================
 * APNS: Increased max device token size to 100 bytes (WWDC 2015, iOS 9)

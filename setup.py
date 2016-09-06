@@ -21,7 +21,7 @@ CLASSIFIERS = [
 ]
 
 setup(
-	name="django-push-notifications",
+	name="django-push-notifications-goinnn",
 	packages=[
 		"push_notifications",
 		"push_notifications/api",
@@ -33,8 +33,8 @@ setup(
 	author_email=push_notifications.__email__,
 	classifiers=CLASSIFIERS,
 	description="Send push notifications to mobile devices through GCM or APNS in Django.",
-	download_url="https://github.com/jleclanche/django-push-notifications/tarball/master",
+	download_url="https://github.com/goinnn/django-push-notifications/tarball/master",
 	long_description=README,
-	url="https://github.com/jleclanche/django-push-notifications",
+	url="https://github.com/goinnn/django-push-notifications",
 	version=push_notifications.__version__,
 )

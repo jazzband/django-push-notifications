@@ -104,6 +104,36 @@ class APNSDevice(Device):
 		return apns_send_message(registration_id=self.registration_id, alert=message, **kwargs)
 
 
+class FirefoxDeviceManager(models.Manager):
+
+	def get_queryset(self):
+		return FirefoxDeviceQuerySet(self.model)
+
+
+class FirefoxDeviceQuerySet(models.query.QuerySet):
+
+	def send_message(self, message, **kwargs):
+		for device in self:
+			device.send_message(message, **kwargs)
+
+
+class FirefoxDevice(Device):
+	registration_id = models.TextField(verbose_name=_("Registration ID"))
+	device_id = models.CharField(verbose_name=_("Device ID"), max_length=200,
+							  blank=True, null=True, db_index=True,
+							  help_text=_("Only for compatibility"),
+							  editable=False)
+
+	objects = FirefoxDeviceManager()
+
+	class Meta:
+		verbose_name = _("Firefox device")
+
+	def send_message(self, message, **kwargs):
+		from .firefox import firefox_send_message
+		return firefox_send_message(registration_id=self.registration_id)
+
+
 class WNSDeviceManager(models.Manager):
 	def get_queryset(self):
 		return WNSDeviceQuerySet(self.model)
@@ -134,6 +164,7 @@ class WNSDevice(Device):
 		from .wns import wns_send_message
 
 		return wns_send_message(uri=self.registration_id, message=message, **kwargs)
+
 
 
 # This is an APNS-only function right now, but maybe GCM will implement it

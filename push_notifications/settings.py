@@ -2,6 +2,8 @@ from django.conf import settings
 
 PUSH_NOTIFICATIONS_SETTINGS = getattr(settings, "PUSH_NOTIFICATIONS_SETTINGS", {})
 
+PUSH_NOTIFICATIONS_SETTINGS.setdefault("DEBUG", settings.DEBUG)
+
 # GCM
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("GCM_POST_URL", "https://android.googleapis.com/gcm/send")
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("GCM_MAX_RECIPIENTS", 1000)
@@ -12,7 +14,12 @@ PUSH_NOTIFICATIONS_SETTINGS.setdefault("APNS_PORT", 2195)
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("APNS_FEEDBACK_PORT", 2196)
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("APNS_ERROR_TIMEOUT", None)
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("APNS_MAX_NOTIFICATION_SIZE", 2048)
-if settings.DEBUG:
+
+# Firefox
+PUSH_NOTIFICATIONS_SETTINGS.setdefault("FIREFOX_POST_URL", "https://updates.push.services.mozilla.com/wpush/")
+PUSH_NOTIFICATIONS_SETTINGS.setdefault("FIREFOX_HEADERS", {"TTL": "60"})
+
+if PUSH_NOTIFICATIONS_SETTINGS.get("DEBUG", True):
 	PUSH_NOTIFICATIONS_SETTINGS.setdefault("APNS_HOST", "gateway.sandbox.push.apple.com")
 	PUSH_NOTIFICATIONS_SETTINGS.setdefault("APNS_FEEDBACK_HOST", "feedback.sandbox.push.apple.com")
 else:
