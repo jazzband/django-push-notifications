@@ -1,6 +1,6 @@
 __author__ = "Jerome Leclanche"
 __email__ = "jerome@leclan.ch"
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 
 
 class NotificationError(Exception):
