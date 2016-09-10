@@ -17,6 +17,21 @@ from . import NotificationError
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 
+APNS_ERROR_MESSAGES = {
+	1: "Processing error",
+	2: "Missing device token",
+	3: "Missing topic",
+	4: "Missing payload",
+	5: "Invalid token size",
+	6: "Invalid topic size",
+	7: "Invalid payload size",
+	8: "Invalid token",
+	10: "Shutdown",
+	128: "Protocol error (APNS could not parse notification)",
+	255: "Unknown APNS error",
+}
+
+
 class APNSError(NotificationError):
 	pass
 
@@ -179,6 +194,8 @@ def _apns_send(
 			socket.write(frame)
 			_apns_check_errors(socket)
 
+	return token
+
 
 def _apns_read_and_unpack(socket, data_format):
 	length = struct.calcsize(data_format)
@@ -231,7 +248,7 @@ def apns_send_message(registration_id, alert, **kwargs):
 	to this for silent notifications.
 	"""
 
-	_apns_send(registration_id, alert, **kwargs)
+	return _apns_send(registration_id, alert, **kwargs)
 
 
 def apns_send_bulk_message(registration_ids, alert, **kwargs):
@@ -246,8 +263,9 @@ def apns_send_bulk_message(registration_ids, alert, **kwargs):
 	certfile = kwargs.get("certfile", None)
 	with closing(_apns_create_socket_to_push(certfile)) as socket:
 		for identifier, registration_id in enumerate(registration_ids):
-			_apns_send(registration_id, alert, identifier=identifier, socket=socket, **kwargs)
+			res = _apns_send(registration_id, alert, identifier=identifier, socket=socket, **kwargs)
 		_apns_check_errors(socket)
+		return res
 
 
 def apns_fetch_inactive_ids(certfile=None):
