@@ -9,17 +9,17 @@ from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 User = apps.get_model(*SETTINGS["USER_MODEL"].split("."))
 
 APNS_ERROR_MESSAGES = {
-	1: _('Processing error'),
-	2: _('Missing device token'),
-	3: _('Missing topic'),
-	4: _('Missing payload'),
-	5: _('Invalid token size'),
-	6: _('Invalid topic size'),
-	7: _('Invalid payload size'),
-	8: _('Invalid token'),
-	10: _('Shutdown'),
-	128: _('Protocol error (APNS could not parse notification)'),
-	255: _('None (Unknown)'),
+	1: _("Processing error"),
+	2: _("Missing device token"),
+	3: _("Missing topic"),
+	4: _("Missing payload"),
+	5: _("Invalid token size"),
+	6: _("Invalid topic size"),
+	7: _("Invalid payload size"),
+	8: _("Invalid token"),
+	10: _("Shutdown"),
+	128: _("Protocol error (APNS could not parse notification)"),
+	255: _("None (Unknown)"),
 }
 
 
