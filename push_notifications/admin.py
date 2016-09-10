@@ -2,10 +2,25 @@ from django.apps import apps
 from django.contrib import admin, messages
 from django.utils.translation import ugettext_lazy as _
 from .gcm import GCMError
+from .apns import APNSServerError
 from .models import APNSDevice, GCMDevice, WNSDevice, get_expired_tokens
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 User = apps.get_model(*SETTINGS["USER_MODEL"].split("."))
+
+APNS_ERROR_MESSAGES = {
+	1: _('Processing error'),
+	2: _('Missing device token'),
+	3: _('Missing topic'),
+	4: _('Missing payload'),
+	5: _('Invalid token size'),
+	6: _('Invalid topic size'),
+	7: _('Invalid payload size'),
+	8: _('Invalid token'),
+	10: _('Shutdown'),
+	128: _('Protocol error (APNS could not parse notification)'),
+	255: _('None (Unknown)'),
+}
 
 
 class DeviceAdmin(admin.ModelAdmin):
@@ -37,6 +52,8 @@ class DeviceAdmin(admin.ModelAdmin):
 					ret.append(r)
 			except GCMError as e:
 				errors.append(str(e))
+			except APNSServerError as e:
+				errors.append(str(APNS_ERROR_MESSAGES[e.status]))
 
 			if bulk:
 				break
