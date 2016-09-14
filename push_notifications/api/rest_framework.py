@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+
+from rest_framework.decorators import authentication_classes
 from rest_framework import permissions
 from rest_framework.serializers import Serializer, ModelSerializer, ValidationError
 from rest_framework.viewsets import ModelViewSet
