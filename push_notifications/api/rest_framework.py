@@ -4,10 +4,13 @@ from rest_framework import permissions
 from rest_framework.serializers import Serializer, ModelSerializer, ValidationError
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.fields import IntegerField
+from rest_framework.authentication import TokenAuthentication
+
 
 from push_notifications.models import APNSDevice, GCMDevice, WNSDevice
 from push_notifications.fields import hex_re
 from push_notifications.fields import UNSIGNED_64BIT_INT_MAX_VALUE
+
 
 
 # Fields
@@ -141,6 +144,10 @@ class AuthorizedMixin(object):
 		return self.queryset.filter(user=self.request.user)
 
 
+class AuthenticationToken(AuthorizedMixin):
+    authentication_classes(TokenAuthentication,)
+
+
 # ViewSets
 class APNSDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
 	queryset = APNSDevice.objects.all()
@@ -151,12 +158,20 @@ class APNSDeviceAuthorizedViewSet(AuthorizedMixin, APNSDeviceViewSet):
 	pass
 
 
+class APNSDeviceAuthenticationTokenViewSet(AuthenticationToken, APNSDeviceViewSet):
+	pass
+
+
 class GCMDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
 	queryset = GCMDevice.objects.all()
 	serializer_class = GCMDeviceSerializer
 
 
 class GCMDeviceAuthorizedViewSet(AuthorizedMixin, GCMDeviceViewSet):
+	pass
+
+
+class GCMDeviceAuthenticationTokenViewSet(AuthenticationToken, APNSDeviceViewSet):
 	pass
 
 
