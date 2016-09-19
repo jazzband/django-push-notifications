@@ -107,7 +107,7 @@ def _gcm_send_json(registration_ids, data, **kwargs):
 	This will send the notification as json data.
 	"""
 
-	values = {"registration_ids": registration_ids}
+	values = {"registration_ids": registration_ids} if registration_ids else {}
 
 	if data is not None:
 		values["data"] = data
@@ -120,7 +120,7 @@ def _gcm_send_json(registration_ids, data, **kwargs):
 	data = json.dumps(values, separators=(",", ":"), sort_keys=True).encode("utf-8")
 
 	response = json.loads(_gcm_send(data, "application/json"))
-	if response["failure"] or response["canonical_ids"]:
+	if response.get("failure") or response.get("canonical_ids"):
 		ids_to_remove, old_new_ids = [], []
 		throw_error = False
 		for index, result in enumerate(response["results"]):
@@ -192,7 +192,8 @@ def gcm_send_bulk_message(registration_ids, data, **kwargs):
 	A reference of extra keyword arguments sent to the server is available here:
 	https://developers.google.com/cloud-messaging/server-ref#downstream
 	"""
-
+	if registration_ids is None and "/topics/" not in kwargs.get("to", ""):
+		return
 	# GCM only allows up to 1000 reg ids per bulk message
 	# https://developer.android.com/google/gcm/gcm.html#request
 	if registration_ids:
@@ -203,4 +204,4 @@ def gcm_send_bulk_message(registration_ids, data, **kwargs):
 				ret.append(_gcm_send_json(chunk, data, **kwargs))
 			return ret
 
-		return _gcm_send_json(registration_ids, data, **kwargs)
+	return _gcm_send_json(registration_ids, data, **kwargs)

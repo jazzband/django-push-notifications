@@ -129,13 +129,14 @@ bulk notifications instead of single ones.
 Sending messages to topic members
 ---------------------------------
 GCM topic messaging allows your app server to send a message to multiple devices that have opted in to a particular topic. Based on the publish/subscribe model, topic messaging supports unlimited subscriptions per app. Developers can choose any topic name that matches the regular expression, "/topics/[a-zA-Z0-9-_.~%]+".
+Note: gcm_send_bulk_message must be used when sending messages to topic subscribers, and setting the first param to any value other than None will result in a 400 Http error.
 
 .. code-block:: python
 
-	from push_notifications.gcm import gcm_send_message
+	from push_notifications.gcm import gcm_send_bulk_message
 
         # First param is "None" because no Registration_id is needed, the message will be sent to all devices subscribed to the topic.
-        gcm_send_message(None, "Hello members of my_topic!", topic='/topics/my_topic')
+        gcm_send_bulk_message(None, {"message": "Hello members of my_topic!"}, to="/topics/my_topic")
 
 Reference: `GCM Documentation <https://developers.google.com/cloud-messaging/topic-messaging>`_
 
