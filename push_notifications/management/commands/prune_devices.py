@@ -7,10 +7,8 @@ class Command(BaseCommand):
 
 	def handle(self, *args, **options):
 		from push_notifications.models import APNSDevice, get_expired_tokens
-		expired = get_expired_tokens()
-		devices = APNSDevice.objects.filter(registration_id__in=expired)
-		for d in devices:
-			self.stdout.write('deactivating [%s]' % d.registration_id)
-			d.active = False
-			d.save()
-		self.stdout.write('deactivated %d devices' % len(devices))
+		app_ids = set(APNSDevice.objects.values_list('application_id', flat=True).distinct())
+		for app_id in app_ids:
+			expired = get_expired_tokens(app_id)
+			cnt = APNSDevice.objects.filter(registration_id__in=expired).update(active=False)
+			self.stdout.write('deactivated %d devices' % cnt)

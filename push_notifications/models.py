@@ -11,14 +11,13 @@ from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 @python_2_unicode_compatible
 class Device(models.Model):
 	name = models.CharField(max_length=255, verbose_name=_("Name"), blank=True, null=True)
-	active = models.BooleanField(
-		verbose_name=_("Is active"), default=True,
-		help_text=_("Inactive devices will not be sent notifications")
-	)
-	user = models.ForeignKey(SETTINGS["USER_MODEL"], blank=True, null=True)
-	date_created = models.DateTimeField(
-		verbose_name=_("Creation date"), auto_now_add=True, null=True
-	)
+	active = models.BooleanField(verbose_name=_("Is active"), default=True,
+		help_text=_("Inactive devices will not be sent notifications"))
+	user = models.ForeignKey(SETTINGS.AUTH_USER_MODEL, blank=True, null=True)
+	date_created = models.DateTimeField(verbose_name=_("Creation date"), auto_now_add=True, null=True)
+	application_id = models.CharField(max_length=64, verbose_name=_("Application ID"),
+		help_text=_("Opaque application identity, should be filled in for multiple key/certificate access"),
+		blank=True, null=True)
 
 	class Meta:
 		abstract = True
@@ -44,8 +43,15 @@ class GCMDeviceQuerySet(models.query.QuerySet):
 			if message is not None:
 				data["message"] = message
 
-			reg_ids = list(self.filter(active=True).values_list('registration_id', flat=True))
-			return gcm_send_bulk_message(registration_ids=reg_ids, data=data, **kwargs)
+			app_ids = set(self.filter(active=True).values_list('application_id', flat=True).distinct())
+			res = []
+			for app_id in app_ids:
+				reg_ids = list(self.filter(active=True, application_id=app_id).values_list('registration_id', flat=True))
+				r = gcm_send_bulk_message(registration_ids=reg_ids, data=data, application_id=app_id, **kwargs)
+				if hasattr(r, 'keys'):
+					res += [r]
+				elif hasattr(r, '__getitem__'):
+					res += r
 
 
 class GCMDevice(Device):
@@ -68,7 +74,7 @@ class GCMDevice(Device):
 		data = kwargs.pop("extra", {})
 		if message is not None:
 			data["message"] = message
-		return gcm_send_message(registration_id=self.registration_id, data=data, **kwargs)
+		return gcm_send_message(registration_id=self.registration_id, data=data, application_id=self.application_id, **kwargs)
 
 
 class APNSDeviceManager(models.Manager):
@@ -80,8 +86,17 @@ class APNSDeviceQuerySet(models.query.QuerySet):
 	def send_message(self, message, **kwargs):
 		if self:
 			from .apns import apns_send_bulk_message
-			reg_ids = list(self.filter(active=True).values_list('registration_id', flat=True))
-			return apns_send_bulk_message(registration_ids=reg_ids, alert=message, **kwargs)
+
+			app_ids = set(self.filter(active=True).values_list('application_id', flat=True).distinct())
+			res = []
+			for app_id in app_ids:
+				reg_ids = list(self.filter(active=True, application_id=app_id).values_list('registration_id', flat=True))
+				r = apns_send_bulk_message(registration_ids=reg_ids, alert=message, application_id=app_id, **kwargs)
+				if hasattr(r, 'keys'):
+					res += [r]
+				elif hasattr(r, '__getitem__'):
+					res += r
+			return res
 
 
 class APNSDevice(Device):
@@ -101,7 +116,7 @@ class APNSDevice(Device):
 	def send_message(self, message, **kwargs):
 		from .apns import apns_send_message
 
-		return apns_send_message(registration_id=self.registration_id, alert=message, **kwargs)
+		return apns_send_message(registration_id=self.registration_id, alert=message, application_id=self.application_id, **kwargs)
 
 
 class WNSDeviceManager(models.Manager):
@@ -138,6 +153,12 @@ class WNSDevice(Device):
 
 # This is an APNS-only function right now, but maybe GCM will implement it
 # in the future.  But the definition of 'expired' may not be the same. Whatevs
-def get_expired_tokens(cerfile=None):
+def get_expired_tokens(application_id):
 	from .apns import apns_fetch_inactive_ids
-	return apns_fetch_inactive_ids(cerfile)
+	return apns_fetch_inactive_ids(application_id)
+
+
+class ApplicationModel(models.Model):
+	application_id = models.CharField(max_length=64, verbose_name=_("Application ID"), unique=True)
+	gcm_api_key = models.TextField(verbose_name=_("GCM API Key"), null=True, blank=True)
+	apns_certificate = models.FileField(verbose_name=_("APNS Certificate"), null=True, blank=True, upload_to='apns_certificates')

@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from rest_framework import permissions
 from rest_framework.serializers import Serializer, ModelSerializer, ValidationError
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.fields import IntegerField
+from rest_framework.fields import IntegerField, UUIDField
 
 from push_notifications.models import APNSDevice, GCMDevice, WNSDevice
 from push_notifications.fields import hex_re
@@ -34,14 +34,20 @@ class HexIntegerField(IntegerField):
 # Serializers
 class DeviceSerializerMixin(ModelSerializer):
 	class Meta:
-		fields = ("id", "name", "registration_id", "device_id", "active", "date_created")
-		read_only_fields = ("date_created",)
+		fields = ("name", "application_id", "registration_id", "device_id", "active", "date_created")
+		read_only_fields = ("date_created", )
 
 		# See https://github.com/tomchristie/django-rest-framework/issues/1101
 		extra_kwargs = {"active": {"default": True}}
 
 
 class APNSDeviceSerializer(ModelSerializer):
+	device_id = UUIDField(
+		help_text="UDID / UIDevice.identifierForVendor() (e.g. 5ce0e9a5-5ffa-654b-cee0-1238041fb31a)",
+		style={'input_type': 'text'},
+		required=False
+	)
+
 	class Meta(DeviceSerializerMixin.Meta):
 		model = APNSDevice
 
