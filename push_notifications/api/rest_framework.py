@@ -60,7 +60,6 @@ class UniqueRegistrationSerializerMixin(Serializer):
 		devices = None
 		primary_key = None
 		request_method = None
-
 		if self.initial_data.get("registration_id", None):
 			if self.instance:
 				request_method = "update"
@@ -70,12 +69,12 @@ class UniqueRegistrationSerializerMixin(Serializer):
 		else:
 			if self.context["request"].method in ["PUT", "PATCH"]:
 				request_method = "update"
-				primary_key = attrs["id"]
+				primary_key = self.instance.id
 			elif self.context["request"].method == "POST":
 				request_method = "create"
 
 		Device = self.Meta.model
-		if request_method == "update":
+		if request_method == "update" and "registration_id" in attrs:
 			devices = Device.objects.filter(registration_id=attrs["registration_id"]) \
 				.exclude(id=primary_key)
 		elif request_method == "create":
@@ -128,6 +127,10 @@ class DeviceViewSetMixin(object):
 		return super(DeviceViewSetMixin, self).perform_create(serializer)
 
 	def perform_update(self, serializer):
+		# if the validated_data contains the id, a create will be perfomed so
+		# pop the id if it is present
+		if 'id' in serializer.validated_data:
+			serializer.validated_data.pop('id')
 		if self.request.user.is_authenticated():
 			serializer.save(user=self.request.user)
 		return super(DeviceViewSetMixin, self).perform_update(serializer)
