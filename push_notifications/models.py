@@ -80,7 +80,7 @@ class APNSDeviceQuerySet(models.query.QuerySet):
 	def send_message(self, message, **kwargs):
 		if self:
 			from .apns import apns_send_bulk_message
-			reg_ids = list(self.filter(active=True).values_list('registration_id', flat=True))
+			reg_ids = list(self.filter(active=True).values_list('registration_id', flat=True).distinct())
 			return apns_send_bulk_message(registration_ids=reg_ids, alert=message, **kwargs)
 
 
@@ -90,13 +90,16 @@ class APNSDevice(Device):
 		help_text="UDID / UIDevice.identifierForVendor()"
 	)
 	registration_id = models.CharField(
-		verbose_name=_("Registration ID"), max_length=200, unique=True
+		verbose_name=_("Registration ID"), max_length=200,
+		unique=(not SETTINGS["APNS_REGISTRATION_ID_UNIQUE_WITH_USER_ID"])
 	)
 
 	objects = APNSDeviceManager()
 
 	class Meta:
 		verbose_name = _("APNS device")
+		if SETTINGS["APNS_REGISTRATION_ID_UNIQUE_WITH_USER_ID"]:
+			unique_together = ("registration_id", "user_id")
 
 	def send_message(self, message, **kwargs):
 		from .apns import apns_send_message
