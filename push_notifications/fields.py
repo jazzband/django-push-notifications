@@ -90,8 +90,8 @@ class HexIntegerField(models.DecimalField):
 
 	def __init__(self, verbose_name=None, name=None, max_digits=None,
                  decimal_places=None, **kwargs):
-		self.max_digits, self.decimal_places = 100, 0
-		super(HexIntegerField, self).__init__(verbose_name, name, **kwargs)
+		max_digits, decimal_places = 100, 0
+		super(HexIntegerField, self).__init__(verbose_name, name, max_digits, decimal_places, **kwargs)
 
 	def get_prep_value(self, value):
 		""" Return the integer value to be stored from the hex string """
