@@ -51,10 +51,10 @@ def _check_certificate(ss):
 	mode = "start"
 	for s in ss.split("\n"):
 		if mode == "start":
-			if "BEGIN RSA PRIVATE KEY" in s:
+			if "BEGIN" in s and "PRIVATE KEY" in s:
 				mode = "key"
 		elif mode == "key":
-			if "END RSA PRIVATE KEY" in s:
+			if "END" in s and "PRIVATE KEY" in s:
 				mode = "end"
 				break
 			elif s.startswith("Proc-Type") and "ENCRYPTED" in s:
