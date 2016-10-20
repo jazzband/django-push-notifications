@@ -61,7 +61,7 @@ class HexadecimalField(forms.CharField):
 		return super(forms.CharField, self).prepare_value(value)
 
 
-class HexIntegerField(models.BigIntegerField):
+class HexIntegerField(models.DecimalField):
 	"""
 	This field stores a hexadecimal *string* of up to 64 bits as an unsigned integer
 	on *all* backends including postgres.
@@ -79,14 +79,19 @@ class HexIntegerField(models.BigIntegerField):
 		MaxValueValidator(UNSIGNED_64BIT_INT_MAX_VALUE)
 	]
 
-	def db_type(self, connection):
-		engine = connection.settings_dict["ENGINE"]
-		if "mysql" in engine:
-			return "bigint unsigned"
-		elif "sqlite" in engine:
-			return "UNSIGNED BIG INT"
-		else:
-			return super(HexIntegerField, self).db_type(connection=connection)
+	# def db_type(self, connection):
+	# 	engine = connection.settings_dict["ENGINE"]
+	# 	if "mysql" in engine:
+	# 		return "bigint unsigned"
+	# 	elif "sqlite" in engine:
+	# 		return "UNSIGNED BIG INT"
+	# 	else:
+	# 		return super(HexIntegerField, self).db_type(connection=connection)
+
+	def __init__(self, verbose_name=None, name=None, max_digits=None,
+                 decimal_places=None, **kwargs):
+		self.max_digits, self.decimal_places = 100, 0
+		super(HexIntegerField, self).__init__(verbose_name, name, **kwargs)
 
 	def get_prep_value(self, value):
 		""" Return the integer value to be stored from the hex string """
