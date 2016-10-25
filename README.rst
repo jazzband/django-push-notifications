@@ -125,6 +125,16 @@ Sending messages in bulk
 Sending messages in bulk makes use of the bulk mechanics offered by GCM and APNS. It is almost always preferable to send
 bulk notifications instead of single ones.
 
+It's also possible to pass badge parameter as a function which accepts token parameter in order to set different badge
+value per user. Assuming User model has a method get_badge returning badge count for a user:
+
+.. code-block:: python
+
+	devices.send_message(
+		"Happy name day!",
+		badge=lambda token: APNSDevice.objects.get(registration_id=token).user.get_badge()
+	)
+
 
 Sending messages to topic members
 ---------------------------------
