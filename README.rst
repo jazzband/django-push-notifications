@@ -130,7 +130,8 @@ value per user. Assuming User model has a method get_badge returning badge count
 
 .. code-block:: python
 
-	devices.send_message("Happy name day!", badge=lambda token: APNSDevice.objects.get(registration_id=token).user.get_badge())
+	devices.send_message("Happy name day!",
+						 badge=lambda token: APNSDevice.objects.get(registration_id=token).user.get_badge())
 
 
 Sending messages to topic members
