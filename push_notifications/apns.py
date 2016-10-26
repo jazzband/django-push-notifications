@@ -163,7 +163,7 @@ def _apns_send(
 		aps_data["alert"] = alert
 
 	if badge is not None:
-		aps_data["badge"] = badge
+		aps_data["badge"] = badge if not callable(badge) else badge(token)
 
 	if sound is not None:
 		aps_data["sound"] = sound
