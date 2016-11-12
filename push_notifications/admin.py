@@ -92,6 +92,11 @@ class DeviceAdmin(admin.ModelAdmin):
 			d.save()
 
 
+class GCMDeviceAdmin(DeviceAdmin):
+
+	list_display = ("__str__", "device_id", "user", "active", "date_created", "cloud_message_type")
+	list_filter = ("active", "cloud_message_type")
+
 admin.site.register(APNSDevice, DeviceAdmin)
-admin.site.register(GCMDevice, DeviceAdmin)
+admin.site.register(GCMDevice, GCMDeviceAdmin)
 admin.site.register(WNSDevice, DeviceAdmin)

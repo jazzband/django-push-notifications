@@ -96,7 +96,7 @@ class GCMDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
 
 	class Meta(DeviceSerializerMixin.Meta):
 		model = GCMDevice
-
+		fields = ("id", "name", "registration_id", "device_id", "active", "date_created", "cloud_message_type")
 		extra_kwargs = {"id": {"read_only": False, "required": False}}
 
 	def validate_device_id(self, value):
