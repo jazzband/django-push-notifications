@@ -1,11 +1,16 @@
 from __future__ import unicode_literals
-
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
 from .fields import HexIntegerField
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+
+
+CLOUD_MESSAGE_TYPES = (
+	("GCM", "Google Cloud Message"),
+	("FCM", "Firebase Cloud Message"),
+)
 
 
 @python_2_unicode_compatible
@@ -38,14 +43,26 @@ class GCMDeviceManager(models.Manager):
 class GCMDeviceQuerySet(models.query.QuerySet):
 	def send_message(self, message, **kwargs):
 		if self:
-			from .gcm import gcm_send_bulk_message
+			from .gcm import send_bulk_message
 
 			data = kwargs.pop("extra", {})
 			if message is not None:
 				data["message"] = message
 
-			reg_ids = list(self.filter(active=True).values_list('registration_id', flat=True))
-			return gcm_send_bulk_message(registration_ids=reg_ids, data=data, **kwargs)
+			response = []
+			for cloud_type in ("GCM", "FCM"):
+				reg_ids = list(
+					self.filter(active=True, cloud_message_type=cloud_type).values_list(
+						"registration_id", flat=True
+					)
+				)
+				if reg_ids:
+					r = send_bulk_message(
+						registration_ids=reg_ids, data=data, cloud_type=cloud_type, **kwargs
+					)
+					response.append(r)
+
+			return response
 
 
 class GCMDevice(Device):
@@ -57,18 +74,27 @@ class GCMDevice(Device):
 		help_text=_("ANDROID_ID / TelephonyManager.getDeviceId() (always as hex)")
 	)
 	registration_id = models.TextField(verbose_name=_("Registration ID"))
-
+	cloud_message_type = models.CharField(
+		verbose_name=_("Cloud Message Type"), max_length=3,
+		choices=CLOUD_MESSAGE_TYPES, default="GCM",
+		help_text=_("You should choose GCM or FCM")
+	)
 	objects = GCMDeviceManager()
 
 	class Meta:
 		verbose_name = _("GCM device")
 
 	def send_message(self, message, **kwargs):
-		from .gcm import gcm_send_message
+		from .gcm import send_message
+
 		data = kwargs.pop("extra", {})
 		if message is not None:
 			data["message"] = message
-		return gcm_send_message(registration_id=self.registration_id, data=data, **kwargs)
+
+		return send_message(
+			registration_id=self.registration_id, data=data,
+			cloud_type=self.cloud_message_type, **kwargs
+		)
 
 
 class APNSDeviceManager(models.Manager):
@@ -80,7 +106,7 @@ class APNSDeviceQuerySet(models.query.QuerySet):
 	def send_message(self, message, **kwargs):
 		if self:
 			from .apns import apns_send_bulk_message
-			reg_ids = list(self.filter(active=True).values_list('registration_id', flat=True))
+			reg_ids = list(self.filter(active=True).values_list("registration_id", flat=True))
 			return apns_send_bulk_message(registration_ids=reg_ids, alert=message, **kwargs)
 
 
@@ -114,7 +140,7 @@ class WNSDeviceQuerySet(models.query.QuerySet):
 		if self:
 			from .wns import wns_send_bulk_message
 
-			reg_ids = list(self.filter(active=True).values_list('registration_id', flat=True))
+			reg_ids = list(self.filter(active=True).values_list("registration_id", flat=True))
 			return wns_send_bulk_message(uri_list=reg_ids, message=message, **kwargs)
 
 
