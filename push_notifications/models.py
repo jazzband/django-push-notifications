@@ -1,4 +1,7 @@
 from __future__ import unicode_literals
+
+import uuid
+
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
@@ -14,7 +17,39 @@ CLOUD_MESSAGE_TYPES = (
 
 
 @python_2_unicode_compatible
+class App(models.Model):
+	uuid = models.UUIDField(blank=True, unique=True)
+	name = models.CharField(max_length=100)
+	is_active = models.BooleanField(default=True)
+
+	apns_certificate = models.TextField(
+		default='', blank=True,
+		help_text=_("Optional. Paste in the contents of your APNS certificate.")
+	)
+	gcm_api_key = models.TextField(default='', blank=True)
+	fcm_api_key = models.TextField(default='', blank=True)
+	wns_package_security_key = models.TextField(default='', blank=True)
+	wns_secret_key = models.TextField(default='', blank=True)
+
+	date_created = models.DateTimeField(
+		verbose_name=_("Creation date"), auto_now_add=True, null=True
+	)
+
+	def __str__(self):
+		return self.name or str(self.uuid)
+
+	def save(self, *args, **kwargs):
+		if not self.uuid:
+			while True:
+				self.uuid = uuid.uuid4()
+				if not self.__class__.objects.filter(uuid=self.uuid).exists():
+					break
+		super(App, self).save(*args, **kwargs)
+
+
+@python_2_unicode_compatible
 class Device(models.Model):
+	app = models.ForeignKey(App, blank=True, null=True, on_delete=models.CASCADE)
 	name = models.CharField(max_length=255, verbose_name=_("Name"), blank=True, null=True)
 	active = models.BooleanField(
 		verbose_name=_("Is active"), default=True,
