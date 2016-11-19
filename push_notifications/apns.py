@@ -3,6 +3,7 @@ Apple Push Notification Service
 Documentation is available on the iOS Developer Library:
 https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/ApplePushService.html
 """
+import tempfile
 
 import codecs
 import json
@@ -12,10 +13,11 @@ import socket
 import time
 from contextlib import closing
 from binascii import unhexlify
+
+import os
 from django.core.exceptions import ImproperlyConfigured
 from . import NotificationError
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
-
 
 APNS_ERROR_MESSAGES = {
 	1: "Processing error",
@@ -63,8 +65,22 @@ def _check_certificate(ss):
 		raise Exception("The certificate doesn't contain a private key")
 
 
-def _apns_create_socket(address_tuple, certfile=None):
-	certfile = certfile or SETTINGS.get("APNS_CERTIFICATE")
+def _get_apns_certificate_file(app):
+	certdata = app.apns_certificate if app else ''
+	if not certdata:
+		return SETTINGS["APNS_CERTIFICATE"], False
+
+	certfile = tempfile.NamedTemporaryFile(delete=False)
+	certfile.write(certdata)
+	certfile.close()
+	return certfile.name, True
+
+
+def _apns_create_socket(address_tuple, certfile=None, app=None):
+	remove_certfile = False
+	if not certfile:
+		certfile, remove_certfile = _get_apns_certificate_file(app)
+
 	if not certfile:
 		raise ImproperlyConfigured(
 			'You need to set PUSH_NOTIFICATIONS_SETTINGS["APNS_CERTIFICATE"] to send messages through APNS.'
@@ -79,6 +95,8 @@ def _apns_create_socket(address_tuple, certfile=None):
 	try:
 		_check_certificate(content)
 	except Exception as e:
+		if remove_certfile:
+			os.unlink(certfile)
 		raise ImproperlyConfigured("The APNS certificate file at %r is unusable: %s" % (certfile, e))
 
 	ca_certs = SETTINGS.get("APNS_CA_CERTIFICATES")
@@ -87,15 +105,18 @@ def _apns_create_socket(address_tuple, certfile=None):
 	sock = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_TLSv1, certfile=certfile, ca_certs=ca_certs)
 	sock.connect(address_tuple)
 
+	if remove_certfile:
+		os.unlink(certfile)
+
 	return sock
 
 
-def _apns_create_socket_to_push(certfile=None):
-	return _apns_create_socket((SETTINGS["APNS_HOST"], SETTINGS["APNS_PORT"]), certfile)
+def _apns_create_socket_to_push(certfile=None, app=None):
+	return _apns_create_socket((SETTINGS["APNS_HOST"], SETTINGS["APNS_PORT"]), certfile, app)
 
 
-def _apns_create_socket_to_feedback(certfile=None):
-	return _apns_create_socket((SETTINGS["APNS_FEEDBACK_HOST"], SETTINGS["APNS_FEEDBACK_PORT"]), certfile)
+def _apns_create_socket_to_feedback(certfile=None, app=None):
+	return _apns_create_socket((SETTINGS["APNS_FEEDBACK_HOST"], SETTINGS["APNS_FEEDBACK_PORT"]), certfile, app)
 
 
 def _apns_pack_frame(token_hex, payload, identifier, expiration, priority):
@@ -143,7 +164,7 @@ def _apns_check_errors(sock):
 def _apns_send(
 	token, alert, badge=None, sound=None, category=None, content_available=False,
 	action_loc_key=None, loc_key=None, loc_args=[], extra={}, identifier=0,
-	expiration=None, priority=10, socket=None, certfile=None
+	expiration=None, priority=10, socket=None, certfile=None, app=None
 ):
 	data = {}
 	aps_data = {}
@@ -192,7 +213,7 @@ def _apns_send(
 	if socket:
 		socket.write(frame)
 	else:
-		with closing(_apns_create_socket_to_push(certfile)) as socket:
+		with closing(_apns_create_socket_to_push(certfile, app)) as socket:
 			socket.write(frame)
 			_apns_check_errors(socket)
 
@@ -238,7 +259,7 @@ def _apns_receive_feedback(socket):
 	return expired_token_list
 
 
-def apns_send_message(registration_id, alert, **kwargs):
+def apns_send_message(registration_id, alert, app=None, **kwargs):
 	"""
 	Sends an APNS notification to a single registration_id.
 	This will send the notification as form data.
@@ -250,10 +271,10 @@ def apns_send_message(registration_id, alert, **kwargs):
 	to this for silent notifications.
 	"""
 
-	return _apns_send(registration_id, alert, **kwargs)
+	return _apns_send(registration_id, alert, app=app, **kwargs)
 
 
-def apns_send_bulk_message(registration_ids, alert, **kwargs):
+def apns_send_bulk_message(registration_ids, alert, app=None, **kwargs):
 	"""
 	Sends an APNS notification to one or more registration_ids.
 	The registration_ids argument needs to be a list.
@@ -263,19 +284,19 @@ def apns_send_bulk_message(registration_ids, alert, **kwargs):
 	to this for silent notifications.
 	"""
 	certfile = kwargs.get("certfile", None)
-	with closing(_apns_create_socket_to_push(certfile)) as socket:
+	with closing(_apns_create_socket_to_push(certfile, app)) as socket:
 		for identifier, registration_id in enumerate(registration_ids):
-			res = _apns_send(registration_id, alert, identifier=identifier, socket=socket, **kwargs)
+			res = _apns_send(registration_id, alert, identifier=identifier, socket=socket, app=app, **kwargs)
 		_apns_check_errors(socket)
 		return res
 
 
-def apns_fetch_inactive_ids(certfile=None):
+def apns_fetch_inactive_ids(certfile=None, app=None):
 	"""
 	Queries the APNS server for id's that are no longer active since
 	the last fetch
 	"""
-	with closing(_apns_create_socket_to_feedback(certfile)) as socket:
+	with closing(_apns_create_socket_to_feedback(certfile, app)) as socket:
 		inactive_ids = []
 		# Maybe we should have a flag to return the timestamp?
 		# It doesn't seem that useful right now, though.
