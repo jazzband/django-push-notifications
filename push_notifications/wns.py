@@ -34,14 +34,14 @@ class WNSNotificationResponseError(WNSError):
 	pass
 
 
-def _wns_authenticate(scope="notify.windows.com", app=None):
+def _wns_authenticate(scope="notify.windows.com", partner=None):
 	"""
 	Requests an Access token for WNS communication.
 
 	:return: dict: {'access_token': <str>, 'expires_in': <int>, 'token_type': 'bearer'}
 	"""
-	package_id = get_application_setting(app, "WNS_PACKAGE_SECURITY_ID")
-	secret_key = get_application_setting(app, "WNS_SECRET_KEY")
+	package_id = get_application_setting(partner, "WNS_PACKAGE_SECURITY_ID")
+	secret_key = get_application_setting(partner, "WNS_SECRET_KEY")
 	if not package_id:
 		raise ImproperlyConfigured(
 			'You need to set PUSH_NOTIFICATIONS_SETTINGS["WNS_PACKAGE_SECURITY_ID"] to use WNS.'
@@ -74,7 +74,7 @@ def _wns_authenticate(scope="notify.windows.com", app=None):
 	return json.loads(response.read().decode("utf-8"))
 
 
-def _wns_send(uri, data, wns_type="wns/toast", app=None):
+def _wns_send(uri, data, wns_type="wns/toast", partner=None):
 	"""
 	Sends a notification data and authentication to WNS.
 
@@ -82,7 +82,7 @@ def _wns_send(uri, data, wns_type="wns/toast", app=None):
 	:param data: dict: The notification data to be sent.
 	:return:
 	"""
-	access_token = _wns_authenticate(app=app)["access_token"]
+	access_token = _wns_authenticate(partner=partner)["access_token"]
 
 	authorization = "Bearer %(token)s" % {"token": access_token}
 
@@ -163,7 +163,7 @@ def _wns_prepare_toast(data, **kwargs):
 	return tostring(root)
 
 
-def wns_send_message(uri, message=None, xml_data=None, raw_data=None, app=None, **kwargs):
+def wns_send_message(uri, message=None, xml_data=None, raw_data=None, partner=None, **kwargs):
 	"""
 	Sends a notification request to WNS.
 	There are four notification types that WNS can send: toast, tile, badge and raw.
@@ -221,10 +221,10 @@ def wns_send_message(uri, message=None, xml_data=None, raw_data=None, app=None, 
 			"`message`, `xml_data`, `raw_data`"
 		)
 
-	_wns_send(uri=uri, data=prepared_data, wns_type=wns_type, app=app)
+	_wns_send(uri=uri, data=prepared_data, wns_type=wns_type, partner=partner)
 
 
-def wns_send_bulk_message(uri_list, message=None, xml_data=None, raw_data=None, app=None, **kwargs):
+def wns_send_bulk_message(uri_list, message=None, xml_data=None, raw_data=None, partner=None, **kwargs):
 	"""
 	WNS doesn't support bulk notification, so we loop through each uri.
 
@@ -237,7 +237,7 @@ def wns_send_bulk_message(uri_list, message=None, xml_data=None, raw_data=None, 
 		for uri in uri_list:
 			wns_send_message(
 				uri=uri, message=message, xml_data=xml_data,
-				raw_data=raw_data, app=app, **kwargs
+				raw_data=raw_data, partner=partner, **kwargs
 			)
 
 

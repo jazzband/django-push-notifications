@@ -32,10 +32,10 @@ PUSH_NOTIFICATIONS_SETTINGS.setdefault("WNS_ACCESS_URL", "https://login.live.com
 # User model
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("USER_MODEL", settings.AUTH_USER_MODEL)
 
-def get_application_setting(app, key):
+def get_application_setting(partner, key):
 	fallback = PUSH_NOTIFICATIONS_SETTINGS[key]
-	if app:
+	if partner:
 		# this will return the fallback if the lowercased
-		# attribute does NOT exist on the `app`
-		return getattr(app, key.lower(), fallback)
+		# attribute does NOT exist on the `partner`
+		return getattr(partner, key.lower(), fallback)
 	return fallback

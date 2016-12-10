@@ -401,7 +401,7 @@ class ModelTestCase(TestCase):
 			reg_ids = [obj.registration_id for obj in GCMDevice.objects.all()]
 			send_bulk_message(reg_ids, {"message": "Hello World"}, "GCM")
 			p.assert_called_once_with(
-				[u"abc", u"abc1"], {"message": "Hello World"}, cloud_type="GCM", app=None
+				[u"abc", u"abc1"], {"message": "Hello World"}, cloud_type="GCM", partner=None
 			)
 
 	def test_fcm_send_message_with_no_reg_ids(self):
@@ -415,7 +415,7 @@ class ModelTestCase(TestCase):
 			reg_ids = [obj.registration_id for obj in GCMDevice.objects.all()]
 			send_bulk_message(reg_ids, {"message": "Hello World"}, "FCM")
 			p.assert_called_once_with(
-				[u"abc", u"abc1"], {"message": "Hello World"}, cloud_type="FCM", app=None
+				[u"abc", u"abc1"], {"message": "Hello World"}, cloud_type="FCM", partner=None
 			)
 
 	def test_can_save_wsn_device(self):

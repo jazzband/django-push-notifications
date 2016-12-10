@@ -5,7 +5,7 @@ from rest_framework.serializers import Serializer, ModelSerializer, SlugRelatedF
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.fields import IntegerField
 
-from push_notifications.models import APNSDevice, GCMDevice, WNSDevice, App
+from push_notifications.models import APNSDevice, GCMDevice, WNSDevice, Partner
 from push_notifications.fields import hex_re
 from push_notifications.fields import UNSIGNED_64BIT_INT_MAX_VALUE
 
@@ -33,10 +33,10 @@ class HexIntegerField(IntegerField):
 
 # Serializers
 class DeviceSerializerMixin(ModelSerializer):
-	app = SlugRelatedField(required=False, slug_field='uuid', queryset=App.objects.filter(is_active=True))
+	partner = SlugRelatedField(required=False, slug_field='uuid', queryset=Partner.objects.filter(is_active=True))
 
 	class Meta:
-		fields = ("id", "name", "app", "registration_id", "device_id", "active", "date_created")
+		fields = ("id", "name", "partner", "registration_id", "device_id", "active", "date_created")
 		read_only_fields = ("date_created",)
 
 		# See https://github.com/tomchristie/django-rest-framework/issues/1101
@@ -99,7 +99,7 @@ class GCMDeviceSerializer(UniqueRegistrationSerializerMixin, DeviceSerializerMix
 	class Meta(DeviceSerializerMixin.Meta):
 		model = GCMDevice
 		fields = (
-			"id", "name", "app", "registration_id", "device_id", "active", "date_created",
+			"id", "name", "partner", "registration_id", "device_id", "active", "date_created",
 			"cloud_message_type",
 		)
 		extra_kwargs = {"id": {"read_only": False, "required": False}}

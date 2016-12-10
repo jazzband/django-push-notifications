@@ -17,7 +17,7 @@ CLOUD_MESSAGE_TYPES = (
 
 
 @python_2_unicode_compatible
-class App(models.Model):
+class Partner(models.Model):
 	uuid = models.UUIDField(blank=True, unique=True)
 	name = models.CharField(max_length=100)
 	is_active = models.BooleanField(default=True)
@@ -44,12 +44,12 @@ class App(models.Model):
 				self.uuid = uuid.uuid4()
 				if not self.__class__.objects.filter(uuid=self.uuid).exists():
 					break
-		super(App, self).save(*args, **kwargs)
+		super(Partner, self).save(*args, **kwargs)
 
 
 @python_2_unicode_compatible
 class Device(models.Model):
-	app = models.ForeignKey(App, blank=True, null=True, on_delete=models.CASCADE)
+	partner = models.ForeignKey(Partner, blank=True, null=True, on_delete=models.CASCADE)
 	name = models.CharField(max_length=255, verbose_name=_("Name"), blank=True, null=True)
 	active = models.BooleanField(
 		verbose_name=_("Is active"), default=True,
@@ -86,18 +86,18 @@ class GCMDeviceQuerySet(models.query.QuerySet):
 
 			response = []
 			for cloud_type in ("GCM", "FCM"):
-				apps = App.objects.filter(pk__in=list(self.values_list('app_id', flat=True)))
-				# take care of both App-based devices and old-school devices
-				# (ie. without an App)
-				for app in (list(apps) + [None]):
+				partners = Partner.objects.filter(pk__in=list(self.values_list('partner_id', flat=True)))
+				# take care of both Partner-based devices and old-school devices
+				# (ie. without an Partner)
+				for partner in (list(partners) + [None]):
 					reg_ids = list(
-						self.filter(app=app, active=True, cloud_message_type=cloud_type).values_list(
+						self.filter(partner=partner, active=True, cloud_message_type=cloud_type).values_list(
 							"registration_id", flat=True
 						)
 					)
 					if reg_ids:
 						r = send_bulk_message(
-							registration_ids=reg_ids, data=data, cloud_type=cloud_type, app=app, **kwargs
+							registration_ids=reg_ids, data=data, cloud_type=cloud_type, partner=partner, **kwargs
 						)
 						response.append(r)
 
@@ -132,7 +132,7 @@ class GCMDevice(Device):
 
 		return send_message(
 			registration_id=self.registration_id, data=data,
-			cloud_type=self.cloud_message_type, app=self.app, **kwargs
+			cloud_type=self.cloud_message_type, partner=self.partner, **kwargs
 		)
 
 
@@ -145,14 +145,14 @@ class APNSDeviceQuerySet(models.query.QuerySet):
 	def send_message(self, message, **kwargs):
 		if self:
 			from .apns import apns_send_bulk_message
-			apps = App.objects.filter(pk__in=list(self.values_list('app_id', flat=True)))
-			# take care of both App-based devices and old-school devices
-			# (ie. without an App)
+			partners = Partner.objects.filter(pk__in=list(self.values_list('partner_id', flat=True)))
+			# take care of both Partner-based devices and old-school devices
+			# (ie. without an Partner)
 			responses = []
-			for app in (list(apps) + [None]):
-				reg_ids = list(self.filter(app=app, active=True).values_list("registration_id", flat=True))
+			for partner in (list(partners) + [None]):
+				reg_ids = list(self.filter(partner=partner, active=True).values_list("registration_id", flat=True))
 				if reg_ids:
-					r = apns_send_bulk_message(registration_ids=reg_ids, alert=message, app=app, **kwargs)
+					r = apns_send_bulk_message(registration_ids=reg_ids, alert=message, partner=partner, **kwargs)
 					responses.append(r)
 			return responses
 
@@ -174,7 +174,7 @@ class APNSDevice(Device):
 	def send_message(self, message, **kwargs):
 		from .apns import apns_send_message
 
-		return apns_send_message(registration_id=self.registration_id, alert=message, app=self.app, **kwargs)
+		return apns_send_message(registration_id=self.registration_id, alert=message, partner=self.partner, **kwargs)
 
 
 class WNSDeviceManager(models.Manager):
@@ -186,14 +186,14 @@ class WNSDeviceQuerySet(models.query.QuerySet):
 	def send_message(self, message, **kwargs):
 		if self:
 			from .wns import wns_send_bulk_message
-			apps = App.objects.filter(pk__in=list(self.values_list('app_id', flat=True)))
-			# take care of both App-based devices and old-school devices
-			# (ie. without an App)
+			partners = Partner.objects.filter(pk__in=list(self.values_list('partner_id', flat=True)))
+			# take care of both Partner-based devices and old-school devices
+			# (ie. without an Partner)
 			responses = []
-			for app in (list(apps) + [None]):
-				reg_ids = list(self.filter(app=app, active=True).values_list("registration_id", flat=True))
+			for partner in (list(partners) + [None]):
+				reg_ids = list(self.filter(partner=partner, active=True).values_list("registration_id", flat=True))
 				if reg_ids:
-					r = wns_send_bulk_message(uri_list=reg_ids, message=message, app=app, **kwargs)
+					r = wns_send_bulk_message(uri_list=reg_ids, message=message, partner=partner, **kwargs)
 					responses.append(r)
 			return responses
 
@@ -213,11 +213,11 @@ class WNSDevice(Device):
 	def send_message(self, message, **kwargs):
 		from .wns import wns_send_message
 
-		return wns_send_message(uri=self.registration_id, message=message, app=self.app, **kwargs)
+		return wns_send_message(uri=self.registration_id, message=message, partner=self.partner, **kwargs)
 
 
 # This is an APNS-only function right now, but maybe GCM will implement it
 # in the future.  But the definition of 'expired' may not be the same. Whatevs
-def get_expired_tokens(cerfile=None, app=None):
+def get_expired_tokens(cerfile=None, partner=None):
 	from .apns import apns_fetch_inactive_ids
-	return apns_fetch_inactive_ids(cerfile, app)
+	return apns_fetch_inactive_ids(cerfile, partner)

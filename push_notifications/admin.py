@@ -4,7 +4,7 @@ from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 from .gcm import GCMError
 from .apns import APNSServerError, APNS_ERROR_MESSAGES
-from .models import APNSDevice, GCMDevice, WNSDevice, get_expired_tokens, App
+from .models import APNSDevice, GCMDevice, WNSDevice, get_expired_tokens, Partner
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 User = apps.get_model(*SETTINGS["USER_MODEL"].split("."))
@@ -12,11 +12,11 @@ User = apps.get_model(*SETTINGS["USER_MODEL"].split("."))
 
 class DeviceAdmin(admin.ModelAdmin):
 	list_display = ("__str__", "device_id", "user", "active", "date_created")
-	list_filter = ("active", "app")
+	list_filter = ("active", "partner")
 	actions = ("send_message", "send_bulk_message", "prune_devices", "enable", "disable")
-	raw_id_fields = ("user", "app")
+	raw_id_fields = ("user", "partner")
 
-	search_fields = ("name", "device_id", "app__uuid", "app__name")
+	search_fields = ("name", "device_id", "partner__uuid", "partner__name")
 	if hasattr(User, "USERNAME_FIELD"):
 		search_fields += ("user__%s" % (User.USERNAME_FIELD,),)
 
@@ -85,12 +85,12 @@ class DeviceAdmin(admin.ModelAdmin):
 		# if the user doesn't select all the devices for pruning, we
 		# could very easily leave an expired device as active.  Maybe
 		#  this is just a bad API.
-		apps = App.objects.filter(pk__in=list(queryset.values_list('app_id', flat=True)))
-		# take care of both App-based devices and old-school devices
-		# (ie. without an App)
-		for app in (list(apps) + [None]):
-			expired = get_expired_tokens(app=app)
-			devices = queryset.filter(app=app, registration_id__in=expired)
+		partners = Partner.objects.filter(pk__in=list(queryset.values_list('partner_id', flat=True)))
+		# take care of both Partner-based devices and old-school devices
+		# (ie. without an Partner)
+		for partner in (list(partners) + [None]):
+			expired = get_expired_tokens(partner=partner)
+			devices = queryset.filter(partner=partner, registration_id__in=expired)
 			for d in devices:
 				d.active = False
 				d.save()
@@ -100,7 +100,7 @@ class GCMDeviceAdmin(DeviceAdmin):
 	list_display = (
 		"__str__", "device_id", "user", "active", "date_created", "cloud_message_type"
 	)
-	list_filter = ("active", "cloud_message_type", "app")
+	list_filter = ("active", "cloud_message_type", "partner")
 
 
 class ServiceEnabledListFilter(admin.SimpleListFilter):
@@ -142,7 +142,7 @@ class WNSListFilter(ServiceEnabledListFilter):
 	keys = ['wns_package_security_key', 'wns_secret_key']
 
 
-class AppAdmin(admin.ModelAdmin):
+class PartnerAdmin(admin.ModelAdmin):
 	list_display = ('__str__', 'uuid', 'is_active', 'has_apns', 'has_gcm', 'has_wns')
 	list_filter = ('is_active', APNSListFilter, GCMListFilter, WNSListFilter)
 	search_fields = ('name', 'uuid', 'apns_certificate', 'gcm_api_key', 'wns_package_security_key', 'wns_secret_key')
@@ -162,4 +162,4 @@ class AppAdmin(admin.ModelAdmin):
 admin.site.register(APNSDevice, DeviceAdmin)
 admin.site.register(GCMDevice, GCMDeviceAdmin)
 admin.site.register(WNSDevice, DeviceAdmin)
-admin.site.register(App, AppAdmin)
+admin.site.register(Partner, PartnerAdmin)
