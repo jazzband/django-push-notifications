@@ -1,11 +1,11 @@
 from __future__ import absolute_import
 
 from rest_framework import permissions
-from rest_framework.serializers import Serializer, ModelSerializer, ValidationError
+from rest_framework.serializers import Serializer, ModelSerializer, SlugRelatedField, ValidationError
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.fields import IntegerField
 
-from push_notifications.models import APNSDevice, GCMDevice, WNSDevice
+from push_notifications.models import APNSDevice, GCMDevice, WNSDevice, Partner
 from push_notifications.fields import hex_re
 from push_notifications.fields import UNSIGNED_64BIT_INT_MAX_VALUE
 
@@ -33,15 +33,17 @@ class HexIntegerField(IntegerField):
 
 # Serializers
 class DeviceSerializerMixin(ModelSerializer):
+	partner = SlugRelatedField(required=False, slug_field='uuid', queryset=Partner.objects.filter(is_active=True))
+
 	class Meta:
-		fields = ("id", "name", "registration_id", "device_id", "active", "date_created")
+		fields = ("id", "name", "partner", "registration_id", "device_id", "active", "date_created")
 		read_only_fields = ("date_created",)
 
 		# See https://github.com/tomchristie/django-rest-framework/issues/1101
 		extra_kwargs = {"active": {"default": True}}
 
 
-class APNSDeviceSerializer(ModelSerializer):
+class APNSDeviceSerializer(DeviceSerializerMixin):
 	class Meta(DeviceSerializerMixin.Meta):
 		model = APNSDevice
 
@@ -86,7 +88,7 @@ class UniqueRegistrationSerializerMixin(Serializer):
 		return attrs
 
 
-class GCMDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
+class GCMDeviceSerializer(UniqueRegistrationSerializerMixin, DeviceSerializerMixin):
 	device_id = HexIntegerField(
 		help_text="ANDROID_ID / TelephonyManager.getDeviceId() (e.g: 0x01)",
 		style={"input_type": "text"},
@@ -97,7 +99,7 @@ class GCMDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
 	class Meta(DeviceSerializerMixin.Meta):
 		model = GCMDevice
 		fields = (
-			"id", "name", "registration_id", "device_id", "active", "date_created",
+			"id", "name", "partner", "registration_id", "device_id", "active", "date_created",
 			"cloud_message_type",
 		)
 		extra_kwargs = {"id": {"read_only": False, "required": False}}
@@ -109,7 +111,7 @@ class GCMDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
 		return value
 
 
-class WNSDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
+class WNSDeviceSerializer(UniqueRegistrationSerializerMixin, DeviceSerializerMixin):
 	class Meta(DeviceSerializerMixin.Meta):
 		model = WNSDevice
 

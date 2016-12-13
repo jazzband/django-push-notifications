@@ -14,13 +14,13 @@ class WNSSendMessageTestCase(TestCase):
 	@mock.patch("push_notifications.wns._wns_send")
 	def test_send_message_calls_wns_send_with_toast(self, mock_method, _):
 		wns_send_message(uri="one", message="test message")
-		mock_method.assert_called_with(uri="one", data="this is expected", wns_type="wns/toast")
+		mock_method.assert_called_with(uri="one", data="this is expected", wns_type="wns/toast", partner=None)
 
 	@mock.patch("push_notifications.wns.dict_to_xml_schema", return_value=ET.Element("toast"))
 	@mock.patch("push_notifications.wns._wns_send")
 	def test_send_message_calls_wns_send_with_xml(self, mock_method, _):
 		wns_send_message(uri="one", xml_data={"key": "value"})
-		mock_method.assert_called_with(uri="one", data=b"<toast />", wns_type="wns/toast")
+		mock_method.assert_called_with(uri="one", data=b"<toast />", wns_type="wns/toast", partner=None)
 
 	def test_send_message_raises_TypeError_if_one_of_the_data_params_arent_filled(self):
 		with self.assertRaises(TypeError):
@@ -40,7 +40,7 @@ class WNSSendBulkMessageTestCase(TestCase):
 	def test_send_bulk_message_calls_send_message(self, mock_method):
 		wns_send_bulk_message(uri_list=["one", ], message="test message")
 		mock_method.assert_called_with(
-			message="test message", raw_data=None, uri="one", xml_data=None
+			message="test message", raw_data=None, uri="one", xml_data=None, partner=None
 		)
 
 
