@@ -69,9 +69,9 @@ All settings are contained in a ``PUSH_NOTIFICATIONS_SETTINGS`` dict.
 
 In order to use GCM, you are required to include one of ``GCM_API_KEY``, ``GCM_API_KEYS``, or ``GCM_API_KEYS_MODEL``.
 For APNS, you are required to include ``APNS_CERTIFICATE``, ``APNS_CERTIFICATES``, or ``APNS_CERTIFICATES_MODEL``.
-For WNS, you are required to use one of the ``WNS_PACKAGE_SECURITY_KEY`` and ``WNS_SECRET_KEY`` pair,
-``WNS_PACKAGE_SECURITY_KEYS`` and ``WNS_SECRET_KEYS`` pair, or
-``WNS_PACKAGE_SECURITY_KEYS_MODEL`` and ``WNS_SECRET_KEYS_MODEL`` pair.
+For WNS, you are required to use one of the ``WNS_PACKAGE_SECURITY_ID`` and ``WNS_SECRET_KEY`` pair,
+``WNS_PACKAGE_SECURITY_IDS`` and ``WNS_SECRET_KEYS`` pair, or
+``WNS_PACKAGE_SECURITY_IDS_MODEL`` and ``WNS_SECRET_KEYS_MODEL`` pair.
 
 - ``APNS_CERTIFICATE``: Absolute path to your APNS certificate file. Certificates with passphrases are not supported.
 - ``APNS_CERTIFICATES``: A dictionary reflecting separate application IDs to separate APNS certificate files.
@@ -91,8 +91,12 @@ For WNS, you are required to use one of the ``WNS_PACKAGE_SECURITY_KEY`` and ``W
     - ``'value'`` - a path to the field from the model referenced above, which contains a GCM API key like ``'api_key'``
 - ``APNS_HOST``: The hostname used for the APNS
   sockets.
-- ``WNS_PACKAGE_SECURITY_KEY``: TODO
+- ``WNS_PACKAGE_SECURITY_ID``: TODO
+- ``WNS_PACKAGE_SECURITY_IDS``: TODO
+- ``WNS_PACKAGE_SECURITY_IDS_MODEL``: TODO
 - ``WNS_SECRET_KEY``: TODO
+- ``WNS_SECRET_KEYS``: TODO
+- ``WNS_SECRET_KEYS_MODEL``: TODO
 - ``APNS_HOST``: The hostname used for the APNS sockets.
    - When ``DEBUG=True``, this defaults to ``gateway.sandbox.push.apple.com``.
    - When ``DEBUG=False``, this defaults to ``gateway.push.apple.com``.
