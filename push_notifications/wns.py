@@ -18,9 +18,10 @@ except ImportError:
 
 from django.core.exceptions import ImproperlyConfigured
 
-from . import NotificationError
+from . import NotificationError, decodestr
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 from .dynamic import get_wns_package_security_id, get_wns_secret_key
+
 
 class WNSError(NotificationError):
 	pass
@@ -71,7 +72,7 @@ def _wns_authenticate(scope="notify.windows.com", application_id=None):
 			# https://msdn.microsoft.com/en-us/library/windows/apps/xaml/hh868245
 			raise WNSAuthenticationError("Authentication failed, check your WNS settings.")
 		raise err
-	return json.loads(response.read().decode("utf-8"))
+	return json.loads(decodestr(response.read()))
 
 
 def _wns_send(uri, data, wns_type="wns/toast", application_id=None):
@@ -130,7 +131,7 @@ def _wns_send(uri, data, wns_type="wns/toast", application_id=None):
 			raise err
 		raise WNSNotificationResponseError("HTTP %i: %s" % (err.code, msg))
 
-	return response.read().decode("utf-8")
+	return decodestr(response.read())
 
 
 def _wns_prepare_toast(data, **kwargs):

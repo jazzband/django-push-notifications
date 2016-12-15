@@ -90,6 +90,7 @@ class DeviceAdmin(admin.ModelAdmin):
 			expired = get_expired_tokens(app_id)
 			queryset.filter(registration_id__in=expired).update(active=False)
 
+
 class GCMDeviceAdmin(DeviceAdmin):
 	list_display = (
 		"__str__", "device_id", "user", "active", "date_created", "cloud_message_type"

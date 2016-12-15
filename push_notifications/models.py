@@ -178,6 +178,7 @@ class WNSDeviceQuerySet(models.query.QuerySet):
 					res += r
 			return res
 
+
 class WNSDevice(Device):
 	device_id = UUIDField(
 		verbose_name=_("Device ID"), blank=True, null=True, db_index=True,

@@ -8,6 +8,10 @@ https://developer.android.com/google/gcm/index.html
 import json
 from .models import GCMDevice
 
+from django.core.exceptions import ImproperlyConfigured
+from . import NotificationError, decodestr
+from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from .dynamic import get_gcm_api_key
 
 try:
 	from urllib.request import Request, urlopen as _urlopen
@@ -21,11 +25,6 @@ except ImportError:
 def urlopen(*av, **kw):
 	# just to allow testing
 	return _urlopen(*av, **kw)
-
-from django.core.exceptions import ImproperlyConfigured
-from . import NotificationError
-from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
-from .dynamic import get_gcm_api_key
 
 
 class GCMError(NotificationError):
@@ -53,7 +52,7 @@ def _gcm_send(data, content_type, application_id):
 		"Content-Length": str(len(data)),
 	}
 	request = Request(SETTINGS["GCM_POST_URL"], data, headers)
-	return urlopen(request, timeout=SETTINGS["GCM_ERROR_TIMEOUT"]).read().decode("utf-8")
+	return decodestr(urlopen(request, timeout=SETTINGS["GCM_ERROR_TIMEOUT"]).read())
 
 
 def _fcm_send(data, content_type, application_id):
@@ -69,7 +68,7 @@ def _fcm_send(data, content_type, application_id):
 		"Content-Length": str(len(data)),
 	}
 	request = Request(SETTINGS["FCM_POST_URL"], data, headers)
-	return urlopen(request, timeout=SETTINGS["FCM_ERROR_TIMEOUT"]).read().decode("utf-8")
+	return decodestr(urlopen(request, timeout=SETTINGS["FCM_ERROR_TIMEOUT"]).read())
 
 
 def _cm_send_plain(registration_id, data, application_id, cloud_type="GCM", **kwargs):
@@ -252,6 +251,7 @@ def gcm_send_bulk_message(registration_ids, data, application_id=None, cloud_typ
 			return ret
 
 	return _cm_send_json(registration_ids, data, application_id=application_id, cloud_type=cloud_type, **kwargs)
+
 
 send_message = gcm_send_message
 send_bulk_message = gcm_send_bulk_message
