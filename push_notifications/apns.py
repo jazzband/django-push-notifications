@@ -58,9 +58,10 @@ def _check_certificate(ss):
 				mode = "end"
 				break
 			elif s.startswith("Proc-Type") and "ENCRYPTED" in s:
-				raise Exception("The certificate private key should not be encrypted")
+				raise ImproperlyConfigured("Encrypted APNS private keys are not supported")
+
 	if mode != "end":
-		raise Exception("The certificate doesn't contain a private key")
+		raise ImproperlyConfigured("The APNS certificate doesn't contain a private key")
 
 
 def _apns_create_socket(address_tuple, certfile=None):
@@ -76,10 +77,7 @@ def _apns_create_socket(address_tuple, certfile=None):
 	except Exception as e:
 		raise ImproperlyConfigured("The APNS certificate file at %r is not readable: %s" % (certfile, e))
 
-	try:
-		_check_certificate(content)
-	except Exception as e:
-		raise ImproperlyConfigured("The APNS certificate file at %r is unusable: %s" % (certfile, e))
+	_check_certificate(content)
 
 	ca_certs = SETTINGS.get("APNS_CA_CERTIFICATES")
 
