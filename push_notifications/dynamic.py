@@ -46,6 +46,10 @@ def get_gcm_api_key(application_id=None):
 	return _get_application_settings(application_id, "GCM_API_KEY", 'You need to setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages')
 
 
+def get_fcm_api_key(application_id=None):
+	return _get_application_settings(application_id, "FCM_API_KEY", 'You need to setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages')
+
+
 def get_apns_certificate(application_id=None):
 	r = _get_application_settings(application_id, "APNS_CERTIFICATE", 'You need to setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages')
 	if not isinstance(r, basestring):
@@ -73,3 +77,9 @@ def get_apns_feedback_host(application_id=None):
 
 def get_apns_feedback_port(application_id=None):
 	return _get_application_settings(application_id, "APNS_FEEDBACK_PORT", 'You need to setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages')
+
+def get_wns_package_security_id(application_id=None):
+	return _get_application_settings(application_id, "WNS_PACKAGE_SECURITY_ID", 'You need to setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages')
+
+def get_wns_secret_key(application_id=None):
+	return _get_application_settings(application_id, "WNS_SECRET_KEY", 'You need to setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages')

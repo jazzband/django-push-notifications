@@ -2,6 +2,7 @@
 import warnings
 warnings.simplefilter("ignore", Warning)
 
+
 DATABASES = {
 	"default": {
 		"ENGINE": "django.db.backends.sqlite3",
@@ -28,3 +29,4 @@ import os
 
 ROOT_DIR = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
 MEDIA_ROOT = os.path.join(ROOT_DIR,"testmedia")
+

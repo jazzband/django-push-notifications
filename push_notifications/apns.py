@@ -18,6 +18,21 @@ from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 from .dynamic import get_apns_certificate, get_apns_host, get_apns_port, get_apns_feedback_host, get_apns_feedback_port
 
 
+APNS_ERROR_MESSAGES = {
+	1: "Processing error",
+	2: "Missing device token",
+	3: "Missing topic",
+	4: "Missing payload",
+	5: "Invalid token size",
+	6: "Invalid topic size",
+	7: "Invalid payload size",
+	8: "Invalid token",
+	10: "Shutdown",
+	128: "Protocol error (APNS could not parse notification)",
+	255: "Unknown APNS error",
+}
+
+
 class APNSError(NotificationError):
 	pass
 
@@ -87,7 +102,8 @@ def _apns_create_socket_to_feedback(application_id):
 def _apns_pack_frame(token_hex, payload, identifier, expiration, priority):
 	token = unhexlify(token_hex)
 	# |COMMAND|FRAME-LEN|{token}|{payload}|{id:4}|{expiration:4}|{priority:1}
-	frame_len = 3 * 5 + len(token) + len(payload) + 4 + 4 + 1  # 5 items, each 3 bytes prefix, then each item length
+	# 5 items, each 3 bytes prefix, then each item length
+	frame_len = 3 * 5 + len(token) + len(payload) + 4 + 4 + 1
 	frame_fmt = "!BIBH%ssBH%ssBHIBHIBHB" % (len(token), len(payload))
 	frame = struct.pack(
 		frame_fmt,
@@ -96,7 +112,8 @@ def _apns_pack_frame(token_hex, payload, identifier, expiration, priority):
 		2, len(payload), payload,
 		3, 4, identifier,
 		4, 4, expiration,
-		5, 1, priority)
+		5, 1, priority
+	)
 
 	return frame
 
@@ -124,9 +141,11 @@ def _apns_check_errors(sock):
 		sock.settimeout(saved_timeout)
 
 
-def _apns_send(token, alert, application_id, badge=None, sound=None, category=None, content_available=False,
+def _apns_send(
+	token, alert, application_id, badge=None, sound=None, category=None, content_available=False,
 	action_loc_key=None, loc_key=None, loc_args=[], extra={}, identifier=0,
-	expiration=None, priority=10, socket=None):
+	expiration=None, priority=10, socket=None, certfile=None
+):
 	data = {}
 	aps_data = {}
 
@@ -143,6 +162,8 @@ def _apns_send(token, alert, application_id, badge=None, sound=None, category=No
 		aps_data["alert"] = alert
 
 	if badge is not None:
+		if callable(badge):
+			badge = badge(token)
 		aps_data["badge"] = badge
 
 	if sound is not None:
@@ -176,6 +197,8 @@ def _apns_send(token, alert, application_id, badge=None, sound=None, category=No
 			socket.write(frame)
 			_apns_check_errors(socket)
 
+	return token
+
 
 def _apns_read_and_unpack(socket, data_format):
 	length = struct.calcsize(data_format)
@@ -190,7 +213,7 @@ def _apns_receive_feedback(socket):
 	expired_token_list = []
 
 	# read a timestamp (4 bytes) and device token length (2 bytes)
-	header_format = '!LH'
+	header_format = "!LH"
 	has_data = True
 	while has_data:
 		try:
@@ -199,7 +222,7 @@ def _apns_receive_feedback(socket):
 			if header_data is not None:
 				timestamp, token_length = header_data
 				# Unpack format for a single value of length bytes
-				token_format = '%ss' % token_length
+				token_format = "%ss" % token_length
 				device_token = _apns_read_and_unpack(socket, token_format)
 				if device_token is not None:
 					# _apns_read_and_unpack returns a tuple, but
@@ -228,7 +251,7 @@ def apns_send_message(registration_id, alert, application_id, **kwargs):
 	to this for silent notifications.
 	"""
 
-	_apns_send(registration_id, alert, application_id, **kwargs)
+	return _apns_send(registration_id, alert, application_id, **kwargs)
 
 
 def apns_send_bulk_message(registration_ids, alert, application_id, **kwargs):
@@ -241,9 +264,12 @@ def apns_send_bulk_message(registration_ids, alert, application_id, **kwargs):
 	to this for silent notifications.
 	"""
 	with closing(_apns_create_socket_to_push(application_id)) as socket:
+		res = []
 		for identifier, registration_id in enumerate(registration_ids):
-			_apns_send(registration_id, alert, application_id, identifier=identifier, socket=socket, **kwargs)
+			r = _apns_send(registration_id, alert, application_id, identifier=identifier, socket=socket, **kwargs)
+			res.append(r)
 		_apns_check_errors(socket)
+		return res
 
 
 def apns_fetch_inactive_ids(application_id):
@@ -255,6 +281,6 @@ def apns_fetch_inactive_ids(application_id):
 		inactive_ids = []
 		# Maybe we should have a flag to return the timestamp?
 		# It doesn't seem that useful right now, though.
-		for tStamp, registration_id in _apns_receive_feedback(socket):
-			inactive_ids.append(codecs.encode(registration_id, 'hex_codec'))
+		for ts, registration_id in _apns_receive_feedback(socket):
+			inactive_ids.append(codecs.encode(registration_id, "hex_codec"))
 		return inactive_ids

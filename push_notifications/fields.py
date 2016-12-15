@@ -16,6 +16,7 @@ __all__ = ["HexadecimalField", "HexIntegerField"]
 
 hex_re = re.compile(r"^(([0-9A-f])|(0x[0-9A-f]))+$")
 signed_integer_engines = [
+	"django.db.backends.postgresql",
 	"django.db.backends.postgresql_psycopg2",
 	"django.contrib.gis.db.backends.postgis",
 	"django.db.backends.sqlite3"
@@ -47,7 +48,9 @@ class HexadecimalField(forms.CharField):
 	A form field that accepts only hexadecimal numbers
 	"""
 	def __init__(self, *args, **kwargs):
-		self.default_validators = [RegexValidator(hex_re, _("Enter a valid hexadecimal number"), "invalid")]
+		self.default_validators = [
+			RegexValidator(hex_re, _("Enter a valid hexadecimal number"), "invalid")
+		]
 		super(HexadecimalField, self).__init__(*args, **kwargs)
 
 	def prepare_value(self, value):
