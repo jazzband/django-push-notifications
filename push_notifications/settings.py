@@ -31,3 +31,6 @@ PUSH_NOTIFICATIONS_SETTINGS.setdefault("WNS_ACCESS_URL", "https://login.live.com
 
 # User model
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("USER_MODEL", settings.AUTH_USER_MODEL)
+
+# API endpoint settings
+PUSH_NOTIFICATIONS_SETTINGS.setdefault("AUTO_UPDATE_MATCHING_REG_ID", False)
