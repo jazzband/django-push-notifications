@@ -150,7 +150,7 @@ class WNSDeviceQuerySet(models.query.QuerySet):
 
 
 class WNSDevice(Device):
-	device_id = models.UUIDField(
+	device_id = UUIDField(
 		verbose_name=_("Device ID"), blank=True, null=True, db_index=True,
 		help_text=_("GUID()")
 	)
