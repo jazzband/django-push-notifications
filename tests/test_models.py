@@ -423,3 +423,18 @@ class ModelTestCase(TestCase):
 		self.assertIsNotNone(device.pk)
 		self.assertIsNotNone(device.date_created)
 		self.assertEqual(device.date_created.date(), timezone.now().date())
+
+	def test_apns_send_message_cert(self):
+		device = APNSDevice.objects.create(registration_id="abc")
+		socket = mock.MagicMock()
+
+		with mock.patch("push_notifications.apns._apns_pack_frame") as p:
+			with mock.patch("push_notifications.apns._apns_create_socket") as cs:
+				cs.return_value = socket
+				device.send_message(
+					"Hello world", extra={"foo": "bar"},
+					identifier=1, expiration=2, priority=5,
+					certfile="12345"
+				)
+				p.assert_called_once_with("abc", b'{"aps":{"alert":"Hello world"},"foo":"bar"}', 1, 2, 5)
+				cs.assert_called_once_with(('gateway.push.apple.com', 2195), "12345")
