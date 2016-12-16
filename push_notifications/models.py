@@ -12,6 +12,11 @@ CLOUD_MESSAGE_TYPES = (
 	("FCM", "Firebase Cloud Message"),
 )
 
+try:
+	from django.db.models import UUIDField
+except:
+	from uuidfield import UUIDField
+
 
 @python_2_unicode_compatible
 class Device(models.Model):
@@ -111,7 +116,7 @@ class APNSDeviceQuerySet(models.query.QuerySet):
 
 
 class APNSDevice(Device):
-	device_id = models.UUIDField(
+	device_id = UUIDField(
 		verbose_name=_("Device ID"), blank=True, null=True, db_index=True,
 		help_text="UDID / UIDevice.identifierForVendor()"
 	)
