@@ -24,3 +24,8 @@ ROOT_URLCONF = "core.urls"
 SECRET_KEY = "foobar"
 
 PUSH_NOTIFICATIONS_SETTINGS = {}
+
+import os
+
+ROOT_DIR = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
+MEDIA_ROOT = os.path.join(ROOT_DIR,"testmedia")
