@@ -121,6 +121,7 @@ class WNSDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
 		style={'input_type': 'text'},
 		required=False
 	)
+
 	class Meta(DeviceSerializerMixin.Meta):
 		model = WNSDevice
 
