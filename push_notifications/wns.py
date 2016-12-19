@@ -7,7 +7,6 @@ https://msdn.microsoft.com/en-us/windows/uwp/controls-and-patterns/tiles-and-not
 
 import json
 import xml.etree.ElementTree as ET
-from xml.etree.ElementTree import tostring
 
 try:
 	from urllib.error import HTTPError
@@ -173,7 +172,7 @@ def _wns_prepare_toast(data, **kwargs):
 			elem = ET.SubElement(binding, "img")
 			elem.attrib["src"] = item
 			elem.attrib["id"] = str(count)
-	return tostring(root)
+	return ET.tostring(root)
 
 
 def wns_send_message(uri, message=None, xml_data=None, raw_data=None, **kwargs):
@@ -223,7 +222,7 @@ def wns_send_message(uri, message=None, xml_data=None, raw_data=None, **kwargs):
 	elif xml_data:
 		xml = dict_to_xml_schema(xml_data)
 		wns_type = "wns/%s" % xml.tag
-		prepared_data = tostring(xml)
+		prepared_data = ET.tostring(xml)
 	# Create a raw notification
 	elif raw_data:
 		wns_type = "wns/raw"
