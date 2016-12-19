@@ -11,13 +11,14 @@ from xml.etree.ElementTree import tostring
 
 try:
 	from urllib.error import HTTPError
+	from urllib.parse import urlencode
 	from urllib.request import Request, urlopen
 except ImportError:
 	# Python 2 support
 	from urllib2 import HTTPError, Request, urlopen
+	from urllib import urlencode
 
 from django.core.exceptions import ImproperlyConfigured
-
 from . import NotificationError
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
@@ -40,29 +41,30 @@ def _wns_authenticate(scope="notify.windows.com"):
 
 	:return: dict: {'access_token': <str>, 'expires_in': <int>, 'token_type': 'bearer'}
 	"""
-	package_id = SETTINGS["WNS_PACKAGE_SECURITY_ID"]
-	secret_key = SETTINGS["WNS_SECRET_KEY"]
-	if not package_id:
+	client_id = SETTINGS["WNS_PACKAGE_SECURITY_ID"]
+	if not client_id:
 		raise ImproperlyConfigured(
 			'You need to set PUSH_NOTIFICATIONS_SETTINGS["WNS_PACKAGE_SECURITY_ID"] to use WNS.'
 		)
-	if not secret_key:
+
+	client_secret = SETTINGS["WNS_SECRET_KEY"]
+	if not client_secret:
 		raise ImproperlyConfigured(
 			'You need to set PUSH_NOTIFICATIONS_SETTINGS["WNS_SECRET_KEY"] to use WNS.'
 		)
 
-	data = (
-		"grant_type=client_credentials"
-		"&client_id=%(client_ids)"
-		"&client_secret=%(client_secret)s"
-		"&scope=notify.windows.com"
-	) % {"client_id": package_id, "client_secret": secret_key, "scope": scope}
-	data_bytes = bytes(data, "utf-8")
 	headers = {
 		"Content-Type": "application/x-www-form-urlencoded",
 	}
+	params = {
+		"grant_type": "client_credentials",
+		"client_id": client_id,
+		"client_secret": client_secret,
+		"scope": scope,
+	}
+	data = urlencode(params).encode("utf-8")
 
-	request = Request(SETTINGS["WNS_ACCESS_URL"], data=data_bytes, headers=headers)
+	request = Request(SETTINGS["WNS_ACCESS_URL"], data=data, headers=headers)
 	try:
 		response = urlopen(request)
 	except HTTPError as err:
