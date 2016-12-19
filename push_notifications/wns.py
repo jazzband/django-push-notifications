@@ -40,8 +40,8 @@ def _wns_authenticate(scope="notify.windows.com"):
 
 	:return: dict: {'access_token': <str>, 'expires_in': <int>, 'token_type': 'bearer'}
 	"""
-	package_id = SETTINGS.get("WNS_PACKAGE_SECURITY_ID")
-	secret_key = SETTINGS.get("WNS_SECRET_KEY")
+	package_id = SETTINGS["WNS_PACKAGE_SECURITY_ID"]
+	secret_key = SETTINGS["WNS_SECRET_KEY"]
 	if not package_id:
 		raise ImproperlyConfigured(
 			'You need to set PUSH_NOTIFICATIONS_SETTINGS["WNS_PACKAGE_SECURITY_ID"] to use WNS.'
@@ -62,7 +62,7 @@ def _wns_authenticate(scope="notify.windows.com"):
 		"Content-Type": "application/x-www-form-urlencoded",
 	}
 
-	request = Request(SETTINGS.WNS_ACCESS_URL, data=data_bytes, headers=headers)
+	request = Request(SETTINGS["WNS_ACCESS_URL"], data=data_bytes, headers=headers)
 	try:
 		response = urlopen(request)
 	except HTTPError as err:
