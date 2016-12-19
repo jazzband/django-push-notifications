@@ -73,7 +73,20 @@ def _wns_authenticate(scope="notify.windows.com"):
 			# https://msdn.microsoft.com/en-us/library/windows/apps/xaml/hh868245
 			raise WNSAuthenticationError("Authentication failed, check your WNS settings.")
 		raise err
-	return json.loads(response.read().decode("utf-8"))
+
+	oauth_data = response.read().decode("utf-8")
+	try:
+		oauth_data = json.loads(oauth_data)
+	except Exception:
+		# Upstream WNS issue
+		raise WNSAuthenticationError("Received invalid JSON data from WNS.")
+
+	access_token = oauth_data.get("access_token")
+	if not access_token:
+		# Upstream WNS issue
+		raise WNSAuthenticationError("Access token missing from WNS response.")
+
+	return access_token
 
 
 def _wns_send(uri, data, wns_type="wns/toast"):
@@ -84,9 +97,7 @@ def _wns_send(uri, data, wns_type="wns/toast"):
 	:param data: dict: The notification data to be sent.
 	:return:
 	"""
-	access_token = _wns_authenticate()["access_token"]
-
-	authorization = "Bearer %(token)s" % {"token": access_token}
+	access_token = _wns_authenticate()
 
 	content_type = "text/xml"
 	if wns_type == "wns/raw":
@@ -95,7 +106,7 @@ def _wns_send(uri, data, wns_type="wns/toast"):
 	headers = {
 		# content_type is "text/xml" (toast/badge/tile) | "application/octet-stream" (raw)
 		"Content-Type": content_type,
-		"Authorization": authorization,
+		"Authorization": "Bearer %s" % (access_token),
 		"X-WNS-Type": wns_type,  # wns/toast | wns/badge | wns/tile | wns/raw
 	}
 
