@@ -1,34 +1,13 @@
 from __future__ import absolute_import
 
 from rest_framework import permissions
-from rest_framework.serializers import Serializer, ModelSerializer, ValidationError
+from rest_framework.serializers import Serializer, ModelSerializer, ValidationError, CharField
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.fields import IntegerField
 
 from push_notifications.models import APNSDevice, GCMDevice, WNSDevice
 from push_notifications.fields import hex_re
 from push_notifications.fields import UNSIGNED_64BIT_INT_MAX_VALUE
-
-
-# Fields
-
-
-class HexIntegerField(IntegerField):
-	"""
-	Store an integer represented as a hex string of form "0x01".
-	"""
-
-	def to_internal_value(self, data):
-		# validate hex string and convert it to the unsigned
-		# integer representation for internal use
-		try:
-			data = int(data, 16) if type(data) != int else data
-		except ValueError:
-			raise ValidationError("Device ID is not a valid hex number")
-		return super(HexIntegerField, self).to_internal_value(data)
-
-	def to_representation(self, value):
-		return value
 
 
 # Serializers
@@ -60,7 +39,6 @@ class UniqueRegistrationSerializerMixin(Serializer):
 		devices = None
 		primary_key = None
 		request_method = None
-
 		if self.initial_data.get("registration_id", None):
 			if self.instance:
 				request_method = "update"
@@ -70,12 +48,12 @@ class UniqueRegistrationSerializerMixin(Serializer):
 		else:
 			if self.context["request"].method in ["PUT", "PATCH"]:
 				request_method = "update"
-				primary_key = attrs["id"]
+				primary_key = self.instance.id
 			elif self.context["request"].method == "POST":
 				request_method = "create"
 
 		Device = self.Meta.model
-		if request_method == "update":
+		if request_method == "update" and "registration_id" in attrs:
 			devices = Device.objects.filter(registration_id=attrs["registration_id"]) \
 				.exclude(id=primary_key)
 		elif request_method == "create":
@@ -87,7 +65,7 @@ class UniqueRegistrationSerializerMixin(Serializer):
 
 
 class GCMDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
-	device_id = HexIntegerField(
+	device_id = CharField(
 		help_text="ANDROID_ID / TelephonyManager.getDeviceId() (e.g: 0x01)",
 		style={"input_type": "text"},
 		required=False,
@@ -101,12 +79,6 @@ class GCMDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
 			"cloud_message_type",
 		)
 		extra_kwargs = {"id": {"read_only": False, "required": False}}
-
-	def validate_device_id(self, value):
-		# device ids are 64 bit unsigned values
-		if value > UNSIGNED_64BIT_INT_MAX_VALUE:
-			raise ValidationError("Device ID is out of range")
-		return value
 
 
 class WNSDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
@@ -131,6 +103,10 @@ class DeviceViewSetMixin(object):
 		return super(DeviceViewSetMixin, self).perform_create(serializer)
 
 	def perform_update(self, serializer):
+		# if the validated_data contains the id, a create will be perfomed so
+		# pop the id if it is present
+		if 'id' in serializer.validated_data:
+			serializer.validated_data.pop('id')
 		if self.request.user.is_authenticated():
 			serializer.save(user=self.request.user)
 		return super(DeviceViewSetMixin, self).perform_update(serializer)
