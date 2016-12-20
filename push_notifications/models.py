@@ -19,6 +19,8 @@ class Device(models.Model):
 	date_created = models.DateTimeField(
 		verbose_name=_("Creation date"), auto_now_add=True, null=True
 	)
+	company = models.CharField(max_length=255, verbose_name=_("Company"),
+							   blank=True, null=True, default="")
 
 	class Meta:
 		abstract = True

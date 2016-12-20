@@ -1,3 +1,8 @@
+v1.5.3 (2016-12-20)
+===================
+* Add company field to devices. Default is empty.
+* Add forgot migration (Firefox)
+
 v1.5.2 (2016-09-06)
 ===================
 * Fix APNS syntax error
