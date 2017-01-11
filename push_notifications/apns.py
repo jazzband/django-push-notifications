@@ -150,7 +150,7 @@ def _apns_check_errors(sock):
 def _apns_send(
 	token, alert, application_id=None, badge=None, sound=None, category=None, content_available=False,
 	action_loc_key=None, loc_key=None, loc_args=[], extra={}, identifier=0,
-	expiration=None, priority=10, socket=None, certfile=None
+	expiration=None, priority=10, socket=None, certfile=None, mutable_content=False
 ):
 	data = {}
 	aps_data = {}
@@ -180,6 +180,9 @@ def _apns_send(
 
 	if content_available:
 		aps_data["content-available"] = 1
+
+	if mutable_content:
+		aps_data["mutable-content"] = 1
 
 	data["aps"] = aps_data
 	data.update(extra)
