@@ -31,3 +31,6 @@ PUSH_NOTIFICATIONS_SETTINGS.setdefault("WNS_ACCESS_URL", "https://login.live.com
 
 # User model
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("USER_MODEL", settings.AUTH_USER_MODEL)
+
+# DRF
+PUSH_NOTIFICATIONS_SETTINGS.setdefault("POST_RECREATE_USER", False)
