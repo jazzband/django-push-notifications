@@ -131,7 +131,7 @@ class DeviceViewSetMixin(object):
 	def create(self, request, *args, **kwargs):
 		serializer = None
 		is_update = False
-		if SETTINGS.get('AUTO_UPDATE_MATCHING_REG_ID') and 'registration_id' in request.data:
+		if SETTINGS.get('UPDATE_ON_DUPLICATE_REG_ID') and 'registration_id' in request.data:
 			instance = self.queryset.model.objects.filter(
 				registration_id=request.data['registration_id']
 			).first()
