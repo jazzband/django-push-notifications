@@ -10,11 +10,11 @@ The app implements three models: ``GCMDevice``, ``APNSDevice`` and ``WNSDevice``
  - ``active`` (default True): A boolean that determines whether the device will be sent notifications.
  - ``user`` (optional): A foreign key to auth.User, if you wish to link the device to a specific user.
  - ``device_id`` (optional): A UUID for the device obtained from Android/iOS/Windows APIs, if you wish to uniquely identify it.
- - ``registration_id`` (required): The FCM registration id or the APNS token for the device.
+ - ``registration_id`` (required): The FCM/GCM registration id or the APNS token for the device.
 
 
 The app also implements an admin panel, through which you can test single and bulk notifications. Select one or more
-FCM, APNS or WNS devices and in the action dropdown, select "Send test message" or "Send test message in bulk", accordingly.
+FCM/GCM, APNS or WNS devices and in the action dropdown, select "Send test message" or "Send test message in bulk", accordingly.
 Note that sending a non-bulk test message to more than one device will just iterate over the devices and send multiple
 single messages.
 
@@ -66,9 +66,11 @@ Settings list
 -------------
 All settings are contained in a ``PUSH_NOTIFICATIONS_SETTINGS`` dict.
 
-In order to use FCM, you are required to include ``FCM_API_KEY``.
+In order to use FCM/GCM, you are required to include ``FCM_API_KEY`` or ``GCM_API_KEY``.
 For APNS, you are required to include ``APNS_CERTIFICATE``.
 For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY``.
+
+*APNS settings*
 
 - ``APNS_CERTIFICATE``: Absolute path to your APNS certificate file. Certificates with passphrases are not supported.
 - ``APNS_CA_CERTIFICATES``: Absolute path to a CA certificates file for APNS. Optional - do not set if not needed. Defaults to None.
@@ -78,6 +80,7 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 - ``APNS_PORT``: The port used along with APNS_HOST. Defaults to 2195.
 - ``APNS_ERROR_TIMEOUT``: The timeout on APNS sockets.
 
+*FCM/GCM settings*
 
 - ``FCM_API_KEY``: Your API key for Firebase Cloud Messaging.
 - ``FCM_POST_URL``: The full url that FCM notifications will be POSTed to. Defaults to https://fcm.googleapis.com/fcm/send.
@@ -85,6 +88,7 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 - ``FCM_ERROR_TIMEOUT``: The timeout on GCM POSTs.
 - ``GCM_API_KEY``, ``GCM_POST_URL``, ``GCM_MAX_RECIPIENTS``, ``GCM_ERROR_TIMEOUT``: Same parameters for GCM
 
+*WNS settings*
 
 - ``WNS_PACKAGE_SECURITY_KEY``: TODO
 - ``WNS_SECRET_KEY``: TODO
@@ -94,7 +98,7 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 
 Sending messages
 ----------------
-FCM and APNS services have slightly different semantics. The app tries to offer a common interface for both when using the models.
+FCM/GCM and APNS services have slightly different semantics. The app tries to offer a common interface for both when using the models.
 
 .. code-block:: python
 
