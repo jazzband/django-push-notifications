@@ -70,7 +70,7 @@ In order to use FCM/GCM, you are required to include ``FCM_API_KEY`` or ``GCM_AP
 For APNS, you are required to include ``APNS_CERTIFICATE``.
 For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY``.
 
-*APNS settings*
+**APNS settings**
 
 - ``APNS_CERTIFICATE``: Absolute path to your APNS certificate file. Certificates with passphrases are not supported.
 - ``APNS_CA_CERTIFICATES``: Absolute path to a CA certificates file for APNS. Optional - do not set if not needed. Defaults to None.
@@ -80,7 +80,7 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 - ``APNS_PORT``: The port used along with APNS_HOST. Defaults to 2195.
 - ``APNS_ERROR_TIMEOUT``: The timeout on APNS sockets.
 
-*FCM/GCM settings*
+**FCM/GCM settings**
 
 - ``FCM_API_KEY``: Your API key for Firebase Cloud Messaging.
 - ``FCM_POST_URL``: The full url that FCM notifications will be POSTed to. Defaults to https://fcm.googleapis.com/fcm/send.
@@ -88,7 +88,7 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 - ``FCM_ERROR_TIMEOUT``: The timeout on GCM POSTs.
 - ``GCM_API_KEY``, ``GCM_POST_URL``, ``GCM_MAX_RECIPIENTS``, ``GCM_ERROR_TIMEOUT``: Same parameters for GCM
 
-*WNS settings*
+**WNS settings**
 
 - ``WNS_PACKAGE_SECURITY_KEY``: TODO
 - ``WNS_SECRET_KEY``: TODO
