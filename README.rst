@@ -83,6 +83,7 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 - ``APNS_ERROR_TIMEOUT``: The timeout on APNS sockets.
 - ``GCM_ERROR_TIMEOUT``: The timeout on GCM POSTs.
 - ``USER_MODEL``: Your user model of choice. Eg. ``myapp.User``. Defaults to ``settings.AUTH_USER_MODEL``.
+- ``UPDATE_ON_DUPLICATE_REG_ID``: Transform create of an existing Device (based on registration id) into a update. See below `Update of device with duplicate registration ID`_ for more details.
 
 Sending messages
 ----------------
@@ -242,6 +243,18 @@ Routes can be added one of two ways:
 		url(r'^device/apns/?$', APNSDeviceAuthorizedViewSet.as_view({'post': 'create'}), name='create_apns_device'),
 		# ...
 	)
+
+Update of device with duplicate registration ID
+-----------------------------------------------
+
+The DRF viewset enforce the uniqueness of the registration ID. In same use case it
+may cause issue: If an already registered mobile change its user and it will
+fail to register because the registration ID already exist.
+
+When option ``UPDATE_ON_DUPLICATE_REG_ID`` is set to True, then any creation of
+device with an already existing registration ID will be transformed into an update.
+
+The ``UPDATE_ON_DUPLICATE_REG_ID`` only works with DRF.
 
 
 Python 3 support
