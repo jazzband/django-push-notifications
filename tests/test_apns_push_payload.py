@@ -16,6 +16,30 @@ class APNSPushPayloadTest(TestCase):
 				b'{"aps":{"alert":"Hello world","badge":1,"sound":"chime"},"custom_data":12345}',
 				0, 3, 10)
 
+	def test_push_payload_with_thread_id(self):
+		socket = mock.MagicMock()
+		with mock.patch("push_notifications.apns._apns_pack_frame") as p:
+			_apns_send(
+				"123", "Hello world", thread_id="565", sound="chime",
+				extra={"custom_data": 12345}, expiration=3, socket=socket
+			)
+			p.assert_called_once_with(
+				"123",
+				b'{"aps":{"alert":"Hello world","sound":"chime","thread-id":"565"},"custom_data":12345}',
+				0, 3, 10)
+
+	def test_push_payload_with_alert_dict(self):
+		socket = mock.MagicMock()
+		with mock.patch("push_notifications.apns._apns_pack_frame") as p:
+			_apns_send(
+				"123", alert={'title':'t1', 'body':'b1'}, sound="chime",
+				extra={"custom_data": 12345}, expiration=3, socket=socket
+			)
+			p.assert_called_once_with(
+				"123",
+				b'{"aps":{"alert":{"body":"b1","title":"t1"},"sound":"chime"},"custom_data":12345}',
+				0, 3, 10)
+
 	def test_localised_push_with_empty_body(self):
 		socket = mock.MagicMock()
 		with mock.patch("push_notifications.apns._apns_pack_frame") as p:
