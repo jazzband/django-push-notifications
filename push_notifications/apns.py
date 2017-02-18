@@ -141,7 +141,7 @@ def _apns_check_errors(sock):
 def _apns_send(
 	token, alert, badge=None, sound=None, category=None, content_available=False,
 	action_loc_key=None, loc_key=None, loc_args=[], extra={}, identifier=0,
-	expiration=None, priority=10, socket=None, certfile=None, mutable_content=False
+	expiration=None, priority=10, socket=None, certfile=None, mutable_content=False, thread_id=None
 ):
 	data = {}
 	aps_data = {}
@@ -174,6 +174,9 @@ def _apns_send(
 
 	if mutable_content:
 		aps_data["mutable-content"] = 1
+
+	if thread_id:
+		aps_data["thread-id"] = thread_id
 
 	data["aps"] = aps_data
 	data.update(extra)

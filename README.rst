@@ -107,12 +107,14 @@ GCM and APNS services have slightly different semantics. The app tries to offer 
 	device = APNSDevice.objects.get(registration_id=apns_token)
 	device.send_message("You've got mail") # Alert message may only be sent as text.
 	device.send_message(None, badge=5) # No alerts but with badge.
-	device.send_message(None, badge=1, extra={"foo": "bar"}) # Silent message with badge and added custom data.
+	device.send_message(None, content_available=1, extra={"foo": "bar"}) # Silent message with custom data.
+	device.send_message("alert" : {"title" : "Game Request", "body" : "Bob wants to play poker", extra={"foo": "bar"}) # alert with title and body.
 
 .. note::
 	APNS does not support sending payloads that exceed 2048 bytes (increased from 256 in 2014).
 	The message is only one part of the payload, if
 	once constructed the payload exceeds the maximum size, an ``APNSDataOverflow`` exception will be raised before anything is sent.
+  Reference: `Apple Payload Documentation <https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/CreatingtheNotificationPayload.html#//apple_ref/doc/uid/TP40008194-CH10-SW1>`_
 
 Sending messages in bulk
 ------------------------
