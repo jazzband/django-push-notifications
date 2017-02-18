@@ -108,7 +108,9 @@ GCM and APNS services have slightly different semantics. The app tries to offer 
 	device.send_message("You've got mail") # Alert message may only be sent as text.
 	device.send_message(None, badge=5) # No alerts but with badge.
 	device.send_message(None, content_available=1, extra={"foo": "bar"}) # Silent message with custom data.
-	device.send_message("alert" : {"title" : "Game Request", "body" : "Bob wants to play poker", extra={"foo": "bar"}) # alert with title and body.
+	# alert with title and body.
+	device.send_message("alert" : {"title" : "Game Request", "body" : "Bob wants to play poker", extra={"foo": "bar"})
+	device.send_message("Hello again", thread_id="123" extra={"foo": "bar"}) # set thread-id to allow iOS to merge notifications
 
 .. note::
 	APNS does not support sending payloads that exceed 2048 bytes (increased from 256 in 2014).
