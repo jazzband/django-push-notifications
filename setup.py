@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os.path
 import push_notifications
-from distutils.core import setup
+from setuptools import setup
 
 README = open(os.path.join(os.path.dirname(__file__), "README.rst")).read()
 
