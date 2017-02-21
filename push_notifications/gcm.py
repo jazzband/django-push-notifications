@@ -175,29 +175,13 @@ def _gcm_handle_canonical_id(canonical_id, current_id, cloud_type):
 			.update(registration_id=canonical_id)
 
 
-def send_message(registration_id, data, cloud_type, **kwargs):
-	"""
-	Sends a GCM or FCM notification to a single registration_id.
-
-	If sending multiple notifications, it is more efficient to use
-	send_bulk_message() with a list of registration_ids
-
-	A reference of extra keyword arguments sent to the server is available here:
-	https://developers.google.com/cloud-messaging/server-ref#downstream
-	"""
-
-	if registration_id:
-		return _cm_send_request([registration_id], data, cloud_type, **kwargs)
-
-
-def send_bulk_message(registration_ids, data, cloud_type, **kwargs):
+def send_message(registration_ids, data, cloud_type, **kwargs):
 	"""
 	Sends a GCM or FCM notification to one or more registration_ids. The registration_ids
-	needs to be a list.
-	This will send the notification as json data.
+	can be a list or a single string. This will send the notification as json data.
 
 	A reference of extra keyword arguments sent to the server is available here:
-	https://firebase.google.com/docs/cloud-messaging/send-message
+	https://firebase.google.com/docs/cloud-messaging/http-server-ref#table1
 	"""
 	if cloud_type == "GCM":
 		max_recipients = SETTINGS.get("GCM_MAX_RECIPIENTS")
@@ -206,15 +190,21 @@ def send_bulk_message(registration_ids, data, cloud_type, **kwargs):
 	else:
 		raise ImproperlyConfigured("cloud_type must be GCM or FCM not %s" % str(cloud_type))
 
+	# Checks for valid recipient
 	if registration_ids is None and "/topics/" not in kwargs.get("to", ""):
 		return
-	# GCM only allows up to 1000 reg ids per bulk message
-	# https://developer.android.com/google/gcm/gcm.html#request
-	if registration_ids:
-		if len(registration_ids) > max_recipients:
-			ret = []
-			for chunk in _chunks(registration_ids, max_recipients):
-				ret.append(_cm_send_request(chunk, data, cloud_type=cloud_type, **kwargs))
-			return ret
 
-	return _cm_send_request(registration_ids, data, cloud_type=cloud_type, **kwargs)
+	# Bundles the registration_ids in an list if only one is sent
+	if not isinstance(registration_ids, list):
+		registration_ids = [registration_ids] if registration_ids else None
+
+	# FCM only allows up to 1000 reg ids per bulk message
+	# https://firebase.google.com/docs/cloud-messaging/server#http-request
+	if registration_ids:
+		ret = []
+		for chunk in _chunks(registration_ids, max_recipients):
+			ret.append(_cm_send_request(chunk, data, cloud_type=cloud_type, **kwargs))
+		return ret[0] if len(ret) == 1 else ret
+
+
+send_bulk_message = send_message
