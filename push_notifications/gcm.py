@@ -22,6 +22,21 @@ from . import NotificationError
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 
+# Valid keys for FCM messages
+# See ref : https://firebase.google.com/docs/cloud-messaging/http-server-ref#notification-payload-support
+FCM_TARGETS_KEYS = [
+	'to', 'condition', 'notification_key'
+]
+FCM_OPTIONS_KEYS = [
+	'collapse_key', 'priority', 'content_available', 'delay_while_idle', 'time_to_live',
+	'restricted_package_name', 'dry_run'
+]
+FCM_NOTIFICATIONS_PAYLOAD_KEYS = [
+	'title', 'body', 'icon', 'sound', 'badge', 'color', 'tag', 'click_action',
+	'body_loc_key', 'body_loc_args', 'title_loc_key', 'title_loc_args'
+]
+
+
 class GCMError(NotificationError):
 	pass
 
@@ -164,28 +179,46 @@ def _handler_cm_message_json(registration_ids, response_data, cloud_type):
 	return response
 
 
-def _cm_send_json(registration_ids, data, cloud_type="GCM", **kwargs):
+def _cm_send_json(registration_ids, data, cloud_type="GCM", use_fcm_notifications=True, **kwargs):
 	"""
 	Sends a GCM notification to one or more registration_ids. The registration_ids
 	needs to be a list.
 	This will send the notification as json data.
 	"""
 
-	values = {"registration_ids": registration_ids} if registration_ids else {}
+	payload = {"registration_ids": registration_ids} if registration_ids else {}
 
-	if data is not None:
-		values["data"] = data
+	# If using FCM, optionnally autodiscovers notification related keys
+	# https://firebase.google.com/docs/cloud-messaging/concept-options#notifications_and_data_messages
+	if cloud_type == "FCM" and use_fcm_notifications:
+		notification_payload = {}
+		if 'message' in data:
+			notification_payload['body'] = data.pop('message', None)
 
-	for k, v in kwargs.items():
-		if v:
-			values[k] = v
+		for key in FCM_NOTIFICATIONS_PAYLOAD_KEYS:
+			value_from_extra = data.pop(key, None)
+			if value_from_extra:
+				notification_payload[key] = value_from_extra
+			value_from_kwargs = kwargs.pop(key, None)
+			if value_from_kwargs:
+				notification_payload[key] = value_from_kwargs
+		if notification_payload:
+			payload['notification'] = notification_payload
+
+	if data:
+		payload['data'] = data
+
+	# Attach any additional non falsy keyword args (targets, options)
+	# See ref : https://firebase.google.com/docs/cloud-messaging/http-server-ref#table1
+	payload.update({k: v for k, v in kwargs.items() if v and (k in FCM_TARGETS_KEYS or k in FCM_OPTIONS_KEYS)})
 
 	# Sort the keys for deterministic output (useful for tests)
-	data = json.dumps(values, separators=(",", ":"), sort_keys=True).encode("utf-8")
+	json_payload = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
+
 	if cloud_type == "GCM":
-		response = json.loads(_gcm_send(data, "application/json"))
+		response = json.loads(_gcm_send(json_payload, "application/json"))
 	elif cloud_type == "FCM":
-		response = json.loads(_fcm_send(data, "application/json"))
+		response = json.loads(_fcm_send(json_payload, "application/json"))
 	else:
 		raise ImproperlyConfigured("cloud_type must be GCM or FCM not %s" % str(cloud_type))
 	return _handler_cm_message_json(registration_ids, response, cloud_type)
