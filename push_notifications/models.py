@@ -85,14 +85,14 @@ class GCMDevice(Device):
 		verbose_name = _("GCM device")
 
 	def send_message(self, message, **kwargs):
-		from .gcm import send_message
+		from .gcm import send_bulk_message
 
 		data = kwargs.pop("extra", {})
 		if message is not None:
 			data["message"] = message
 
-		return send_message(
-			registration_id=self.registration_id, data=data,
+		return send_bulk_message(
+			registration_ids=[self.registration_id], data=data,
 			cloud_type=self.cloud_message_type, **kwargs
 		)
 
