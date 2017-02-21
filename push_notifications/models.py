@@ -8,8 +8,8 @@ from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 
 CLOUD_MESSAGE_TYPES = (
-	("GCM", "Google Cloud Message"),
 	("FCM", "Firebase Cloud Message"),
+	("GCM", "Google Cloud Message"),
 )
 
 
@@ -50,7 +50,7 @@ class GCMDeviceQuerySet(models.query.QuerySet):
 				data["message"] = message
 
 			response = []
-			for cloud_type in ("GCM", "FCM"):
+			for cloud_type in ("FCM", "GCM"):
 				reg_ids = list(
 					self.filter(active=True, cloud_message_type=cloud_type).values_list(
 						"registration_id", flat=True
@@ -75,7 +75,7 @@ class GCMDevice(Device):
 	cloud_message_type = models.CharField(
 		verbose_name=_("Cloud Message Type"), max_length=3,
 		choices=CLOUD_MESSAGE_TYPES, default="GCM",
-		help_text=_("You should choose GCM or FCM")
+		help_text=_("You should choose FCM or GCM")
 	)
 	objects = GCMDeviceManager()
 
