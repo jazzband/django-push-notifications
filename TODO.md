@@ -11,4 +11,3 @@ These are the main big items that still need to be done:
 ## Backends
 
 * WebPush (#276)
-* FCM (#302)
