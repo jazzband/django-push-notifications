@@ -7,6 +7,7 @@ addons:
     - python3.5
 install:
   - pip install tox
+  - pip install PySocks
 script:
   - tox
 sudo: false
