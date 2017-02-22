@@ -86,10 +86,7 @@ class DeviceAdmin(admin.ModelAdmin):
 		# could very easily leave an expired device as active.  Maybe
 		#  this is just a bad API.
 		expired = get_expired_tokens()
-		devices = queryset.filter(registration_id__in=expired)
-		for d in devices:
-			d.active = False
-			d.save()
+		queryset.filter(registration_id__in=expired).update(active=False)
 
 
 class GCMDeviceAdmin(DeviceAdmin):
