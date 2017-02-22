@@ -9,7 +9,9 @@ import json
 import ssl
 import struct
 import socket
+import socket as Socket
 import time
+import errno
 from contextlib import closing
 from binascii import unhexlify
 from django.core.exceptions import ImproperlyConfigured
@@ -194,7 +196,12 @@ def _apns_send(
 	frame = _apns_pack_frame(token, json_data, identifier, expiration_time, priority)
 
 	if socket:
-		socket.write(frame)
+		try:
+			socket.write(frame)
+		except Socket.error, e:
+			if e[0] == errno.EPIPE:
+				raise APNSServerError(20, identifier)
+			raise APNSServerError(255, identifier)
 	else:
 		with closing(_apns_create_socket_to_push(certfile)) as socket:
 			socket.write(frame)
