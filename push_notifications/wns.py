@@ -18,8 +18,10 @@ except ImportError:
 	from urllib import urlencode
 
 from django.core.exceptions import ImproperlyConfigured
-from . import NotificationError
+
+from . import NotificationError, decodestr
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from .dynamic import get_wns_package_security_id, get_wns_secret_key
 
 
 class WNSError(NotificationError):
@@ -34,19 +36,19 @@ class WNSNotificationResponseError(WNSError):
 	pass
 
 
-def _wns_authenticate(scope="notify.windows.com"):
+def _wns_authenticate(scope="notify.windows.com", application_id=None):
 	"""
 	Requests an Access token for WNS communication.
 
 	:return: dict: {'access_token': <str>, 'expires_in': <int>, 'token_type': 'bearer'}
 	"""
-	client_id = SETTINGS["WNS_PACKAGE_SECURITY_ID"]
+	client_id = get_wns_package_security_id(application_id)
+	client_secret = get_wns_secret_key(application_id)
 	if not client_id:
 		raise ImproperlyConfigured(
 			'You need to set PUSH_NOTIFICATIONS_SETTINGS["WNS_PACKAGE_SECURITY_ID"] to use WNS.'
 		)
 
-	client_secret = SETTINGS["WNS_SECRET_KEY"]
 	if not client_secret:
 		raise ImproperlyConfigured(
 			'You need to set PUSH_NOTIFICATIONS_SETTINGS["WNS_SECRET_KEY"] to use WNS.'
@@ -61,7 +63,7 @@ def _wns_authenticate(scope="notify.windows.com"):
 		"client_secret": client_secret,
 		"scope": scope,
 	}
-	data = urlencode(params).encode("utf-8")
+	data = decodestr(urlencode(params))
 
 	request = Request(SETTINGS["WNS_ACCESS_URL"], data=data, headers=headers)
 	try:
@@ -73,7 +75,7 @@ def _wns_authenticate(scope="notify.windows.com"):
 			raise WNSAuthenticationError("Authentication failed, check your WNS settings.")
 		raise err
 
-	oauth_data = response.read().decode("utf-8")
+	oauth_data = decodestr(response.read())
 	try:
 		oauth_data = json.loads(oauth_data)
 	except Exception:
@@ -88,7 +90,7 @@ def _wns_authenticate(scope="notify.windows.com"):
 	return access_token
 
 
-def _wns_send(uri, data, wns_type="wns/toast"):
+def _wns_send(uri, data, wns_type="wns/toast", application_id=None):
 	"""
 	Sends a notification data and authentication to WNS.
 
@@ -96,7 +98,7 @@ def _wns_send(uri, data, wns_type="wns/toast"):
 	:param data: dict: The notification data to be sent.
 	:return:
 	"""
-	access_token = _wns_authenticate()
+	access_token = _wns_authenticate(application_id=application_id)
 
 	content_type = "text/xml"
 	if wns_type == "wns/raw":
@@ -142,7 +144,7 @@ def _wns_send(uri, data, wns_type="wns/toast"):
 			raise err
 		raise WNSNotificationResponseError("HTTP %i: %s" % (err.code, msg))
 
-	return response.read().decode("utf-8")
+	return decodestr(response.read())
 
 
 def _wns_prepare_toast(data, **kwargs):
@@ -175,7 +177,7 @@ def _wns_prepare_toast(data, **kwargs):
 	return ET.tostring(root)
 
 
-def wns_send_message(uri, message=None, xml_data=None, raw_data=None, **kwargs):
+def wns_send_message(uri, message=None, xml_data=None, raw_data=None, application_id=None, **kwargs):
 	"""
 	Sends a notification request to WNS.
 	There are four notification types that WNS can send: toast, tile, badge and raw.
@@ -233,10 +235,10 @@ def wns_send_message(uri, message=None, xml_data=None, raw_data=None, **kwargs):
 			"`message`, `xml_data`, `raw_data`"
 		)
 
-	_wns_send(uri=uri, data=prepared_data, wns_type=wns_type)
+	return _wns_send(uri=uri, data=prepared_data, wns_type=wns_type, application_id=application_id)
 
 
-def wns_send_bulk_message(uri_list, message=None, xml_data=None, raw_data=None, **kwargs):
+def wns_send_bulk_message(uri_list, message=None, xml_data=None, raw_data=None, application_id=None, **kwargs):
 	"""
 	WNS doesn't support bulk notification, so we loop through each uri.
 
@@ -245,12 +247,15 @@ def wns_send_bulk_message(uri_list, message=None, xml_data=None, raw_data=None, 
 	:param xml_data: dict: A dictionary containing data to be converted to an xml tree.
 	:param raw_data: str: Data to be sent via a `raw` notification.
 	"""
+	res = []
 	if uri_list:
 		for uri in uri_list:
-			wns_send_message(
+			r = wns_send_message(
 				uri=uri, message=message, xml_data=xml_data,
-				raw_data=raw_data, **kwargs
+				raw_data=raw_data, application_id=application_id, **kwargs
 			)
+			res.append(r)
+	return res
 
 
 def dict_to_xml_schema(data):

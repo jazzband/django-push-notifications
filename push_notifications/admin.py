@@ -85,11 +85,10 @@ class DeviceAdmin(admin.ModelAdmin):
 		# if the user doesn't select all the devices for pruning, we
 		# could very easily leave an expired device as active.  Maybe
 		#  this is just a bad API.
-		expired = get_expired_tokens()
-		devices = queryset.filter(registration_id__in=expired)
-		for d in devices:
-			d.active = False
-			d.save()
+		app_ids = set(queryset.values_list('application_id', flat=True).distinct())
+		for app_id in app_ids:
+			expired = get_expired_tokens(app_id)
+			queryset.filter(registration_id__in=expired).update(active=False)
 
 
 class GCMDeviceAdmin(DeviceAdmin):
