@@ -44,6 +44,15 @@ class DeviceAdmin(admin.ModelAdmin):
 			if bulk:
 				break
 
+		# Because NotRegistered and InvalidRegistration do not throw GCMError
+		# catch them here to display error msg.
+		if not bulk:
+			for r in list(ret):
+				if r in ("Error=NotRegistered", "Error=InvalidRegistration"):
+					errors.append(r)
+					ret.remove(r)
+		else:
+			errors = [",".join(r.values()) for r in ret[0][0]["results"] if "error" in r]
 		if errors:
 			self.message_user(
 				request, _("Some messages could not be processed: %r" % (", ".join(errors))),
@@ -52,6 +61,8 @@ class DeviceAdmin(admin.ModelAdmin):
 		if ret:
 			if not bulk:
 				ret = ", ".join(ret)
+			elif ret[0][0]["success"] == 0:
+				return
 			if errors:
 				msg = _("Some messages were sent: %s" % (ret))
 			else:
