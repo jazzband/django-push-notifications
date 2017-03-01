@@ -73,13 +73,14 @@ class UniqueRegistrationSerializerMixin(Serializer):
 		else:
 			if self.context["request"].method in ["PUT", "PATCH"]:
 				request_method = "update"
-				primary_key = attrs["id"]
+				primary_key = self.instance.id
 			elif self.context["request"].method == "POST":
 				request_method = "create"
 
 		Device = self.Meta.model
 		if request_method == "update":
-			devices = Device.objects.filter(registration_id=attrs["registration_id"]) \
+			reg_id = attrs.get("registration_id", self.instance.registration_id)
+			devices = Device.objects.filter(registration_id=reg_id) \
 				.exclude(id=primary_key)
 		elif request_method == "create":
 			devices = Device.objects.filter(registration_id=attrs["registration_id"])
