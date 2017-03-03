@@ -46,12 +46,13 @@ Edit your settings.py file:
 		"FCM_API_KEY": "[your api key]",
 		"GCM_API_KEY": "[your api key]",
 		"APNS_CERTIFICATE": "/path/to/your/certificate.pem",
+		"APNS_TOPIC": "com.example.push_test",
 		"WNS_PACKAGE_SECURITY_ID": "[your package security id, e.g: 'ms-app://e-3-4-6234...']",
 		"WNS_SECRET_KEY": "[your app secret key, e.g.: 'KDiejnLKDUWodsjmewuSZkk']",
 	}
 
 .. note::
-	If you are planning on running your project with ``DEBUG=True``, then make sure you have set the
+	If you are planning on running your project with ``APNS_USE_SANDBOX=True``, then make sure you have set the
 	*development* certificate as your ``APNS_CERTIFICATE``. Otherwise the app will not be able to connect to the correct host. See settings_ for details.
 
 You can learn more about APNS certificates `here <https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/ApplePushService.html>`_.
@@ -71,12 +72,8 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 **APNS settings**
 
 - ``APNS_CERTIFICATE``: Absolute path to your APNS certificate file. Certificates with passphrases are not supported.
-- ``APNS_CA_CERTIFICATES``: Absolute path to a CA certificates file for APNS. Optional - do not set if not needed. Defaults to None.
-- ``APNS_HOST``: The hostname used for the APNS sockets.
-   - When ``DEBUG=True``, this defaults to ``gateway.sandbox.push.apple.com``.
-   - When ``DEBUG=False``, this defaults to ``gateway.push.apple.com``.
-- ``APNS_PORT``: The port used along with APNS_HOST. Defaults to 2195.
-- ``APNS_ERROR_TIMEOUT``: The timeout on APNS sockets.
+- ``APNS_USE_ALTERNATIVE_PORT``: Use port 2197 for APNS, instead of default port 443.
+- ``APNS_USE_SANDBOX``: Use 'api.development.push.apple.com', instead of default host 'api.push.apple.com'.
 
 **FCM/GCM settings**
 
@@ -205,23 +202,6 @@ Note: gcm_send_bulk_message must be used when sending messages to topic subscrib
         send_message(None, {"body": "Hello members of my_topic!"}, to="/topics/my_topic")
 
 Reference: `FCM Documentation <https://firebase.google.com/docs/cloud-messaging/android/topic-messaging>`_
-
-Administration
---------------
-
-APNS devices which are not receiving push notifications can be set to inactive by two methods.  The web admin interface for
-APNS devices has a "prune devices" option.  Any selected devices which are not receiving notifications will be set to inactive [1]_.
-There is also a management command to prune all devices failing to receive notifications:
-
-.. code-block:: shell
-
-	$ python manage.py prune_devices
-
-This removes all devices which are not receiving notifications.
-
-For more information, please refer to the APNS feedback service_.
-
-.. _service: https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/CommunicatingWIthAPS.html
 
 Exceptions
 ----------
