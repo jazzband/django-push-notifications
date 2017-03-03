@@ -42,7 +42,9 @@ class GCMModelTestCase(TestCase):
 				json.dumps({
 					"data": {"message": "Hello world"},
 					"registration_ids": ["abc"]
-				}, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json")
+				}, separators=(",", ":"), sort_keys=True).encode("utf-8"),
+				"application/json", application_id=None
+			)
 
 	def test_gcm_send_message_extra(self):
 		device = GCMDevice.objects.create(registration_id="abc", cloud_message_type="GCM")
@@ -55,7 +57,9 @@ class GCMModelTestCase(TestCase):
 					"collapse_key": "test_key",
 					"data": {"message": "Hello world", "foo": "bar"},
 					"registration_ids": ["abc"]
-				}, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json")
+				}, separators=(",", ":"), sort_keys=True).encode("utf-8"),
+				"application/json", application_id=None
+			)
 
 	def test_gcm_send_message_collapse_key(self):
 		device = GCMDevice.objects.create(registration_id="abc", cloud_message_type="GCM")
@@ -68,7 +72,9 @@ class GCMModelTestCase(TestCase):
 					"data": {"message": "Hello world"},
 					"registration_ids": ["abc"],
 					"collapse_key": "test_key"
-				}, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json")
+				}, separators=(",", ":"), sort_keys=True).encode("utf-8"),
+				"application/json", application_id=None
+			)
 
 	def test_gcm_send_message_to_multiple_devices(self):
 		self._create_devices(["abc", "abc1"])
@@ -81,7 +87,9 @@ class GCMModelTestCase(TestCase):
 				json.dumps({
 					"data": {"message": "Hello world"},
 					"registration_ids": ["abc", "abc1"]
-				}, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json")
+				}, separators=(",", ":"), sort_keys=True).encode("utf-8"),
+				"application/json", application_id=None
+			)
 
 	def test_gcm_send_message_active_devices(self):
 		GCMDevice.objects.create(registration_id="abc", active=True, cloud_message_type="GCM")
@@ -95,7 +103,9 @@ class GCMModelTestCase(TestCase):
 				json.dumps({
 					"data": {"message": "Hello world"},
 					"registration_ids": ["abc"]
-				}, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json")
+				}, separators=(",", ":"), sort_keys=True).encode("utf-8"),
+				"application/json", application_id=None
+			)
 
 	def test_gcm_send_message_collapse_to_multiple_devices(self):
 		self._create_devices(["abc", "abc1"])
@@ -109,7 +119,9 @@ class GCMModelTestCase(TestCase):
 						"collapse_key": "test_key",
 						"data": {"message": "Hello world"},
 						"registration_ids": ["abc", "abc1"]
-					}, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json")
+					}, separators=(",", ":"), sort_keys=True).encode("utf-8"),
+					"application/json", application_id=None
+				)
 
 	def test_gcm_send_message_to_single_device_with_error(self):
 		# these errors are device specific, device.active will be set false
@@ -212,7 +224,7 @@ class GCMModelTestCase(TestCase):
 			reg_ids = [obj.registration_id for obj in GCMDevice.objects.all()]
 			send_bulk_message(reg_ids, {"message": "Hello World"}, "GCM")
 			p.assert_called_once_with(
-				[u"abc", u"abc1"], {"message": "Hello World"}, cloud_type="GCM"
+				[u"abc", u"abc1"], {"message": "Hello World"}, cloud_type="GCM", application_id=None
 			)
 
 	def test_fcm_send_message(self):
@@ -225,7 +237,9 @@ class GCMModelTestCase(TestCase):
 				json.dumps({
 					"notification": {"body": "Hello world"},
 					"registration_ids": ["abc"]
-				}, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json")
+				}, separators=(",", ":"), sort_keys=True).encode("utf-8"),
+				"application/json", application_id=None
+			)
 
 	def test_fcm_send_message_extra_data(self):
 		device = GCMDevice.objects.create(registration_id="abc", cloud_message_type="FCM")
@@ -238,7 +252,9 @@ class GCMModelTestCase(TestCase):
 					"data": {"foo": "bar"},
 					"notification": {"body": "Hello world"},
 					"registration_ids": ["abc"],
-				}, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json")
+				}, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json",
+				application_id=None
+			)
 
 	def test_fcm_send_message_extra_options(self):
 		device = GCMDevice.objects.create(registration_id="abc", cloud_message_type="FCM")
@@ -251,7 +267,9 @@ class GCMModelTestCase(TestCase):
 					"collapse_key": "test_key",
 					"notification": {"body": "Hello world"},
 					"registration_ids": ["abc"],
-				}, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json")
+				}, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json",
+				application_id=None
+			)
 
 	def test_fcm_send_message_extra_notification(self):
 		device = GCMDevice.objects.create(registration_id="abc", cloud_message_type="FCM")
@@ -263,7 +281,9 @@ class GCMModelTestCase(TestCase):
 				json.dumps({
 					"notification": {"body": "Hello world", "title": "test", "icon": "test_icon"},
 					"registration_ids": ["abc"]
-				}, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json")
+				}, separators=(",", ":"), sort_keys=True).encode("utf-8"),
+				"application/json", application_id=None
+			)
 
 	def test_fcm_send_message_extra_options_and_notification_and_data(self):
 		device = GCMDevice.objects.create(registration_id="abc", cloud_message_type="FCM")
@@ -282,7 +302,9 @@ class GCMModelTestCase(TestCase):
 					"data": {"foo": "bar"},
 					"registration_ids": ["abc"],
 					"collapse_key": "test_key"
-				}, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json")
+				}, separators=(",", ":"), sort_keys=True).encode("utf-8"),
+				"application/json", application_id=None
+			)
 
 	def test_fcm_send_message_to_multiple_devices(self):
 		self._create_fcm_devices(["abc", "abc1"])
@@ -295,7 +317,9 @@ class GCMModelTestCase(TestCase):
 				json.dumps({
 					"notification": {"body": "Hello world"},
 					"registration_ids": ["abc", "abc1"]
-				}, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json")
+				}, separators=(",", ":"), sort_keys=True).encode("utf-8"),
+				"application/json", application_id=None
+			)
 
 	def test_fcm_send_message_active_devices(self):
 		GCMDevice.objects.create(registration_id="abc", active=True, cloud_message_type="FCM")
@@ -309,7 +333,9 @@ class GCMModelTestCase(TestCase):
 				json.dumps({
 					"notification": {"body": "Hello world"},
 					"registration_ids": ["abc"]
-				}, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json")
+				}, separators=(",", ":"), sort_keys=True).encode("utf-8"),
+				"application/json", application_id=None
+			)
 
 	def test_fcm_send_message_collapse_to_multiple_devices(self):
 		self._create_fcm_devices(["abc", "abc1"])
@@ -323,7 +349,9 @@ class GCMModelTestCase(TestCase):
 						"collapse_key": "test_key",
 						"notification": {"body": "Hello world"},
 						"registration_ids": ["abc", "abc1"]
-					}, separators=(",", ":"), sort_keys=True).encode("utf-8"), "application/json")
+					}, separators=(",", ":"), sort_keys=True).encode("utf-8"),
+					"application/json", application_id=None
+				)
 
 	def test_fcm_send_message_to_single_device_with_error(self):
 		# these errors are device specific, device.active will be set false
@@ -424,9 +452,10 @@ class GCMModelTestCase(TestCase):
 
 		with mock.patch("push_notifications.gcm._cm_send_request", return_value="") as p:
 			reg_ids = [obj.registration_id for obj in GCMDevice.objects.all()]
-			send_bulk_message(reg_ids, {"message": "Hello World"}, "GCM")
+			send_bulk_message(reg_ids, {"message": "Hello World"}, "FCM")
 			p.assert_called_once_with(
-				[u"abc", u"abc1"], {"message": "Hello World"}, cloud_type="GCM"
+				[u"abc", u"abc1"], {"message": "Hello World"}, cloud_type="FCM",
+				application_id=None
 			)
 
 	def test_can_save_wsn_device(self):

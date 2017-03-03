@@ -1,7 +1,7 @@
 from apns2.client import NotificationPriority
 from apns2.errors import BadTopic, PayloadTooLarge, Unregistered
-
-from django.test import TestCase
+from django.conf import settings
+from django.test import override_settings, TestCase
 from push_notifications.apns import APNSError
 from push_notifications.models import APNSDevice
 
@@ -14,8 +14,14 @@ class APNSModelTestCase(TestCase):
 		for device in devices:
 			APNSDevice.objects.create(registration_id=device)
 
+	@override_settings()
 	def test_apns_send_bulk_message(self):
 		self._create_devices(["abc", "def"])
+
+		# legacy conf manager requires a value
+		settings.PUSH_NOTIFICATIONS_SETTINGS.update({
+			"APNS_CERTIFICATE": "/path/to/apns/certificate.pem"
+		})
 
 		with mock.patch("apns2.client.init_context"):
 			with mock.patch("apns2.client.APNsClient.connect"):
