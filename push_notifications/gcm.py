@@ -199,6 +199,8 @@ def send_message(registration_ids, data, cloud_type, **kwargs):
 		for chunk in _chunks(registration_ids, max_recipients):
 			ret.append(_cm_send_request(chunk, data, cloud_type=cloud_type, **kwargs))
 		return ret[0] if len(ret) == 1 else ret
+	else:
+		return _cm_send_request(None, data, cloud_type=cloud_type, **kwargs)
 
 
 send_bulk_message = send_message
