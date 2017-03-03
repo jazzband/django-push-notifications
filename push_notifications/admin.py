@@ -1,11 +1,10 @@
 from django.apps import apps
 from django.contrib import admin, messages
 from django.utils.translation import ugettext_lazy as _
-from .apns import APNS_ERROR_MESSAGES, APNSServerError
+from .apns import APNSServerError
 from .gcm import GCMError
 from .models import APNSDevice, GCMDevice, WNSDevice
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
-from .utils import get_expired_tokens
 
 User = apps.get_model(*SETTINGS["USER_MODEL"].split("."))
 
@@ -13,7 +12,7 @@ User = apps.get_model(*SETTINGS["USER_MODEL"].split("."))
 class DeviceAdmin(admin.ModelAdmin):
 	list_display = ("__str__", "device_id", "user", "active", "date_created")
 	list_filter = ("active",)
-	actions = ("send_message", "send_bulk_message", "prune_devices", "enable", "disable")
+	actions = ("send_message", "send_bulk_message", "enable", "disable")
 	raw_id_fields = ("user",)
 
 	if hasattr(User, "USERNAME_FIELD"):
@@ -40,7 +39,7 @@ class DeviceAdmin(admin.ModelAdmin):
 			except GCMError as e:
 				errors.append(str(e))
 			except APNSServerError as e:
-				errors.append(APNS_ERROR_MESSAGES[e.status])
+				errors.append(e.status)
 
 			if bulk:
 				break
@@ -89,19 +88,6 @@ class DeviceAdmin(admin.ModelAdmin):
 		queryset.update(active=False)
 
 	disable.short_description = _("Disable selected devices")
-
-	def prune_devices(self, request, queryset):
-		# Note that when get_expired_tokens() is called, Apple's
-		# feedback service resets, so, calling it again won't return
-		# the device again (unless a message is sent to it again).  So,
-		# if the user doesn't select all the devices for pruning, we
-		# could very easily leave an expired device as active.  Maybe
-		#  this is just a bad API.
-		expired = get_expired_tokens()
-		devices = queryset.filter(registration_id__in=expired)
-		for d in devices:
-			d.active = False
-			d.save()
 
 
 class GCMDeviceAdmin(DeviceAdmin):

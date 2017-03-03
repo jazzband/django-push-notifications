@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 import json
+
 from django.test import TestCase
 from django.utils import timezone
 from push_notifications.gcm import GCMError, send_bulk_message
@@ -427,25 +428,6 @@ class GCMModelTestCase(TestCase):
 			p.assert_called_once_with(
 				[u"abc", u"abc1"], {"message": "Hello World"}, cloud_type="GCM"
 			)
-
-	def test_apns_send_message(self):
-		device = APNSDevice.objects.create(registration_id="abc")
-		socket = mock.MagicMock()
-
-		with mock.patch("push_notifications.apns._apns_pack_frame") as p:
-			device.send_message("Hello world", socket=socket, expiration=1)
-			p.assert_called_once_with("abc", b'{"aps":{"alert":"Hello world"}}', 0, 1, 10)
-
-	def test_apns_send_message_extra(self):
-		device = APNSDevice.objects.create(registration_id="abc")
-		socket = mock.MagicMock()
-
-		with mock.patch("push_notifications.apns._apns_pack_frame") as p:
-			device.send_message(
-				"Hello world", extra={"foo": "bar"}, socket=socket,
-				identifier=1, expiration=2, priority=5
-			)
-			p.assert_called_once_with("abc", b'{"aps":{"alert":"Hello world"},"foo":"bar"}', 1, 2, 5)
 
 	def test_can_save_wsn_device(self):
 		device = GCMDevice.objects.create(registration_id="a valid registration id")
