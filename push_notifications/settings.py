@@ -3,6 +3,10 @@ from django.conf import settings
 
 PUSH_NOTIFICATIONS_SETTINGS = getattr(settings, "PUSH_NOTIFICATIONS_SETTINGS", {})
 
+PUSH_NOTIFICATIONS_SETTINGS.setdefault(
+	"CONFIG", "push_notifications.conf.LegacyConfig"
+)
+
 # GCM
 PUSH_NOTIFICATIONS_SETTINGS.setdefault(
 	"GCM_POST_URL", "https://android.googleapis.com/gcm/send"
