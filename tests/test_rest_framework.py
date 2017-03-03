@@ -15,6 +15,7 @@ class APNSDeviceSerializerTestCase(TestCase):
 			"registration_id": "AEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAE",
 			"name": "Apple iPhone 6+",
 			"device_id": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+			"application_id": "XXXXXXXXXXXXXXXXXXXX",
 		})
 		self.assertTrue(serializer.is_valid())
 
@@ -23,6 +24,7 @@ class APNSDeviceSerializerTestCase(TestCase):
 			"registration_id": "aeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeae",
 			"name": "Apple iPhone 6+",
 			"device_id": "ffffffffffffffffffffffffffffffff",
+			"application_id": "XXXXXXXXXXXXXXXXXXXX",
 		})
 		self.assertTrue(serializer.is_valid())
 
@@ -47,6 +49,7 @@ class APNSDeviceSerializerTestCase(TestCase):
 			"registration_id": "invalid device token contains no hex",
 			"name": "Apple iPhone 6+",
 			"device_id": "ffffffffffffffffffffffffffffake",
+			"application_id": "XXXXXXXXXXXXXXXXXXXX",
 		})
 		self.assertFalse(serializer.is_valid())
 
@@ -57,6 +60,7 @@ class GCMDeviceSerializerTestCase(TestCase):
 			"registration_id": "foobar",
 			"name": "Galaxy Note 3",
 			"device_id": "0x1031af3b",
+			"application_id": "XXXXXXXXXXXXXXXXXXXX",
 		})
 		self.assertTrue(serializer.is_valid())
 
@@ -68,6 +72,7 @@ class GCMDeviceSerializerTestCase(TestCase):
 			"registration_id": "foobar",
 			"name": "Galaxy Note 3",
 			"device_id": "0x1031af3b",
+			"application_id": "XXXXXXXXXXXXXXXXXXXX",
 		})
 		serializer.is_valid(raise_exception=True)
 		obj = serializer.save()
@@ -77,6 +82,7 @@ class GCMDeviceSerializerTestCase(TestCase):
 			"registration_id": "foobar",
 			"name": "Galaxy Note 5",
 			"device_id": "0x1031af3b",
+			"application_id": "XXXXXXXXXXXXXXXXXXXX",
 		})
 		serializer.is_valid(raise_exception=True)
 		obj = serializer.save()
@@ -86,6 +92,7 @@ class GCMDeviceSerializerTestCase(TestCase):
 			"registration_id": "foobar",
 			"name": "Galaxy Note 3",
 			"device_id": "0xdeadbeaf",
+			"application_id": "XXXXXXXXXXXXXXXXXXXX",
 		})
 
 		with self.assertRaises(ValidationError):
@@ -96,6 +103,7 @@ class GCMDeviceSerializerTestCase(TestCase):
 			"registration_id": "foobar",
 			"name": "Galaxy Note 3",
 			"device_id": "0x10r",
+			"application_id": "XXXXXXXXXXXXXXXXXXXX",
 		})
 		self.assertFalse(serializer.is_valid())
 		self.assertEqual(serializer.errors, GCM_DRF_INVALID_HEX_ERROR)
@@ -105,6 +113,7 @@ class GCMDeviceSerializerTestCase(TestCase):
 			"registration_id": "foobar",
 			"name": "Galaxy Note 3",
 			"device_id": "10000000000000000",  # 2**64
+			"application_id": "XXXXXXXXXXXXXXXXXXXX",
 		})
 		self.assertFalse(serializer.is_valid())
 		self.assertEqual(serializer.errors, GCM_DRF_OUT_OF_RANGE_ERROR)
@@ -117,5 +126,6 @@ class GCMDeviceSerializerTestCase(TestCase):
 			"registration_id": "foobar",
 			"name": "Nexus 5",
 			"device_id": "e87a4e72d634997c",
+			"application_id": "XXXXXXXXXXXXXXXXXXXX",
 		})
 		self.assertTrue(serializer.is_valid())

@@ -13,7 +13,7 @@ from apns2 import payload as apns2_payload
 from . import models
 from . import NotificationError
 from .apns_errors import reason_for_exception_class
-from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from .conf import get_manager
 
 
 class APNSError(NotificationError):
@@ -30,20 +30,21 @@ class APNSServerError(APNSError):
 		self.status = status
 
 
-def _apns_create_socket(certfile=None):
-	certfile = certfile or SETTINGS.get("APNS_CERTIFICATE")
+def _apns_create_socket(certfile=None, application_id=None):
+	certfile = certfile or get_manager().get_apns_certificate(application_id)
 	client = apns2_client.APNsClient(
 		certfile,
-		use_sandbox=SETTINGS.get("APNS_USE_SANDBOX"),
-		use_alternative_port=SETTINGS.get("APNS_USE_ALTERNATIVE_PORT"))
+		use_sandbox=get_manager().get_apns_use_sandbox(application_id),
+		use_alternative_port=get_manager().get_apns_use_alternative_port(application_id)
+	)
 	client.connect()
 	return client
 
 
 def _apns_prepare(
-	token, alert, badge=None, sound=None, category=None, content_available=False,
-	action_loc_key=None, loc_key=None, loc_args=[], extra={}, mutable_content=False,
-	thread_id=None, url_args=None):
+	token, alert, application_id=None, badge=None, sound=None, category=None,
+	content_available=False, action_loc_key=None, loc_key=None, loc_args=[],
+	extra={}, mutable_content=False, thread_id=None, url_args=None):
 		if action_loc_key or loc_key or loc_args:
 			apns2_alert = apns2_payload.PayloadAlert(
 				body=alert if alert else {}, body_localized_key=loc_key,
@@ -59,8 +60,10 @@ def _apns_prepare(
 			url_args, custom=extra, thread_id=thread_id)
 
 
-def _apns_send(registration_id, alert, batch=False, **kwargs):
-	client = _apns_create_socket(kwargs.pop("certfile", None))
+def _apns_send(
+	registration_id, alert, batch=False, application_id=None, certfile=None, **kwargs
+):
+	client = _apns_create_socket(certfile=certfile, application_id=application_id)
 
 	notification_kwargs = {}
 
@@ -80,14 +83,19 @@ def _apns_send(registration_id, alert, batch=False, **kwargs):
 		data = [apns2_client.Notification(
 			token=rid, payload=_apns_prepare(rid, alert, **kwargs)) for rid in registration_id]
 		return client.send_notification_batch(
-			data, SETTINGS.get("APNS_TOPIC"), **notification_kwargs)
+			data, get_manager().get_apns_topic(application_id=application_id),
+			**notification_kwargs
+		)
 
 	data = _apns_prepare(registration_id, alert, **kwargs)
 	client.send_notification(
-		registration_id, data, SETTINGS.get("APNS_TOPIC"), **notification_kwargs)
+		registration_id, data,
+		get_manager().get_apns_topic(application_id=application_id),
+		**notification_kwargs
+	)
 
 
-def apns_send_message(registration_id, alert, **kwargs):
+def apns_send_message(registration_id, alert, application_id=None, certfile=None, **kwargs):
 	"""
 	Sends an APNS notification to a single registration_id.
 	This will send the notification as form data.
@@ -100,7 +108,10 @@ def apns_send_message(registration_id, alert, **kwargs):
 	"""
 
 	try:
-		_apns_send(registration_id, alert, **kwargs)
+		_apns_send(
+			registration_id, alert, application_id=application_id,
+			certfile=certfile, **kwargs
+		)
 	except apns2_errors.APNsException as apns2_exception:
 		if isinstance(apns2_exception, apns2_errors.Unregistered):
 			device = models.APNSDevice.objects.get(registration_id=registration_id)
@@ -109,7 +120,9 @@ def apns_send_message(registration_id, alert, **kwargs):
 		raise APNSServerError(status=reason_for_exception_class(apns2_exception.__class__))
 
 
-def apns_send_bulk_message(registration_ids, alert, **kwargs):
+def apns_send_bulk_message(
+	registration_ids, alert, application_id=None, certfile=None, **kwargs
+):
 	"""
 	Sends an APNS notification to one or more registration_ids.
 	The registration_ids argument needs to be a list.
@@ -119,7 +132,10 @@ def apns_send_bulk_message(registration_ids, alert, **kwargs):
 	to this for silent notifications.
 	"""
 
-	results = _apns_send(registration_ids, alert, batch=True, **kwargs)
+	results = _apns_send(
+		registration_ids, alert, batch=True, application_id=application_id,
+		certfile=certfile, **kwargs
+	)
 	inactive_tokens = [token for token, result in results.items() if result == "Unregistered"]
 	models.APNSDevice.objects.filter(registration_id__in=inactive_tokens).update(active=False)
 	return results
