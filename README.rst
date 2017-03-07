@@ -77,6 +77,7 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 - ``APNS_HOST``: The hostname used for the APNS sockets.
    - When ``DEBUG=True``, this defaults to ``gateway.sandbox.push.apple.com``.
    - When ``DEBUG=False``, this defaults to ``gateway.push.apple.com``.
+   - If you're running your app on a development device (i.e. not a build downloaded from the app store) you'll need to use the sandbox gateway regardless of whether DEBUG is True or False.
 - ``APNS_PORT``: The port used along with APNS_HOST. Defaults to 2195.
 - ``APNS_ERROR_TIMEOUT``: The timeout on APNS sockets.
 
