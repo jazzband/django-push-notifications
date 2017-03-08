@@ -6,12 +6,12 @@ https://developer.apple.com/library/ios/documentation/NetworkingInternet/Concept
 
 import codecs
 import json
+import socket
 import ssl
 import struct
-import socket
 import time
-from contextlib import closing
 from binascii import unhexlify
+from contextlib import closing
 from django.core.exceptions import ImproperlyConfigured
 from . import NotificationError
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
@@ -68,21 +68,24 @@ def _apns_create_socket(address_tuple, certfile=None):
 	certfile = certfile or SETTINGS.get("APNS_CERTIFICATE")
 	if not certfile:
 		raise ImproperlyConfigured(
-			'You need to set PUSH_NOTIFICATIONS_SETTINGS["APNS_CERTIFICATE"] to send messages through APNS.'
+			'You need to set PUSH_NOTIFICATIONS_SETTINGS["APNS_CERTIFICATE"] to send APNS messages.'
 		)
 
 	try:
 		with open(certfile, "r") as f:
 			content = f.read()
 	except Exception as e:
-		raise ImproperlyConfigured("The APNS certificate file at %r is not readable: %s" % (certfile, e))
+		msg = "The APNS certificate file at %r is not readable: %s" % (certfile, e)
+		raise ImproperlyConfigured(msg)
 
 	_check_certificate(content)
 
 	ca_certs = SETTINGS.get("APNS_CA_CERTIFICATES")
 
 	sock = socket.socket()
-	sock = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_TLSv1, certfile=certfile, ca_certs=ca_certs)
+	sock = ssl.wrap_socket(
+		sock, ssl_version=ssl.PROTOCOL_TLSv1, certfile=certfile, ca_certs=ca_certs
+	)
 	sock.connect(address_tuple)
 
 	return sock
@@ -93,7 +96,9 @@ def _apns_create_socket_to_push(certfile=None):
 
 
 def _apns_create_socket_to_feedback(certfile=None):
-	return _apns_create_socket((SETTINGS["APNS_FEEDBACK_HOST"], SETTINGS["APNS_FEEDBACK_PORT"]), certfile)
+	host = SETTINGS["APNS_FEEDBACK_HOST"]
+	port = SETTINGS["APNS_FEEDBACK_PORT"]
+	return _apns_create_socket((host, port), certfile)
 
 
 def _apns_pack_frame(token_hex, payload, identifier, expiration, priority):
@@ -141,7 +146,8 @@ def _apns_check_errors(sock):
 def _apns_send(
 	token, alert, badge=None, sound=None, category=None, content_available=False,
 	action_loc_key=None, loc_key=None, loc_args=[], extra={}, identifier=0,
-	expiration=None, priority=10, socket=None, certfile=None, mutable_content=False, thread_id=None
+	expiration=None, priority=10, socket=None, certfile=None, mutable_content=False,
+	thread_id=None
 ):
 	data = {}
 	aps_data = {}
