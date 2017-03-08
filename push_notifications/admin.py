@@ -1,10 +1,11 @@
 from django.apps import apps
 from django.contrib import admin, messages
 from django.utils.translation import ugettext_lazy as _
+from .apns import APNS_ERROR_MESSAGES, APNSServerError
 from .gcm import GCMError
-from .apns import APNSServerError, APNS_ERROR_MESSAGES
-from .models import APNSDevice, GCMDevice, WNSDevice, get_expired_tokens
+from .models import APNSDevice, GCMDevice, WNSDevice
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from .utils import get_expired_tokens
 
 User = apps.get_model(*SETTINGS["USER_MODEL"].split("."))
 

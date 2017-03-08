@@ -155,10 +155,3 @@ class WNSDevice(Device):
 		from .wns import wns_send_message
 
 		return wns_send_message(uri=self.registration_id, message=message, **kwargs)
-
-
-# This is an APNS-only function right now, but maybe GCM will implement it
-# in the future.  But the definition of 'expired' may not be the same. Whatevs
-def get_expired_tokens(cerfile=None):
-	from .apns import apns_fetch_inactive_ids
-	return apns_fetch_inactive_ids(cerfile)
