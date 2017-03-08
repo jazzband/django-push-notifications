@@ -1,21 +1,17 @@
 from __future__ import absolute_import
 
-from rest_framework import permissions
-from rest_framework.response import Response
-from rest_framework.serializers import Serializer, ModelSerializer, ValidationError
-from rest_framework import status
-from rest_framework.viewsets import ModelViewSet
+from rest_framework import permissions, status
 from rest_framework.fields import IntegerField
+from rest_framework.response import Response
+from rest_framework.serializers import ModelSerializer, Serializer, ValidationError
+from rest_framework.viewsets import ModelViewSet
 
-from push_notifications.models import APNSDevice, GCMDevice, WNSDevice
-from push_notifications.fields import hex_re
-from push_notifications.fields import UNSIGNED_64BIT_INT_MAX_VALUE
-from push_notifications.settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from ..fields import hex_re, UNSIGNED_64BIT_INT_MAX_VALUE
+from ..models import APNSDevice, GCMDevice, WNSDevice
+from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 
 # Fields
-
-
 class HexIntegerField(IntegerField):
 	"""
 	Store an integer represented as a hex string of form "0x01".

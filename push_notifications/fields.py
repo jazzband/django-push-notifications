@@ -1,17 +1,16 @@
 import re
 import struct
 from django import forms
-from django.core.validators import MaxValueValidator
-from django.core.validators import MinValueValidator
-from django.core.validators import RegexValidator
-from django.db import models, connection
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
+from django.db import connection, models
 from django.utils import six
 from django.utils.translation import ugettext_lazy as _
 
-UNSIGNED_64BIT_INT_MIN_VALUE = 0
-UNSIGNED_64BIT_INT_MAX_VALUE = 2 ** 64 - 1
 
 __all__ = ["HexadecimalField", "HexIntegerField"]
+
+UNSIGNED_64BIT_INT_MIN_VALUE = 0
+UNSIGNED_64BIT_INT_MAX_VALUE = 2 ** 64 - 1
 
 
 hex_re = re.compile(r"^(([0-9A-f])|(0x[0-9A-f]))+$")

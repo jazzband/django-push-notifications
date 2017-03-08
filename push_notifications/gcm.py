@@ -6,7 +6,6 @@ https://firebase.google.com/docs/cloud-messaging/
 """
 
 import json
-from .models import GCMDevice
 
 try:
 	from urllib.request import Request, urlopen
@@ -16,21 +15,22 @@ except ImportError:
 
 from django.core.exceptions import ImproperlyConfigured
 from . import NotificationError
+from .models import GCMDevice
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 
-# Valid keys for FCM messages
-# See ref : https://firebase.google.com/docs/cloud-messaging/http-server-ref#notification-payload-support
+# Valid keys for FCM messages. Reference:
+# https://firebase.google.com/docs/cloud-messaging/http-server-ref
 FCM_TARGETS_KEYS = [
-	'to', 'condition', 'notification_key'
+	"to", "condition", "notification_key"
 ]
 FCM_OPTIONS_KEYS = [
-	'collapse_key', 'priority', 'content_available', 'delay_while_idle', 'time_to_live',
-	'restricted_package_name', 'dry_run'
+	"collapse_key", "priority", "content_available", "delay_while_idle", "time_to_live",
+	"restricted_package_name", "dry_run"
 ]
 FCM_NOTIFICATIONS_PAYLOAD_KEYS = [
-	'title', 'body', 'icon', 'sound', 'badge', 'color', 'tag', 'click_action',
-	'body_loc_key', 'body_loc_args', 'title_loc_key', 'title_loc_args'
+	"title", "body", "icon", "sound", "badge", "color", "tag", "click_action",
+	"body_loc_key", "body_loc_args", "title_loc_key", "title_loc_args"
 ]
 
 
@@ -50,7 +50,7 @@ def _gcm_send(payload, content_type):
 	key = SETTINGS.get("GCM_API_KEY")
 	if not key:
 		raise ImproperlyConfigured(
-			'You need to set PUSH_NOTIFICATIONS_SETTINGS["GCM_API_KEY"] to send messages through GCM.'
+			'You need to set PUSH_NOTIFICATIONS_SETTINGS["GCM_API_KEY"] to send GCM Messages.'
 		)
 
 	headers = {
@@ -66,7 +66,7 @@ def _fcm_send(payload, content_type):
 	key = SETTINGS.get("FCM_API_KEY")
 	if not key:
 		raise ImproperlyConfigured(
-			'You need to set PUSH_NOTIFICATIONS_SETTINGS["FCM_API_KEY"] to send messages through FCM.'
+			'You need to set PUSH_NOTIFICATIONS_SETTINGS["FCM_API_KEY"] to send FCM Messages.'
 		)
 
 	headers = {
@@ -87,22 +87,25 @@ def _cm_handle_response(registration_ids, response_data, cloud_type):
 			error = result.get("error")
 			if error:
 				# https://firebase.google.com/docs/cloud-messaging/http-server-ref#error-codes
-				# If error is NotRegistered or InvalidRegistration, then we will deactivate devices because
-				# this registration ID is no more valid and can't be used to send messages, otherwise raise error
+				# If error is NotRegistered or InvalidRegistration, then we will deactivate devices
+				# because this registration ID is no more valid and can't be used to send messages,
+				# otherwise raise error
 				if error in ("NotRegistered", "InvalidRegistration"):
 					ids_to_remove.append(registration_ids[index])
 				else:
 					throw_error = True
 
-			# If registration_id is set, replace the original ID with the new value (canonical ID) in your
-			# server database. Note that the original ID is not part of the result, so you need to obtain it
-			# from the list of registration_ids passed in the request (using the same index).
+			# If registration_id is set, replace the original ID with the new value (canonical ID)
+			# in your server database. Note that the original ID is not part of the result, you need
+			# to obtain it from the list of registration_ids in the request (using the same index).
 			new_id = result.get("registration_id")
 			if new_id:
 				old_new_ids.append((registration_ids[index], new_id))
 
 		if ids_to_remove:
-			removed = GCMDevice.objects.filter(registration_id__in=ids_to_remove, cloud_message_type=cloud_type)
+			removed = GCMDevice.objects.filter(
+				registration_id__in=ids_to_remove, cloud_message_type=cloud_type
+			)
 			removed.update(active=0)
 
 		for old_id, new_id in old_new_ids:
@@ -113,7 +116,9 @@ def _cm_handle_response(registration_ids, response_data, cloud_type):
 	return response
 
 
-def _cm_send_request(registration_ids, data, cloud_type="GCM", use_fcm_notifications=True, **kwargs):
+def _cm_send_request(
+	registration_ids, data, cloud_type="GCM", use_fcm_notifications=True, **kwargs
+):
 	"""
 	Sends a FCM or GCM notification to one or more registration_ids as json data.
 	The registration_ids needs to be a list.
@@ -143,7 +148,9 @@ def _cm_send_request(registration_ids, data, cloud_type="GCM", use_fcm_notificat
 
 	# Attach any additional non falsy keyword args (targets, options)
 	# See ref : https://firebase.google.com/docs/cloud-messaging/http-server-ref#table1
-	payload.update({k: v for k, v in kwargs.items() if v and (k in FCM_TARGETS_KEYS or k in FCM_OPTIONS_KEYS)})
+	payload.update({
+		k: v for k, v in kwargs.items() if v and (k in FCM_TARGETS_KEYS or k in FCM_OPTIONS_KEYS)
+	})
 
 	# Sort the keys for deterministic output (useful for tests)
 	json_payload = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
@@ -162,11 +169,11 @@ def _cm_handle_canonical_id(canonical_id, current_id, cloud_type):
 	"""
 	Handle situation when FCM server response contains canonical ID
 	"""
-	if GCMDevice.objects.filter(registration_id=canonical_id, cloud_message_type=cloud_type, active=True).exists():
-		GCMDevice.objects.filter(registration_id=current_id, cloud_message_type=cloud_type).update(active=False)
+	devices = GCMDevice.objects.filter(cloud_message_type=cloud_type)
+	if devices.filter(registration_id=canonical_id, active=True).exists():
+		devices.filter(registration_id=current_id).update(active=False)
 	else:
-		GCMDevice.objects.filter(registration_id=current_id, cloud_message_type=cloud_type)\
-			.update(registration_id=canonical_id)
+		devices.filter(registration_id=current_id).update(registration_id=canonical_id)
 
 
 def send_message(registration_ids, data, cloud_type, **kwargs):

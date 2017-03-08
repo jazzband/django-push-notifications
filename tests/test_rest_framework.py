@@ -1,6 +1,7 @@
 from django.test import TestCase
-from rest_framework.serializers import ValidationError
-from push_notifications.api.rest_framework import APNSDeviceSerializer, GCMDeviceSerializer
+from push_notifications.api.rest_framework import (
+	APNSDeviceSerializer, GCMDeviceSerializer, ValidationError
+)
 
 
 GCM_DRF_INVALID_HEX_ERROR = {'device_id': [u"Device ID is not a valid hex number"]}
