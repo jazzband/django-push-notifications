@@ -1,12 +1,33 @@
+# https://travis-ci.org/jleclanche/django-push-notifications
+sudo: false
 language: python
-addons:
-  apt:
-    sources:
-    - deadsnakes
-    packages:
-    - python3.5
+
+python:
+  - 3.5
+
+env:
+  - TOXENV=py27-django18
+  - TOXENV=py27-django110
+  - TOXENV=py27-django111
+  - TOXENV=py34-django18
+  - TOXENV=py34-django110
+  - TOXENV=py34-django111
+  - TOXENV=py35-django18
+  - TOXENV=py35-django110
+  - TOXENV=py35-django111
+  - TOXENV=flake8
+
+cache:
+  directories:
+    - $HOME/.cache/pip
+
 install:
   - pip install tox
+
 script:
   - tox
-sudo: false
+
+notifications:
+  email:
+    on_failure: always
+    on_success: change
