@@ -20,11 +20,8 @@ single messages.
 
 Dependencies
 ------------
-Django 1.8 is required. Support for older versions is available in the release 1.2.1.
-
-Tastypie support should work on Tastypie 0.11.0 and newer.
-
-Django REST Framework support should work on DRF version 3.0 and newer.
+- Django 1.8, 1.10 or 1.11
+- For the API module, Django REST Framework 3.5 is required.
 
 Setup
 -----
@@ -232,24 +229,6 @@ Exceptions
 - ``gcm.GCMError(NotificationError)``: An error was returned by GCM. This is never raised when using bulk notifications.
 - ``apns.APNSError(NotificationError)``: Something went wrong upon sending APNS notifications.
 - ``apns.APNSDataOverflow(APNSError)``: The APNS payload exceeds its maximum size and cannot be sent.
-
-Tastypie support
-----------------
-
-The app includes tastypie-compatible resources in push_notifications.api.tastypie. These can be used as-is, or as base classes
-for more involved APIs.
-The following resources are available:
-
-- ``APNSDeviceResource``
-- ``GCMDeviceResource``
-- ``APNSDeviceAuthenticatedResource``
-- ``GCMDeviceAuthenticatedResource``
-
-The base device resources will not ask for authentication, while the authenticated ones will link the logged in user to
-the device they register.
-Subclassing the authenticated resources in order to add a ``SameUserAuthentication`` and a user ``ForeignKey`` is recommended.
-
-When registered, the APIs will show up at ``<api_root>/device/apns`` and ``<api_root>/device/gcm``, respectively.
 
 Django REST Framework (DRF) support
 -----------------------------------
