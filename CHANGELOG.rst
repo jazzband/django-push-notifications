@@ -1,5 +1,6 @@
 Unreleased
 ==========
+* BACKWARDS-INCOMPATIBLE: Remove `push_notifications.api.tastypie` module. Only DRF is supported now.
 * FCM : Better support for Firebase Cloud Messaging, with payload being sent correctly for FCM devices
 * FCM : Introduced `use_fcm_notification` option to enforce legacy GCM payload
 
