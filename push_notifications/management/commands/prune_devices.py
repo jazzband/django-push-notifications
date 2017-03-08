@@ -1,4 +1,6 @@
 from django.core.management.base import BaseCommand
+from push_notifications.models import APNSDevice
+from push_notifications.utils import get_expired_tokens
 
 
 class Command(BaseCommand):
@@ -6,7 +8,6 @@ class Command(BaseCommand):
 	help = 'Deactivate APNS devices that are not receiving notifications'
 
 	def handle(self, *args, **options):
-		from push_notifications.models import APNSDevice, get_expired_tokens
 		expired = get_expired_tokens()
 		devices = APNSDevice.objects.filter(registration_id__in=expired)
 		for d in devices:
