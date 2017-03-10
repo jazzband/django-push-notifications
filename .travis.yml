@@ -1,9 +1,7 @@
 # https://travis-ci.org/jleclanche/django-push-notifications
 sudo: false
 language: python
-
-python:
-  - 3.6
+python: "3.6"
 
 env:
   - TOXENV=py27-django18
@@ -19,6 +17,7 @@ env:
 cache:
   directories:
     - $HOME/.cache/pip
+    - $TRAVIS_BUILD_DIR/.tox
 
 install:
   - pip install tox
