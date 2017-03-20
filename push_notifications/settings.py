@@ -43,3 +43,19 @@ PUSH_NOTIFICATIONS_SETTINGS.setdefault("USER_MODEL", settings.AUTH_USER_MODEL)
 
 # API endpoint settings
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("UPDATE_ON_DUPLICATE_REG_ID", False)
+
+
+# Check Device Uniqueness
+def get_unique_device_check(device_instance):
+	"""APNS requires the registration_id be unique for backwards compatibility"""
+
+	# cyclic imports make importing the classes difficult
+	if device_instance.__class__.__name__ == "APNSDevice":
+		return ("registration_id",)
+
+	# no other device types are restricted
+	return None
+
+
+# Can be a callable, or a tuple suitable for Meta.unique_together.
+PUSH_NOTIFICATIONS_SETTINGS.setdefault("UNIQUE_DEVICE_CHECK", get_unique_device_check)
