@@ -82,7 +82,7 @@ class UniqueRegistrationSerializerMixin(Serializer):
 			devices = Device.objects.filter(registration_id=attrs["registration_id"])
 
 		if devices:
-			raise ValidationError({'registration_id': 'This field must be unique.'})
+			raise ValidationError({"registration_id": "This field must be unique."})
 		return attrs
 
 
@@ -128,9 +128,9 @@ class DeviceViewSetMixin(object):
 	def create(self, request, *args, **kwargs):
 		serializer = None
 		is_update = False
-		if SETTINGS.get('UPDATE_ON_DUPLICATE_REG_ID') and 'registration_id' in request.data:
+		if SETTINGS.get("UPDATE_ON_DUPLICATE_REG_ID") and "registration_id" in request.data:
 			instance = self.queryset.model.objects.filter(
-				registration_id=request.data['registration_id']
+				registration_id=request.data["registration_id"]
 			).first()
 			if instance:
 				serializer = self.get_serializer(instance, data=request.data)

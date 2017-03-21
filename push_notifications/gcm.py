@@ -130,8 +130,8 @@ def _cm_send_request(
 	# https://firebase.google.com/docs/cloud-messaging/concept-options#notifications_and_data_messages
 	if cloud_type == "FCM" and use_fcm_notifications:
 		notification_payload = {}
-		if 'message' in data:
-			notification_payload['body'] = data.pop('message', None)
+		if "message" in data:
+			notification_payload["body"] = data.pop("message", None)
 
 		for key in FCM_NOTIFICATIONS_PAYLOAD_KEYS:
 			value_from_extra = data.pop(key, None)
@@ -141,10 +141,10 @@ def _cm_send_request(
 			if value_from_kwargs:
 				notification_payload[key] = value_from_kwargs
 		if notification_payload:
-			payload['notification'] = notification_payload
+			payload["notification"] = notification_payload
 
 	if data:
-		payload['data'] = data
+		payload["data"] = data
 
 	# Attach any additional non falsy keyword args (targets, options)
 	# See ref : https://firebase.google.com/docs/cloud-messaging/http-server-ref#table1
