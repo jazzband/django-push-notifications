@@ -1,9 +1,10 @@
 from __future__ import absolute_import
 import json
+from django.conf import settings
 from django.test import TestCase
 from django.utils import timezone
 from push_notifications.gcm import GCMError, send_bulk_message
-from push_notifications.models import APNSDevice, GCMDevice
+from push_notifications.models import APNSDevice, GCMDevice, WNSDevice
 from . import responses
 from ._mock import mock
 
@@ -452,3 +453,41 @@ class GCMModelTestCase(TestCase):
 		self.assertIsNotNone(device.pk)
 		self.assertIsNotNone(device.date_created)
 		self.assertEqual(device.date_created.date(), timezone.now().date())
+
+	def test_unique_device_check_as_callable(self):
+		"""The default device check is a callable that enforce a unique registration_id
+		for APNS devices for backwards compatibility."""
+
+		apns_check = APNSDevice()._get_unique_checks()
+		assert ([(APNSDevice, ("id",)), (APNSDevice, ("registration_id",))], []) == apns_check
+
+		gcm_check = GCMDevice()._get_unique_checks()
+		assert ([(GCMDevice, ("id",))], []) == gcm_check
+
+		wns_check = WNSDevice()._get_unique_checks()
+		assert ([(WNSDevice, ("id",))], []) == wns_check
+
+	def test_unique_device_check_as_tuple(self):
+		"""Device check as a tuple that enforces user_id and registration_id be unique."""
+
+		settings.PUSH_NOTIFICATIONS_SETTINGS["UNIQUE_DEVICE_CHECK"] = (
+			"user_id", "registration_id"
+		)
+
+		apns_check = APNSDevice()._get_unique_checks()
+		assert ([
+			(APNSDevice, ("id",)),
+			(APNSDevice, ("user_id", "registration_id")),
+		], []) == apns_check
+
+		gcm_check = GCMDevice()._get_unique_checks()
+		assert ([
+			(GCMDevice, ("id",)),
+			(GCMDevice, ("user_id", "registration_id")),
+		], []) == gcm_check
+
+		wns_check = WNSDevice()._get_unique_checks()
+		assert ([
+			(WNSDevice, ("id",)),
+			(WNSDevice, ("user_id", "registration_id")),
+		], []) == wns_check

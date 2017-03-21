@@ -36,6 +36,30 @@ class Device(models.Model):
 			"%s for %s" % (self.__class__.__name__, self.user or "unknown user")
 		)
 
+	def _get_unique_checks(self, exclude=None):
+		"""Allows configuring device uniqueness via setting."""
+		unique_checks, date_checks = super(Device, self)._get_unique_checks(exclude)
+
+		if exclude is None:
+			exclude = []
+
+		device_check = SETTINGS["UNIQUE_DEVICE_CHECK"]
+		if callable(device_check):
+			check = device_check(self)
+		else:
+			check = device_check
+
+		if check:
+			for name in check:
+				# If this is an excluded field, don't add this check.
+				if name in exclude:
+					break
+			else:
+				# exclude if name in
+				unique_checks.append((self.__class__, tuple(check)))
+
+		return unique_checks, date_checks
+
 
 class GCMDeviceManager(models.Manager):
 	def get_queryset(self):
@@ -113,7 +137,7 @@ class APNSDevice(Device):
 		help_text="UDID / UIDevice.identifierForVendor()"
 	)
 	registration_id = models.CharField(
-		verbose_name=_("Registration ID"), max_length=200, unique=True
+		verbose_name=_("Registration ID"), max_length=200
 	)
 
 	objects = APNSDeviceManager()

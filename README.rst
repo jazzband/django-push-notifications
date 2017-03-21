@@ -95,6 +95,16 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 - ``USER_MODEL``: Your user model of choice. Eg. ``myapp.User``. Defaults to ``settings.AUTH_USER_MODEL``.
 - ``UPDATE_ON_DUPLICATE_REG_ID``: Transform create of an existing Device (based on registration id) into a update. See below `Update of device with duplicate registration ID`_ for more details.
 
+**DEVICE UNIQUENESS**
+
+You can change the device uniqueness check by modifying ``UNIQUE_DEVICE_CHECK``. It should be a callable or tuple.
+If you use a callable, it should return a tuple compatible with to `unique_together <https://docs.djangoproject.com/en/1.10/ref/models/options/#django.db.models.Options.unique_together>`_.
+
+The default value requires the ``APNSDevice`` registration_id be unique for backwards compatibility.
+
+The suggested configuration is ``UNIQUE_DEVICE_CHECK = ("user_id", "registration_id",)``.
+
+
 Sending messages
 ----------------
 FCM/GCM and APNS services have slightly different semantics. The app tries to offer a common interface for both when using the models.
