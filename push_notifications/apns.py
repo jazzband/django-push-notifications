@@ -4,242 +4,87 @@ Documentation is available on the iOS Developer Library:
 https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/ApplePushService.html
 """
 
-import codecs
-import json
-import ssl
-import struct
-import socket
 import time
-from contextlib import closing
-from binascii import unhexlify
-from django.core.exceptions import ImproperlyConfigured
+
+from apns2 import client as apns2_client
+from apns2 import errors as apns2_errors
+from apns2 import payload as apns2_payload
+
+from . import models
 from . import NotificationError
+from .apns_errors import reason_for_exception_class
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
-
-
-APNS_ERROR_MESSAGES = {
-	1: "Processing error",
-	2: "Missing device token",
-	3: "Missing topic",
-	4: "Missing payload",
-	5: "Invalid token size",
-	6: "Invalid topic size",
-	7: "Invalid payload size",
-	8: "Invalid token",
-	10: "Shutdown",
-	128: "Protocol error (APNS could not parse notification)",
-	255: "Unknown APNS error",
-}
 
 
 class APNSError(NotificationError):
 	pass
 
 
-class APNSServerError(APNSError):
-	def __init__(self, status, identifier):
-		super(APNSServerError, self).__init__(status, identifier)
-		self.status = status
-		self.identifier = identifier
-
-
-class APNSDataOverflow(APNSError):
+class APNSUnsupportedPriority(APNSError):
 	pass
 
 
-def _check_certificate(ss):
-	mode = "start"
-	for s in ss.split("\n"):
-		if mode == "start":
-			if "BEGIN RSA PRIVATE KEY" in s or "BEGIN PRIVATE KEY" in s:
-				mode = "key"
-		elif mode == "key":
-			if "END RSA PRIVATE KEY" in s or "END PRIVATE KEY" in s:
-				mode = "end"
-				break
-			elif s.startswith("Proc-Type") and "ENCRYPTED" in s:
-				raise ImproperlyConfigured("Encrypted APNS private keys are not supported")
-
-	if mode != "end":
-		raise ImproperlyConfigured("The APNS certificate doesn't contain a private key")
+class APNSServerError(APNSError):
+	def __init__(self, status):
+		super(APNSServerError, self).__init__(status)
+		self.status = status
 
 
-def _apns_create_socket(address_tuple, certfile=None):
+def _apns_create_socket(certfile=None):
 	certfile = certfile or SETTINGS.get("APNS_CERTIFICATE")
-	if not certfile:
-		raise ImproperlyConfigured(
-			'You need to set PUSH_NOTIFICATIONS_SETTINGS["APNS_CERTIFICATE"] to send messages through APNS.'
-		)
-
-	try:
-		with open(certfile, "r") as f:
-			content = f.read()
-	except Exception as e:
-		raise ImproperlyConfigured("The APNS certificate file at %r is not readable: %s" % (certfile, e))
-
-	_check_certificate(content)
-
-	ca_certs = SETTINGS.get("APNS_CA_CERTIFICATES")
-
-	sock = socket.socket()
-	sock = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_TLSv1, certfile=certfile, ca_certs=ca_certs)
-	sock.connect(address_tuple)
-
-	return sock
+	client = apns2_client.APNsClient(
+		certfile,
+		use_sandbox=SETTINGS.get("APNS_USE_SANDBOX"),
+		use_alternative_port=SETTINGS.get("APNS_USE_ALTERNATIVE_PORT"))
+	client.connect()
+	return client
 
 
-def _apns_create_socket_to_push(certfile=None):
-	return _apns_create_socket((SETTINGS["APNS_HOST"], SETTINGS["APNS_PORT"]), certfile)
-
-
-def _apns_create_socket_to_feedback(certfile=None):
-	return _apns_create_socket((SETTINGS["APNS_FEEDBACK_HOST"], SETTINGS["APNS_FEEDBACK_PORT"]), certfile)
-
-
-def _apns_pack_frame(token_hex, payload, identifier, expiration, priority):
-	token = unhexlify(token_hex)
-	# |COMMAND|FRAME-LEN|{token}|{payload}|{id:4}|{expiration:4}|{priority:1}
-	# 5 items, each 3 bytes prefix, then each item length
-	frame_len = 3 * 5 + len(token) + len(payload) + 4 + 4 + 1
-	frame_fmt = "!BIBH%ssBH%ssBHIBHIBHB" % (len(token), len(payload))
-	frame = struct.pack(
-		frame_fmt,
-		2, frame_len,
-		1, len(token), token,
-		2, len(payload), payload,
-		3, 4, identifier,
-		4, 4, expiration,
-		5, 1, priority
-	)
-
-	return frame
-
-
-def _apns_check_errors(sock):
-	timeout = SETTINGS["APNS_ERROR_TIMEOUT"]
-	if timeout is None:
-		return  # assume everything went fine!
-	saved_timeout = sock.gettimeout()
-	try:
-		sock.settimeout(timeout)
-		data = sock.recv(6)
-		if data:
-			command, status, identifier = struct.unpack("!BBI", data)
-			# apple protocol says command is always 8. See http://goo.gl/ENUjXg
-			assert command == 8, "Command must be 8!"
-			if status != 0:
-				raise APNSServerError(status, identifier)
-	except socket.timeout:  # py3, see http://bugs.python.org/issue10272
-		pass
-	except ssl.SSLError as e:  # py2
-		if "timed out" not in e.message:
-			raise
-	finally:
-		sock.settimeout(saved_timeout)
-
-
-def _apns_send(
+def _apns_prepare(
 	token, alert, badge=None, sound=None, category=None, content_available=False,
-	action_loc_key=None, loc_key=None, loc_args=[], extra={}, identifier=0,
-	expiration=None, priority=10, socket=None, certfile=None, mutable_content=False, thread_id=None
-):
-	data = {}
-	aps_data = {}
+	action_loc_key=None, loc_key=None, loc_args=[], extra={}, mutable_content=False,
+	thread_id=None, url_args=None):
+		if action_loc_key or loc_key or loc_args:
+			apns2_alert = apns2_payload.PayloadAlert(
+				body=alert if alert else {}, body_localized_key=loc_key,
+				body_localized_args=loc_args, action_localized_key=action_loc_key)
+		else:
+			apns2_alert = alert
 
-	if action_loc_key or loc_key or loc_args:
-		alert = {"body": alert} if alert else {}
-		if action_loc_key:
-			alert["action-loc-key"] = action_loc_key
-		if loc_key:
-			alert["loc-key"] = loc_key
-		if loc_args:
-			alert["loc-args"] = loc_args
+			if callable(badge):
+				badge = badge(token)
 
-	if alert is not None:
-		aps_data["alert"] = alert
-
-	if badge is not None:
-		if callable(badge):
-			badge = badge(token)
-		aps_data["badge"] = badge
-
-	if sound is not None:
-		aps_data["sound"] = sound
-
-	if category is not None:
-		aps_data["category"] = category
-
-	if content_available:
-		aps_data["content-available"] = 1
-
-	if mutable_content:
-		aps_data["mutable-content"] = 1
-
-	if thread_id:
-		aps_data["thread-id"] = thread_id
-
-	data["aps"] = aps_data
-	data.update(extra)
-
-	# convert to json, avoiding unnecessary whitespace with separators (keys sorted for tests)
-	json_data = json.dumps(data, separators=(",", ":"), sort_keys=True).encode("utf-8")
-
-	max_size = SETTINGS["APNS_MAX_NOTIFICATION_SIZE"]
-	if len(json_data) > max_size:
-		raise APNSDataOverflow("Notification body cannot exceed %i bytes" % (max_size))
-
-	# if expiration isn't specified use 1 month from now
-	expiration_time = expiration if expiration is not None else int(time.time()) + 2592000
-
-	frame = _apns_pack_frame(token, json_data, identifier, expiration_time, priority)
-
-	if socket:
-		socket.write(frame)
-	else:
-		with closing(_apns_create_socket_to_push(certfile)) as socket:
-			socket.write(frame)
-			_apns_check_errors(socket)
-
-	return token
+		return apns2_payload.Payload(
+			apns2_alert, badge, sound, content_available, mutable_content, category,
+			url_args, custom=extra, thread_id=thread_id)
 
 
-def _apns_read_and_unpack(socket, data_format):
-	length = struct.calcsize(data_format)
-	data = socket.recv(length)
-	if data:
-		return struct.unpack_from(data_format, data, 0)
-	else:
-		return None
+def _apns_send(registration_id, alert, batch=False, **kwargs):
+	client = _apns_create_socket(kwargs.pop("certfile", None))
 
+	notification_kwargs = {}
 
-def _apns_receive_feedback(socket):
-	expired_token_list = []
+	# if expiration isn"t specified use 1 month from now
+	notification_kwargs["expiration"] = kwargs.pop("expiration", None)
+	if not notification_kwargs["expiration"]:
+		notification_kwargs["expiration"] = int(time.time()) + 2592000
 
-	# read a timestamp (4 bytes) and device token length (2 bytes)
-	header_format = "!LH"
-	has_data = True
-	while has_data:
+	priority = kwargs.pop("priority", None)
+	if priority:
 		try:
-			# read the header tuple
-			header_data = _apns_read_and_unpack(socket, header_format)
-			if header_data is not None:
-				timestamp, token_length = header_data
-				# Unpack format for a single value of length bytes
-				token_format = "%ss" % token_length
-				device_token = _apns_read_and_unpack(socket, token_format)
-				if device_token is not None:
-					# _apns_read_and_unpack returns a tuple, but
-					# it's just one item, so get the first.
-					expired_token_list.append((timestamp, device_token[0]))
-			else:
-				has_data = False
-		except socket.timeout:  # py3, see http://bugs.python.org/issue10272
-			pass
-		except ssl.SSLError as e:  # py2
-			if "timed out" not in e.message:
-				raise
+			notification_kwargs["priority"] = apns2_client.NotificationPriority(str(priority))
+		except ValueError:
+			raise APNSUnsupportedPriority("Unsupported priority %d" % (priority))
 
-	return expired_token_list
+	if batch:
+		data = [apns2_client.Notification(
+			token=rid, payload=_apns_prepare(rid, alert, **kwargs)) for rid in registration_id]
+		return client.send_notification_batch(
+			data, SETTINGS.get("APNS_TOPIC"), **notification_kwargs)
+
+	data = _apns_prepare(registration_id, alert, **kwargs)
+	client.send_notification(
+		registration_id, data, SETTINGS.get("APNS_TOPIC"), **notification_kwargs)
 
 
 def apns_send_message(registration_id, alert, **kwargs):
@@ -250,11 +95,18 @@ def apns_send_message(registration_id, alert, **kwargs):
 	apns_send_bulk_message()
 
 	Note that if set alert should always be a string. If it is not set,
-	it won't be included in the notification. You will need to pass None
+	it won"t be included in the notification. You will need to pass None
 	to this for silent notifications.
 	"""
 
-	return _apns_send(registration_id, alert, **kwargs)
+	try:
+		_apns_send(registration_id, alert, **kwargs)
+	except apns2_errors.APNsException as apns2_exception:
+		if isinstance(apns2_exception, apns2_errors.Unregistered):
+			device = models.APNSDevice.objects.get(registration_id=registration_id)
+			device.active = False
+			device.save()
+		raise APNSServerError(status=reason_for_exception_class(apns2_exception.__class__))
 
 
 def apns_send_bulk_message(registration_ids, alert, **kwargs):
@@ -263,26 +115,11 @@ def apns_send_bulk_message(registration_ids, alert, **kwargs):
 	The registration_ids argument needs to be a list.
 
 	Note that if set alert should always be a string. If it is not set,
-	it won't be included in the notification. You will need to pass None
+	it won"t be included in the notification. You will need to pass None
 	to this for silent notifications.
 	"""
-	certfile = kwargs.get("certfile", None)
-	with closing(_apns_create_socket_to_push(certfile)) as socket:
-		for identifier, registration_id in enumerate(registration_ids):
-			res = _apns_send(registration_id, alert, identifier=identifier, socket=socket, **kwargs)
-		_apns_check_errors(socket)
-		return res
 
-
-def apns_fetch_inactive_ids(certfile=None):
-	"""
-	Queries the APNS server for id's that are no longer active since
-	the last fetch
-	"""
-	with closing(_apns_create_socket_to_feedback(certfile)) as socket:
-		inactive_ids = []
-		# Maybe we should have a flag to return the timestamp?
-		# It doesn't seem that useful right now, though.
-		for ts, registration_id in _apns_receive_feedback(socket):
-			inactive_ids.append(codecs.encode(registration_id, "hex_codec"))
-		return inactive_ids
+	results = _apns_send(registration_ids, alert, batch=True, **kwargs)
+	inactive_tokens = [token for token, result in results.items() if result == "Unregistered"]
+	models.APNSDevice.objects.filter(registration_id__in=inactive_tokens).update(active=False)
+	return results

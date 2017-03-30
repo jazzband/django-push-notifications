@@ -17,8 +17,6 @@ class Migration(migrations.Migration):
 		migrations.AddField(
 			model_name='gcmdevice',
 			name='cloud_message_type',
-			field=models.CharField(choices=[('FCM', 'Google Cloud Message'), ('GCM', 'Firebase Cloud Message')],
-								default='GCM', help_text='You should choose GCM or FCM', max_length=3,
-								verbose_name='Cloud Message Type')
+			field=models.CharField(choices=[('FCM', 'Firebase Cloud Message'), ('GCM', 'Google Cloud Message')], default='GCM', help_text='You should choose FCM or GCM', max_length=3, verbose_name='Cloud Message Type')
 		),
 	]

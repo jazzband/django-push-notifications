@@ -1,21 +1,17 @@
 from __future__ import absolute_import
 
-from rest_framework import permissions
-from rest_framework.response import Response
-from rest_framework.serializers import Serializer, ModelSerializer, ValidationError
-from rest_framework import status
-from rest_framework.viewsets import ModelViewSet
+from rest_framework import permissions, status
 from rest_framework.fields import IntegerField
+from rest_framework.response import Response
+from rest_framework.serializers import ModelSerializer, Serializer, ValidationError
+from rest_framework.viewsets import ModelViewSet
 
-from push_notifications.models import APNSDevice, GCMDevice, WNSDevice
-from push_notifications.fields import hex_re
-from push_notifications.fields import UNSIGNED_64BIT_INT_MAX_VALUE
-from push_notifications.settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from ..fields import hex_re, UNSIGNED_64BIT_INT_MAX_VALUE
+from ..models import APNSDevice, GCMDevice, WNSDevice
+from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 
 # Fields
-
-
 class HexIntegerField(IntegerField):
 	"""
 	Store an integer represented as a hex string of form "0x01".
@@ -73,19 +69,20 @@ class UniqueRegistrationSerializerMixin(Serializer):
 		else:
 			if self.context["request"].method in ["PUT", "PATCH"]:
 				request_method = "update"
-				primary_key = attrs["id"]
+				primary_key = self.instance.id
 			elif self.context["request"].method == "POST":
 				request_method = "create"
 
 		Device = self.Meta.model
 		if request_method == "update":
-			devices = Device.objects.filter(registration_id=attrs["registration_id"]) \
+			reg_id = attrs.get("registration_id", self.instance.registration_id)
+			devices = Device.objects.filter(registration_id=reg_id) \
 				.exclude(id=primary_key)
 		elif request_method == "create":
 			devices = Device.objects.filter(registration_id=attrs["registration_id"])
 
 		if devices:
-			raise ValidationError({'registration_id': 'This field must be unique.'})
+			raise ValidationError({"registration_id": "This field must be unique."})
 		return attrs
 
 
@@ -131,9 +128,9 @@ class DeviceViewSetMixin(object):
 	def create(self, request, *args, **kwargs):
 		serializer = None
 		is_update = False
-		if SETTINGS.get('UPDATE_ON_DUPLICATE_REG_ID') and 'registration_id' in request.data:
+		if SETTINGS.get("UPDATE_ON_DUPLICATE_REG_ID") and "registration_id" in request.data:
 			instance = self.queryset.model.objects.filter(
-				registration_id=request.data['registration_id']
+				registration_id=request.data["registration_id"]
 			).first()
 			if instance:
 				serializer = self.get_serializer(instance, data=request.data)

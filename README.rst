@@ -3,28 +3,26 @@ django-push-notifications
 .. image:: https://api.travis-ci.org/jleclanche/django-push-notifications.png
 	:target: https://travis-ci.org/jleclanche/django-push-notifications
 
-A minimal Django app that implements Device models that can send messages through APNS, GCM and WNS.
+A minimal Django app that implements Device models that can send messages through APNS, FCM/GCM and WNS.
 
 The app implements three models: ``GCMDevice``, ``APNSDevice`` and ``WNSDevice``. Those models share the same attributes:
  - ``name`` (optional): A name for the device.
  - ``active`` (default True): A boolean that determines whether the device will be sent notifications.
  - ``user`` (optional): A foreign key to auth.User, if you wish to link the device to a specific user.
  - ``device_id`` (optional): A UUID for the device obtained from Android/iOS/Windows APIs, if you wish to uniquely identify it.
- - ``registration_id`` (required): The GCM registration id or the APNS token for the device.
+ - ``registration_id`` (required): The FCM/GCM registration id or the APNS token for the device.
 
 
 The app also implements an admin panel, through which you can test single and bulk notifications. Select one or more
-GCM, APNS or WNS devices and in the action dropdown, select "Send test message" or "Send test message in bulk", accordingly.
+FCM/GCM, APNS or WNS devices and in the action dropdown, select "Send test message" or "Send test message in bulk", accordingly.
 Note that sending a non-bulk test message to more than one device will just iterate over the devices and send multiple
 single messages.
 
 Dependencies
 ------------
-Django 1.8 is required. Support for older versions is available in the release 1.2.1.
-
-Tastypie support should work on Tastypie 0.11.0 and newer.
-
-Django REST Framework support should work on DRF version 3.0 and newer.
+- Python 2.7 or 3.4+
+- Django 1.8, or 1.10+
+- For the API module, Django REST Framework 3.5 is required.
 
 Setup
 -----
@@ -45,14 +43,16 @@ Edit your settings.py file:
 	)
 
 	PUSH_NOTIFICATIONS_SETTINGS = {
+		"FCM_API_KEY": "[your api key]",
 		"GCM_API_KEY": "[your api key]",
 		"APNS_CERTIFICATE": "/path/to/your/certificate.pem",
+		"APNS_TOPIC": "com.example.push_test",
 		"WNS_PACKAGE_SECURITY_ID": "[your package security id, e.g: 'ms-app://e-3-4-6234...']",
 		"WNS_SECRET_KEY": "[your app secret key, e.g.: 'KDiejnLKDUWodsjmewuSZkk']",
 	}
 
 .. note::
-	If you are planning on running your project with ``DEBUG=True``, then make sure you have set the
+	If you are planning on running your project with ``APNS_USE_SANDBOX=True``, then make sure you have set the
 	*development* certificate as your ``APNS_CERTIFICATE``. Otherwise the app will not be able to connect to the correct host. See settings_ for details.
 
 You can learn more about APNS certificates `here <https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/ApplePushService.html>`_.
@@ -65,29 +65,36 @@ Settings list
 -------------
 All settings are contained in a ``PUSH_NOTIFICATIONS_SETTINGS`` dict.
 
-In order to use GCM, you are required to include ``GCM_API_KEY``.
+In order to use FCM/GCM, you are required to include ``FCM_API_KEY`` or ``GCM_API_KEY``.
 For APNS, you are required to include ``APNS_CERTIFICATE``.
 For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY``.
 
+**APNS settings**
+
 - ``APNS_CERTIFICATE``: Absolute path to your APNS certificate file. Certificates with passphrases are not supported.
-- ``APNS_CA_CERTIFICATES``: Absolute path to a CA certificates file for APNS. Optional - do not set if not needed. Defaults to None.
-- ``GCM_API_KEY``: Your API key for GCM.
+- ``APNS_USE_ALTERNATIVE_PORT``: Use port 2197 for APNS, instead of default port 443.
+- ``APNS_USE_SANDBOX``: Use 'api.development.push.apple.com', instead of default host 'api.push.apple.com'.
+
+**FCM/GCM settings**
+
+- ``FCM_API_KEY``: Your API key for Firebase Cloud Messaging.
+- ``FCM_POST_URL``: The full url that FCM notifications will be POSTed to. Defaults to https://fcm.googleapis.com/fcm/send.
+- ``FCM_MAX_RECIPIENTS``: The maximum amount of recipients that can be contained per bulk message. If the ``registration_ids`` list is larger than that number, multiple bulk messages will be sent. Defaults to 1000 (the maximum amount supported by FCM).
+- ``FCM_ERROR_TIMEOUT``: The timeout on GCM POSTs.
+- ``GCM_API_KEY``, ``GCM_POST_URL``, ``GCM_MAX_RECIPIENTS``, ``GCM_ERROR_TIMEOUT``: Same parameters for GCM
+
+**WNS settings**
+
 - ``WNS_PACKAGE_SECURITY_KEY``: TODO
 - ``WNS_SECRET_KEY``: TODO
-- ``APNS_HOST``: The hostname used for the APNS sockets.
-   - When ``DEBUG=True``, this defaults to ``gateway.sandbox.push.apple.com``.
-   - When ``DEBUG=False``, this defaults to ``gateway.push.apple.com``.
-- ``APNS_PORT``: The port used along with APNS_HOST. Defaults to 2195.
-- ``GCM_POST_URL``: The full url that GCM notifications will be POSTed to. Defaults to https://android.googleapis.com/gcm/send.
-- ``GCM_MAX_RECIPIENTS``: The maximum amount of recipients that can be contained per bulk message. If the ``registration_ids`` list is larger than that number, multiple bulk messages will be sent. Defaults to 1000 (the maximum amount supported by GCM).
-- ``APNS_ERROR_TIMEOUT``: The timeout on APNS sockets.
-- ``GCM_ERROR_TIMEOUT``: The timeout on GCM POSTs.
+
+
 - ``USER_MODEL``: Your user model of choice. Eg. ``myapp.User``. Defaults to ``settings.AUTH_USER_MODEL``.
 - ``UPDATE_ON_DUPLICATE_REG_ID``: Transform create of an existing Device (based on registration id) into a update. See below `Update of device with duplicate registration ID`_ for more details.
 
 Sending messages
 ----------------
-GCM and APNS services have slightly different semantics. The app tries to offer a common interface for both when using the models.
+FCM/GCM and APNS services have slightly different semantics. The app tries to offer a common interface for both when using the models.
 
 .. code-block:: python
 
@@ -109,8 +116,8 @@ GCM and APNS services have slightly different semantics. The app tries to offer 
 	device.send_message(None, badge=5) # No alerts but with badge.
 	device.send_message(None, content_available=1, extra={"foo": "bar"}) # Silent message with custom data.
 	# alert with title and body.
-	device.send_message("alert" : {"title" : "Game Request", "body" : "Bob wants to play poker", extra={"foo": "bar"})
-	device.send_message("Hello again", thread_id="123" extra={"foo": "bar"}) # set thread-id to allow iOS to merge notifications
+	device.send_message(message={"title" : "Game Request", "body" : "Bob wants to play poker"}, extra={"foo": "bar"})
+	device.send_message("Hello again", thread_id="123", extra={"foo": "bar"}) # set thread-id to allow iOS to merge notifications
 
 .. note::
 	APNS does not support sending payloads that exceed 2048 bytes (increased from 256 in 2014).
@@ -140,37 +147,61 @@ value per user. Assuming User model has a method get_badge returning badge count
 		badge=lambda token: APNSDevice.objects.get(registration_id=token).user.get_badge()
 	)
 
+Firebase vs Google Cloud Messaging
+----------------------------------
 
-Sending messages to topic members
----------------------------------
-GCM topic messaging allows your app server to send a message to multiple devices that have opted in to a particular topic. Based on the publish/subscribe model, topic messaging supports unlimited subscriptions per app. Developers can choose any topic name that matches the regular expression, "/topics/[a-zA-Z0-9-_.~%]+".
+``django-push-notifications`` supports both Google Cloud Messaging and Firebase Cloud Messaging (which is now the officially supported messaging platform from Google). When registering a device, you must pass the ``cloud_type`` parameter to set the cloud type that matches the device needs.
+This is currently defaulting to ``'GCM'``, but may change to ``'FCM'`` at some point. You are encouraged to use the `officially supported library <https://developers.google.com/cloud-messaging/faq>`_.
+
+When using FCM, ``django-push-notifications`` will automatically use the `notification and data messages format <https://firebase.google.com/docs/cloud-messaging/concept-options#notifications_and_data_messages>`_ to be conveniently handled by Firebase devices. You may want to check the payload to see if it matches your needs, and review your notification statuses in `FCM Diagnostic console <https://support.google.com/googleplay/android-developer/answer/2663268?hl=en>`_.
+
+
+.. code-block:: python
+
+	# Create a FCM device
+	fcm_device = GCMDevice.objects.create(registration_id="token", cloud_message_type="FCM", user=the_user)
+
+	# Send a notification message
+	fcm_device.send_message("This is a message")
+
+	# Send a notification message with additionnal payload
+	fcm_device.send_message("This is a enriched message", extra={"title": "Notification title", "icon": "icon_ressource"})
+
+	# Send a notification message with additionnal payload (alternative syntax)
+	fcm_device.send_message("This is a enriched message", title="Notification title", badge=6)
+
+	# Send a notification message with extra data
+	fcm_device.send_message("This is a message with data", extra={"other": "content", "misc": "data"})
+
+	# Send a notification message with options
+	fcm_device.send_message("This is a message", time_to_live=3600)
+
+	# Send a data message only
+	fcm_device.send_message(None, extra={"other": "content", "misc": "data"})
+
+You can disable this default behaviour by setting ``use_fcm_notifications`` to ``False``.
+
+.. code-block:: python
+
+	fcm_device = GCMDevice.objects.create(registration_id="token", cloud_message_type="FCM", user=the_user)
+
+	# Send a data message with classic format
+	fcm_device.send_message("This is a message", use_fcm_notifications=False)
+
+
+Sending FCM/GCM messages to topic members
+-----------------------------------------
+FCM/GCM topic messaging allows your app server to send a message to multiple devices that have opted in to a particular topic. Based on the publish/subscribe model, topic messaging supports unlimited subscriptions per app. Developers can choose any topic name that matches the regular expression, "/topics/[a-zA-Z0-9-_.~%]+".
 Note: gcm_send_bulk_message must be used when sending messages to topic subscribers, and setting the first param to any value other than None will result in a 400 Http error.
 
 .. code-block:: python
 
-	from push_notifications.gcm import gcm_send_bulk_message
+	from push_notifications.gcm import send_message
 
         # First param is "None" because no Registration_id is needed, the message will be sent to all devices subscribed to the topic.
-        gcm_send_bulk_message(None, {"message": "Hello members of my_topic!"}, to="/topics/my_topic")
+        send_message(None, {"body": "Hello members of my_topic!"}, to="/topics/my_topic")
 
-Reference: `GCM Documentation <https://developers.google.com/cloud-messaging/topic-messaging>`_
-
-Administration
---------------
-
-APNS devices which are not receiving push notifications can be set to inactive by two methods.  The web admin interface for
-APNS devices has a "prune devices" option.  Any selected devices which are not receiving notifications will be set to inactive [1]_.
-There is also a management command to prune all devices failing to receive notifications:
-
-.. code-block:: shell
-
-	$ python manage.py prune_devices
-
-This removes all devices which are not receiving notifications.
-
-For more information, please refer to the APNS feedback service_.
-
-.. _service: https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/CommunicatingWIthAPS.html
+Reference: `FCM Documentation <https://firebase.google.com/docs/cloud-messaging/android/topic-messaging>`_
 
 Exceptions
 ----------
@@ -179,24 +210,6 @@ Exceptions
 - ``gcm.GCMError(NotificationError)``: An error was returned by GCM. This is never raised when using bulk notifications.
 - ``apns.APNSError(NotificationError)``: Something went wrong upon sending APNS notifications.
 - ``apns.APNSDataOverflow(APNSError)``: The APNS payload exceeds its maximum size and cannot be sent.
-
-Tastypie support
-----------------
-
-The app includes tastypie-compatible resources in push_notifications.api.tastypie. These can be used as-is, or as base classes
-for more involved APIs.
-The following resources are available:
-
-- ``APNSDeviceResource``
-- ``GCMDeviceResource``
-- ``APNSDeviceAuthenticatedResource``
-- ``GCMDeviceAuthenticatedResource``
-
-The base device resources will not ask for authentication, while the authenticated ones will link the logged in user to
-the device they register.
-Subclassing the authenticated resources in order to add a ``SameUserAuthentication`` and a user ``ForeignKey`` is recommended.
-
-When registered, the APIs will show up at ``<api_root>/device/apns`` and ``<api_root>/device/gcm``, respectively.
 
 Django REST Framework (DRF) support
 -----------------------------------
@@ -260,10 +273,5 @@ device with an already existing registration ID will be transformed into an upda
 
 The ``UPDATE_ON_DUPLICATE_REG_ID`` only works with DRF.
 
-
-Python 3 support
-----------------
-
-``django-push-notifications`` is fully compatible with Python 3.4 & 3.5
 
 .. [1] Any devices which are not selected, but are not receiving notifications will not be deactivated on a subsequent call to "prune devices" unless another attempt to send a message to the device fails after the call to the feedback service.

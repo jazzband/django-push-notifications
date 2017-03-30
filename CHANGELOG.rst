@@ -1,3 +1,9 @@
+Unreleased
+==========
+* BACKWARDS-INCOMPATIBLE: Remove `push_notifications.api.tastypie` module. Only DRF is supported now.
+* FCM : Better support for Firebase Cloud Messaging, with payload being sent correctly for FCM devices
+* FCM : Introduced `use_fcm_notification` option to enforce legacy GCM payload
+
 v1.4.1 (2016-01-11)
 ===================
 * APNS: Increased max device token size to 100 bytes (WWDC 2015, iOS 9)
