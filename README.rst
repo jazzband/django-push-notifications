@@ -21,8 +21,8 @@ single messages.
 Dependencies
 ------------
 - Python 2.7 or 3.4+
-- Django 1.8, or 1.10+
-- For the API module, Django REST Framework 3.5 is required.
+- Django 1.10+
+- For the API module, Django REST Framework 3.5+ is required.
 
 Setup
 -----
