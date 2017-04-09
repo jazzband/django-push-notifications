@@ -38,7 +38,7 @@ class LegacyConfig(BaseConfig):
 		return self._get_application_settings(application_id, "FCM_API_KEY", msg)
 
 	def get_post_url(self, cloud_type, application_id=None):
-		key = "{}_API_KEY".format(cloud_type)
+		key = "{}_POST_URL".format(cloud_type)
 		msg = (
 			"Set PUSH_NOTIFICATIONS_SETTINGS[\"{}\"] to send messages through {}.".format(
 				key, cloud_type
