@@ -1,45 +1,16 @@
 This library was created by Jerome Leclanche <jerome@leclan.ch>, for use on the
 Anthill application (https://www.anthill.com).
 
-Special thanks to everyone who contributed:
+Special thanks to the following core and frequent contributors:
 
 Adam "Cezar" Jenkins
-Alan Descoins
-Ales Dokhanin
-Alistair Broomhead
-Andrey Zevakin
-Antonin Lenfant
 Arthur Silva
-Avichal Pandey
-Brad Pitcher
-Daniel Kronovet
-David Pretty
-Dilvane Zanardine
-Florian Finke
-Florian Purchess
-Francois Lebel
-halak
-Innocenty Enikeew
-Jack Feng
+Camille Fabreguettes
 Jamaal Scarlett
-Jay Camp
-Jeremy Morgan
-Jerome Leclanche
-Julien Dubiel
-Lital Natan
-Luke Burden
-Marconi Moreto
 Matthew Hershberger
-Maxim Kamenkov
-Mohamad Nour Chawich
-Nicolas Delaby
-Remigiusz Dymecki
-Ruslan Kovtun
-Sander Heling
-Sergei Evdokimov
-Sujit Nair
-Thomas Iovine
-Valentin Hăloiu
-Wyan Jow
-@hoongun
-Leo Honkanen
+Pablo Martín
+
+
+The full contributor list is available at the following URL:
+
+https://github.com/jleclanche/django-push-notifications/graphs/contributors
