@@ -9,13 +9,17 @@ __all__ = [
 ]
 
 
+class empty(object):
+	pass
+
+
 class LegacyConfig(BaseConfig):
 	def _get_application_settings(self, application_id, settings_key, error_message):
 		"""Legacy behaviour"""
 
 		if not application_id:
-			value = SETTINGS.get(settings_key, None)  # do we need a NO_OP?
-			if value is None:
+			value = SETTINGS.get(settings_key, empty)
+			if value is empty:
 				raise ImproperlyConfigured(error_message)
 			return value
 		else:
