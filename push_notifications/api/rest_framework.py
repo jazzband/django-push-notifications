@@ -101,7 +101,7 @@ class GCMDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
 		model = GCMDevice
 		fields = (
 			"id", "name", "registration_id", "device_id", "active", "date_created",
-			"cloud_message_type", 'application_id',
+			"cloud_message_type", "application_id",
 		)
 		extra_kwargs = {"id": {"read_only": False, "required": False}}
 
