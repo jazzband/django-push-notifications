@@ -39,7 +39,7 @@ Edit your settings.py file:
 
 	INSTALLED_APPS = (
 		...
-		"push_notifications"
+		"push_notifications",
 	)
 
 	PUSH_NOTIFICATIONS_SETTINGS = {
