@@ -23,7 +23,7 @@ class APNSModelTestCase(TestCase):
 			"APNS_CERTIFICATE": "/path/to/apns/certificate.pem"
 		})
 
-		with mock.patch("apns2.client.init_context"):
+		with mock.patch("apns2.credentials.init_context"):
 			with mock.patch("apns2.client.APNsClient.connect"):
 				with mock.patch("apns2.client.APNsClient.send_notification_batch") as s:
 					APNSDevice.objects.all().send_message("Hello world", expiration=1)
@@ -37,7 +37,7 @@ class APNSModelTestCase(TestCase):
 	def test_apns_send_message_extra(self):
 		self._create_devices(["abc"])
 
-		with mock.patch("apns2.client.init_context"):
+		with mock.patch("apns2.credentials.init_context"):
 			with mock.patch("apns2.client.APNsClient.connect"):
 				with mock.patch("apns2.client.APNsClient.send_notification") as s:
 					APNSDevice.objects.get().send_message(
@@ -52,7 +52,7 @@ class APNSModelTestCase(TestCase):
 	def test_apns_send_message(self):
 		self._create_devices(["abc"])
 
-		with mock.patch("apns2.client.init_context"):
+		with mock.patch("apns2.credentials.init_context"):
 			with mock.patch("apns2.client.APNsClient.connect"):
 				with mock.patch("apns2.client.APNsClient.send_notification") as s:
 					APNSDevice.objects.get().send_message("Hello world", expiration=1)
