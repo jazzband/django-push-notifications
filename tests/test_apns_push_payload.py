@@ -10,7 +10,7 @@ from ._mock import mock
 class APNSPushPayloadTest(TestCase):
 
 	def test_push_payload(self):
-		with mock.patch("apns2.client.init_context"):
+		with mock.patch("apns2.credentials.init_context"):
 			with mock.patch("apns2.client.APNsClient.connect"):
 				with mock.patch("apns2.client.APNsClient.send_notification") as s:
 					_apns_send(
@@ -28,7 +28,7 @@ class APNSPushPayloadTest(TestCase):
 					self.assertEqual(kargs["expiration"], 3)
 
 	def test_push_payload_with_thread_id(self):
-		with mock.patch("apns2.client.init_context"):
+		with mock.patch("apns2.credentials.init_context"):
 			with mock.patch("apns2.client.APNsClient.connect"):
 				with mock.patch("apns2.client.APNsClient.send_notification") as s:
 					_apns_send(
@@ -44,7 +44,7 @@ class APNSPushPayloadTest(TestCase):
 				self.assertEqual(kargs["expiration"], 3)
 
 	def test_push_payload_with_alert_dict(self):
-		with mock.patch("apns2.client.init_context"):
+		with mock.patch("apns2.credentials.init_context"):
 			with mock.patch("apns2.client.APNsClient.connect"):
 				with mock.patch("apns2.client.APNsClient.send_notification") as s:
 					_apns_send(
@@ -60,7 +60,7 @@ class APNSPushPayloadTest(TestCase):
 					self.assertEqual(kargs["expiration"], 3)
 
 	def test_localised_push_with_empty_body(self):
-		with mock.patch("apns2.client.init_context"):
+		with mock.patch("apns2.credentials.init_context"):
 			with mock.patch("apns2.client.APNsClient.connect"):
 				with mock.patch("apns2.client.APNsClient.send_notification") as s:
 					_apns_send("123", None, loc_key="TEST_LOC_KEY", expiration=3)
@@ -70,7 +70,7 @@ class APNSPushPayloadTest(TestCase):
 					self.assertEqual(kargs["expiration"], 3)
 
 	def test_using_extra(self):
-		with mock.patch("apns2.client.init_context"):
+		with mock.patch("apns2.credentials.init_context"):
 			with mock.patch("apns2.client.APNsClient.connect"):
 				with mock.patch("apns2.client.APNsClient.send_notification") as s:
 					_apns_send(
@@ -85,7 +85,7 @@ class APNSPushPayloadTest(TestCase):
 					self.assertEqual(kargs["expiration"], 30)
 
 	def test_bad_priority(self):
-		with mock.patch("apns2.client.init_context"):
+		with mock.patch("apns2.credentials.init_context"):
 			with mock.patch("apns2.client.APNsClient.connect"):
 				with mock.patch("apns2.client.APNsClient.send_notification") as s:
 					self.assertRaises(APNSUnsupportedPriority, _apns_send, "123", "_" * 2049, priority=24)
