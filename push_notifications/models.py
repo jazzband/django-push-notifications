@@ -59,8 +59,9 @@ class GCMDeviceQuerySet(models.query.QuerySet):
 			if message is not None:
 				data["message"] = message
 
-			app_ids = self.filter(active=True).order_by("application_id")\
-				.values_list("application_id", flat=True).distinct()
+			app_ids = self.filter(active=True).order_by(
+				"application_id"
+			).values_list("application_id", flat=True).distinct()
 			response = []
 			for cloud_type in ("FCM", "GCM"):
 				for app_id in app_ids:

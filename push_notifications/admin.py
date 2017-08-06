@@ -63,6 +63,8 @@ class DeviceAdmin(admin.ModelAdmin):
 			)
 		if ret:
 			if bulk:
+				# When the queryset exceeds the max_recipients value, the
+				# send_message method returns a list of dicts, one per chunk
 				try:
 					success = ret[0][0]["success"]
 				except TypeError:
