@@ -90,7 +90,7 @@ def _cm_handle_response(registration_ids, response_data, cloud_type, application
 					ids_to_remove.append(registration_ids[index])
 				else:
 					throw_error = True
-
+			result["original_registration_id"] = registration_ids[index]
 			# If registration_id is set, replace the original ID with the new value (canonical ID)
 			# in your server database. Note that the original ID is not part of the result, you need
 			# to obtain it from the list of registration_ids in the request (using the same index).
