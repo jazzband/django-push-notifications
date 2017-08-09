@@ -3,7 +3,6 @@ from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
-from .fields import HexIntegerField
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 
@@ -82,10 +81,11 @@ class GCMDevice(Device):
 	# device_id cannot be a reliable primary key as fragmentation between different devices
 	# can make it turn out to be null and such:
 	# http://android-developers.blogspot.co.uk/2011/03/identifying-app-installations.html
-	device_id = HexIntegerField(
+	device_id = models.UUIDField(
 		verbose_name=_("Device ID"), blank=True, null=True, db_index=True,
-		help_text=_("ANDROID_ID / TelephonyManager.getDeviceId() (always as hex)")
+		help_text=_("ANDROID_ID / TelephonyManager.getDeviceId()")
 	)
+
 	registration_id = models.TextField(verbose_name=_("Registration ID"))
 	cloud_message_type = models.CharField(
 		verbose_name=_("Cloud Message Type"), max_length=3,

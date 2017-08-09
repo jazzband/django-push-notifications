@@ -1,30 +1,29 @@
 from __future__ import absolute_import
 
 from rest_framework import permissions, status
-from rest_framework.fields import IntegerField
+from rest_framework.fields import UUIDField
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer, Serializer, ValidationError
 from rest_framework.viewsets import ModelViewSet
 
-from ..fields import hex_re, UNSIGNED_64BIT_INT_MAX_VALUE
+from ..fields import hex_re
 from ..models import APNSDevice, GCMDevice, WNSDevice
 from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 
-# Fields
-class HexIntegerField(IntegerField):
+class UUIDIntegerField(UUIDField):
 	"""
-	Store an integer represented as a hex string of form "0x01".
+	Store an integer represented as a UUID for backwards compatibiltiy. Also
+	allows device_ids to be express as UUIDs.
 	"""
 
 	def to_internal_value(self, data):
-		# validate hex string and convert it to the unsigned
-		# integer representation for internal use
 		try:
+			# maintain some semblence of backwards compatibility
 			data = int(data, 16) if type(data) != int else data
 		except ValueError:
 			raise ValidationError("Device ID is not a valid hex number")
-		return super(HexIntegerField, self).to_internal_value(data)
+		return super(UUIDIntegerField, self).to_internal_value(data)
 
 	def to_representation(self, value):
 		return value
@@ -90,9 +89,8 @@ class UniqueRegistrationSerializerMixin(Serializer):
 
 
 class GCMDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
-	device_id = HexIntegerField(
+	device_id = UUIDIntegerField(
 		help_text="ANDROID_ID / TelephonyManager.getDeviceId() (e.g: 0x01)",
-		style={"input_type": "text"},
 		required=False,
 		allow_null=True
 	)
@@ -104,12 +102,6 @@ class GCMDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
 			"cloud_message_type", "application_id",
 		)
 		extra_kwargs = {"id": {"read_only": False, "required": False}}
-
-	def validate_device_id(self, value):
-		# device ids are 64 bit unsigned values
-		if value > UNSIGNED_64BIT_INT_MAX_VALUE:
-			raise ValidationError("Device ID is out of range")
-		return value
 
 
 class WNSDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):

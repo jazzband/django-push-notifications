@@ -1,7 +1,7 @@
 import re
 import struct
 from django import forms
-from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
+from django.core.validators import RegexValidator
 from django.db import connection, models
 from django.utils import six
 from django.utils.translation import ugettext_lazy as _
@@ -60,6 +60,7 @@ class HexadecimalField(forms.CharField):
 		return super(forms.CharField, self).prepare_value(value)
 
 
+# https://docs.djangoproject.com/en/1.11/topics/migrations/#considerations-when-removing-model-fields
 class HexIntegerField(models.BigIntegerField):
 	"""
 	This field stores a hexadecimal *string* of up to 64 bits as an unsigned integer
@@ -73,53 +74,11 @@ class HexIntegerField(models.BigIntegerField):
 	value we deal with in python is always in hex.
 	"""
 
-	validators = [
-		MinValueValidator(UNSIGNED_64BIT_INT_MIN_VALUE),
-		MaxValueValidator(UNSIGNED_64BIT_INT_MAX_VALUE)
-	]
-
-	def db_type(self, connection):
-		engine = connection.settings_dict["ENGINE"]
-		if "mysql" in engine:
-			return "bigint unsigned"
-		elif "sqlite" in engine:
-			return "UNSIGNED BIG INT"
-		else:
-			return super(HexIntegerField, self).db_type(connection=connection)
-
-	def get_prep_value(self, value):
-		""" Return the integer value to be stored from the hex string """
-		if value is None or value == "":
-			return None
-		if isinstance(value, six.string_types):
-			value = _hex_string_to_unsigned_integer(value)
-		if _using_signed_storage():
-			value = _unsigned_to_signed_integer(value)
-		return value
-
-	def from_db_value(self, value, expression, connection, context):
-		""" Return an unsigned int representation from all db backends """
-		if value is None:
-			return value
-		if _using_signed_storage():
-			value = _signed_to_unsigned_integer(value)
-		return value
-
-	def to_python(self, value):
-		""" Return a str representation of the hexadecimal """
-		if isinstance(value, six.string_types):
-			return value
-		if value is None:
-			return value
-		return _unsigned_integer_to_hex_string(value)
-
-	def formfield(self, **kwargs):
-		defaults = {"form_class": HexadecimalField}
-		defaults.update(kwargs)
-		# yes, that super call is right
-		return super(models.IntegerField, self).formfield(**defaults)
-
-	def run_validators(self, value):
-		# make sure validation is performed on integer value not string value
-		value = _hex_string_to_unsigned_integer(value)
-		return super(models.BigIntegerField, self).run_validators(value)
+	system_check_removed_details = {
+		"msg": (
+			"HexIntegerField has been removed except for support in "
+			"historical migrations."
+		),
+		"hint": "Use UUIDField instead.",
+		"id": "fields.E001",
+	}
