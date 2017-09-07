@@ -131,9 +131,6 @@ def _cm_send_request(
 			notification_payload["body"] = data.pop("message", None)
 
 		for key in FCM_NOTIFICATIONS_PAYLOAD_KEYS:
-			value_from_extra = data.pop(key, None)
-			if value_from_extra:
-				notification_payload[key] = value_from_extra
 			value_from_kwargs = kwargs.pop(key, None)
 			if value_from_kwargs:
 				notification_payload[key] = value_from_kwargs
