@@ -25,8 +25,7 @@ script:
 
 matrix:
   allow_failures:
-  - python: "3.6"
-    env: py36-djangomaster
+  - env: TOXENV=py36-djangomaster
 
 notifications:
   email:
