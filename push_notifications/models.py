@@ -109,12 +109,17 @@ class GCMDevice(Device):
 
 
 class APNSDeviceManager(models.Manager):
+	# Here's where we could keep the credentials for a JWT so we don't have
+	# to recreated it for every request
+	#
+	# self.credentials = ...
+	# This would require some API to create some credentials maybe...
 	def get_queryset(self):
 		return APNSDeviceQuerySet(self.model)
 
 
 class APNSDeviceQuerySet(models.query.QuerySet):
-	def send_message(self, message, certfile=None, **kwargs):
+	def send_message(self, message, creds=None, **kwargs):
 		if self:
 			from .apns import apns_send_bulk_message
 
@@ -126,7 +131,7 @@ class APNSDeviceQuerySet(models.query.QuerySet):
 				)
 				r = apns_send_bulk_message(
 					registration_ids=reg_ids, alert=message, application_id=app_id,
-					certfile=certfile, **kwargs
+					creds=creds, **kwargs
 				)
 				if hasattr(r, "keys"):
 					res += [r]
@@ -149,13 +154,13 @@ class APNSDevice(Device):
 	class Meta:
 		verbose_name = _("APNS device")
 
-	def send_message(self, message, certfile=None, **kwargs):
+	def send_message(self, message, creds=None, **kwargs):
 		from .apns import apns_send_message
 
 		return apns_send_message(
 			registration_id=self.registration_id,
 			alert=message,
-			application_id=self.application_id, certfile=certfile,
+			application_id=self.application_id, creds=creds,
 			**kwargs
 		)
 

@@ -42,7 +42,14 @@ OPTIONAL_SETTINGS = [
 	"APPLICATION_SECRET",
 ]
 
-APNS_REQUIRED_SETTINGS = ["CERTIFICATE"]
+# Since we can have an auth key, combined with a auth key id and team id *or*
+# a certificate, we make these all optional, and then make sure we have one or
+# the other (group) of settings.
+APNS_SETTINGS_CERT_CREDS = "CERTIFICATE"
+
+# Subkeys for APNS_SETTINGS_AUTH_CREDS
+APNS_AUTH_CREDS_REQUIRED = ["AUTH_KEY_PATH", "AUTH_KEY_ID", "TEAM_ID"]
+APNS_AUTH_CREDS_OPTIONAL = ["CERTIFICATE", "ENCRYPTION_ALGORITHM", "TOKEN_LIFETIME"]
 
 APNS_OPTIONAL_SETTINGS = [
 	"USE_SANDBOX", "USE_ALTERNATIVE_PORT", "TOPIC"
@@ -114,20 +121,46 @@ class AppConfig(BaseConfig):
 			)
 
 	def _validate_apns_config(self, application_id, application_config):
-		allowed = REQUIRED_SETTINGS + OPTIONAL_SETTINGS + APNS_REQUIRED_SETTINGS + \
+		allowed = REQUIRED_SETTINGS + OPTIONAL_SETTINGS + \
+			APNS_AUTH_CREDS_REQUIRED + \
+			APNS_AUTH_CREDS_OPTIONAL + \
 			APNS_OPTIONAL_SETTINGS
 
 		self._validate_allowed_settings(application_id, application_config, allowed)
-		self._validate_required_settings(
-			application_id, application_config, APNS_REQUIRED_SETTINGS
-		)
+		# We have two sets of settings, certificate and JWT auth key.
+                # Auth Key requires 3 values, so if that is set, that will take
+                # precedence. If None are set, we will throw an error.
+		hasCertCreds = APNS_SETTINGS_CERT_CREDS in \
+			application_config.keys()
+		self.hasTokenCreds = True
+		for tokenSetting in APNS_AUTH_CREDS_REQUIRED:
+			if tokenSetting not in application_config.keys():
+				self.hasTokenCreds = False
+				break
+
+		if not hasCertCreds and not self.hasTokenCreds:
+			raise ImproperlyConfigured(
+				MISSING_SETTING.format(
+					application_id=application_id, setting=(APNS_SETTINGS_CERT_CREDS, APNS_AUTH_CREDS_REQUIRED)))
+		certPath = None
+		if hasCertCreds:
+			certPath = "CERTIFICATE"
+		elif self.hasTokenCreds:
+			certPath = "AUTH_KEY_PATH"
+			allowedToke = APNS_AUTH_CREDS_REQUIRED + \
+				APNS_AUTH_CREDS_OPTIONAL + \
+				APNS_OPTIONAL_SETTINGS + \
+				REQUIRED_SETTINGS
+			self._validate_allowed_settings(application_id, application_config, allowedToke)
+			self._validate_required_settings(
+				application_id, application_config, APNS_AUTH_CREDS_REQUIRED
+			)
+		self._validate_apns_certificate(application_config[certPath])
 
 		# determine/set optional values
 		application_config.setdefault("USE_SANDBOX", False)
 		application_config.setdefault("USE_ALTERNATIVE_PORT", False)
 		application_config.setdefault("TOPIC", "")
-
-		self._validate_apns_certificate(application_config["CERTIFICATE"])
 
 	def _validate_apns_certificate(self, certfile):
 		"""Validate the APNS certificate at startup."""
@@ -189,17 +222,22 @@ class AppConfig(BaseConfig):
 				)
 
 	def _validate_required_settings(
-		self, application_id, application_config, required_settings
+		self, application_id, application_config, required_settings,
+		shouldThrow=True
 	):
 		"""All required keys must be present"""
 
 		for setting_key in required_settings:
 			if setting_key not in application_config.keys():
-				raise ImproperlyConfigured(
-					MISSING_SETTING.format(
-						application_id=application_id, setting=setting_key
+				if shouldThrow:
+					raise ImproperlyConfigured(
+						MISSING_SETTING.format(
+							application_id=application_id, setting=setting_key
+						)
 					)
-				)
+				else:
+					return False
+		return True
 
 	def _get_application_settings(self, application_id, platform, settings_key):
 		"""Walks through PUSH_NOTIFICATIONS_SETTINGS to find the correct setting
@@ -238,6 +276,9 @@ class AppConfig(BaseConfig):
 
 		return app_config.get(settings_key)
 
+	def has_auth_token_creds(self, application_id=None):
+		return self.hasTokenCreds
+
 	def get_gcm_api_key(self, application_id=None):
 		return self._get_application_settings(application_id, "GCM", "API_KEY")
 
@@ -267,6 +308,24 @@ class AppConfig(BaseConfig):
 					"should have a 'path' attribute or key"
 				)
 		return r
+
+	def get_apns_auth_creds(self, application_id=None):
+		return
+		(self._get_apns_auth_key_path(application_id),
+			self._get_apns_auth_key_id(application_id),
+			self._get_apns_team_id(application_id))
+
+	def _get_apns_auth_key_path(self, application_id=None):
+		return self._get_application_settings(application_id, "APNS", "AUTH_KEY_PATH")
+
+	def _get_apns_auth_key_id(self, application_id=None):
+		return self._get_application_settings(application_id, "APNS", "AUTH_KEY_ID")
+
+	def _get_apns_team_id(self, application_id=None):
+		return self._get_application_settings(application_id, "APNS", "TEAM_ID")
+
+	def get_apns_token_lifetime(self, application_id=None):
+		return self._get_application_settings(application_id, "APNS", "TOKEN_LIFETIME")
 
 	def get_apns_use_sandbox(self, application_id=None):
 		return self._get_application_settings(application_id, "APNS", "USE_SANDBOX")
