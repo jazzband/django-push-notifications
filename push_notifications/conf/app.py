@@ -142,8 +142,7 @@ class AppConfig(BaseConfig):
 			raise ImproperlyConfigured(
 				MISSING_SETTING.format(
 					application_id=application_id,
-					setting=(APNS_SETTINGS_CERT_CREDS,
-					APNS_AUTH_CREDS_REQUIRED)))
+					setting=(APNS_SETTINGS_CERT_CREDS, APNS_AUTH_CREDS_REQUIRED)))
 		certPath = None
 		if hasCertCreds:
 			certPath = "CERTIFICATE"

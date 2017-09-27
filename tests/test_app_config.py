@@ -160,7 +160,7 @@ class AppConfigTestCase(TestCase):
 		self.assertEqual(
 			str(ic.exception),
 			("PUSH_NOTIFICATIONS_SETTINGS.APPLICATIONS['my_apns_app']['('CERTIFICATE', "
-			"['AUTH_KEY_PATH', 'AUTH_KEY_ID', 'TEAM_ID'])'] is missing.")
+				"['AUTH_KEY_PATH', 'AUTH_KEY_ID', 'TEAM_ID'])'] is missing.")
 		)
 
 		#
