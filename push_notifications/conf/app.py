@@ -130,33 +130,33 @@ class AppConfig(BaseConfig):
 		# We have two sets of settings, certificate and JWT auth key.
 		# Auth Key requires 3 values, so if that is set, that will take
 		# precedence. If None are set, we will throw an error.
-		hasCertCreds = APNS_SETTINGS_CERT_CREDS in \
+		has_cert_creds = APNS_SETTINGS_CERT_CREDS in \
 			application_config.keys()
-		self.hasTokenCreds = True
-		for tokenSetting in APNS_AUTH_CREDS_REQUIRED:
-			if tokenSetting not in application_config.keys():
-				self.hasTokenCreds = False
+		self.has_token_creds = True
+		for token_setting in APNS_AUTH_CREDS_REQUIRED:
+			if token_setting not in application_config.keys():
+				self.has_token_creds = False
 				break
 
-		if not hasCertCreds and not self.hasTokenCreds:
+		if not has_cert_creds and not self.has_token_creds:
 			raise ImproperlyConfigured(
 				MISSING_SETTING.format(
 					application_id=application_id,
 					setting=(APNS_SETTINGS_CERT_CREDS, APNS_AUTH_CREDS_REQUIRED)))
-		certPath = None
-		if hasCertCreds:
-			certPath = "CERTIFICATE"
-		elif self.hasTokenCreds:
-			certPath = "AUTH_KEY_PATH"
-			allowedToke = APNS_AUTH_CREDS_REQUIRED + \
+		cert_path = None
+		if has_cert_creds:
+			cert_path = "CERTIFICATE"
+		elif self.has_token_creds:
+			cert_path = "AUTH_KEY_PATH"
+			allowed_tokens = APNS_AUTH_CREDS_REQUIRED + \
 				APNS_AUTH_CREDS_OPTIONAL + \
 				APNS_OPTIONAL_SETTINGS + \
 				REQUIRED_SETTINGS
-			self._validate_allowed_settings(application_id, application_config, allowedToke)
+			self._validate_allowed_settings(application_id, application_config, allowed_tokens)
 			self._validate_required_settings(
 				application_id, application_config, APNS_AUTH_CREDS_REQUIRED
 			)
-		self._validate_apns_certificate(application_config[certPath])
+		self._validate_apns_certificate(application_config[cert_path])
 
 		# determine/set optional values
 		application_config.setdefault("USE_SANDBOX", False)
@@ -224,13 +224,13 @@ class AppConfig(BaseConfig):
 
 	def _validate_required_settings(
 		self, application_id, application_config, required_settings,
-		shouldThrow=True
+		should_throw=True
 	):
 		"""All required keys must be present"""
 
 		for setting_key in required_settings:
 			if setting_key not in application_config.keys():
-				if shouldThrow:
+				if should_throw:
 					raise ImproperlyConfigured(
 						MISSING_SETTING.format(
 							application_id=application_id, setting=setting_key
@@ -278,7 +278,7 @@ class AppConfig(BaseConfig):
 		return app_config.get(settings_key)
 
 	def has_auth_token_creds(self, application_id=None):
-		return self.hasTokenCreds
+		return self.has_token_creds
 
 	def get_gcm_api_key(self, application_id=None):
 		return self._get_application_settings(application_id, "GCM", "API_KEY")
@@ -324,9 +324,6 @@ class AppConfig(BaseConfig):
 
 	def _get_apns_team_id(self, application_id=None):
 		return self._get_application_settings(application_id, "APNS", "TEAM_ID")
-
-	def get_apns_token_lifetime(self, application_id=None):
-		return self._get_application_settings(application_id, "APNS", "TOKEN_LIFETIME")
 
 	def get_apns_use_sandbox(self, application_id=None):
 		return self._get_application_settings(application_id, "APNS", "USE_SANDBOX")

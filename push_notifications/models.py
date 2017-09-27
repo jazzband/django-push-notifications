@@ -111,11 +111,6 @@ class GCMDevice(Device):
 
 
 class APNSDeviceManager(models.Manager):
-	# Here's where we could keep the credentials for a JWT so we don't have
-	# to recreated it for every request
-	#
-	# self.credentials = ...
-	# This would require some API to create some credentials maybe...
 	def get_queryset(self):
 		return APNSDeviceQuerySet(self.model)
 

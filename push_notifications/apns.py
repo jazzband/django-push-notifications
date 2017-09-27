@@ -39,8 +39,8 @@ def _apns_create_socket(creds=None, application_id=None):
 		else:
 			keyPath, keyId, teamId = get_manager().get_apns_auth_creds(application_id)
 			# No use getting a lifetime because this credential is
-			# ephemeral, but if you looking at this to see how to
-			# create acredential, you could also pass the lifetime and
+			# ephemeral, but if you're looking at this to see how to
+			# create a credential, you could also pass the lifetime and
 			# algorithm. Neither of those settings are exposed in the
 			# settings API at the moment.
 			creds = creds or apns2_credentials.TokenCredentials(keyPath, keyId, teamId)

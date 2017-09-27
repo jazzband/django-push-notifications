@@ -23,6 +23,11 @@ install:
 script:
   - tox
 
+matrix:
+  allow_failures:
+  - python: 3.6
+    env: djangomaster
+
 notifications:
   email:
     on_failure: always
