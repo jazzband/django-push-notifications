@@ -3,12 +3,12 @@
 
 GCM_JSON = '{"cast_id":108,"success":1,"failure":0,"canonical_ids":0,"results":[{"message_id":"1:08"}]}'
 GCM_JSON_ERROR_NOTREGISTERED = (
-	'{"success":1, "failure": 1, "canonical_ids": 0, "cast_id": 6358665107659088804, "results":'
-	' [{"error": "NotRegistered"}, {"message_id": "0:1433830664381654%3449593ff9fd7ecd"}]}'
+	'{"failure": 1, "canonical_ids": 0, "cast_id": 6358665107659088804, "results":'
+	' [{"error": "NotRegistered"}]}'
 )
 GCM_JSON_ERROR_INVALIDREGISTRATION = (
-	'{"success":1, "failure": 1, "canonical_ids": 0, "cast_id": 6358665107659088804, "results":'
-	' [{"error": "InvalidRegistration"}, {"message_id": "0:1433830664381654%3449593ff9fd7ecd"}]}'
+	'{"failure": 1, "canonical_ids": 0, "cast_id": 6358665107659088804, "results":'
+	' [{"error": "InvalidRegistration"}]}'
 )
 GCM_JSON_ERROR_MISMATCHSENDERID = (
 	'{"success":0, "failure": 1, "canonical_ids": 0, "results":'

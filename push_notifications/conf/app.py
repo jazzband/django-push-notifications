@@ -160,7 +160,7 @@ class AppConfig(BaseConfig):
 		# determine/set optional values
 		application_config.setdefault("USE_SANDBOX", False)
 		application_config.setdefault("USE_ALTERNATIVE_PORT", False)
-		application_config.setdefault("TOPIC", "")
+		application_config.setdefault("TOPIC", None)
 
 	def _validate_apns_certificate(self, certfile):
 		"""Validate the APNS certificate at startup."""
