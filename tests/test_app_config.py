@@ -159,7 +159,8 @@ class AppConfigTestCase(TestCase):
 
 		self.assertEqual(
 			str(ic.exception),
-			"PUSH_NOTIFICATIONS_SETTINGS.APPLICATIONS['my_apns_app']['('CERTIFICATE', ['AUTH_KEY_PATH', 'AUTH_KEY_ID', 'TEAM_ID'])'] is missing."
+			("PUSH_NOTIFICATIONS_SETTINGS.APPLICATIONS['my_apns_app']['('CERTIFICATE', "
+			"['AUTH_KEY_PATH', 'AUTH_KEY_ID', 'TEAM_ID'])'] is missing.")
 		)
 
 		#
@@ -187,8 +188,8 @@ class AppConfigTestCase(TestCase):
 				"my_apns_app": {
 					"PLATFORM": "APNS",
 					"AUTH_KEY_PATH": path,
-					"AUTH_KEY_ID": '123456',
-					"TEAM_ID": '123456',
+					"AUTH_KEY_ID": "123456",
+					"TEAM_ID": "123456",
 				}
 			}
 		}

@@ -128,8 +128,8 @@ class AppConfig(BaseConfig):
 
 		self._validate_allowed_settings(application_id, application_config, allowed)
 		# We have two sets of settings, certificate and JWT auth key.
-                # Auth Key requires 3 values, so if that is set, that will take
-                # precedence. If None are set, we will throw an error.
+		# Auth Key requires 3 values, so if that is set, that will take
+		# precedence. If None are set, we will throw an error.
 		hasCertCreds = APNS_SETTINGS_CERT_CREDS in \
 			application_config.keys()
 		self.hasTokenCreds = True
@@ -141,7 +141,9 @@ class AppConfig(BaseConfig):
 		if not hasCertCreds and not self.hasTokenCreds:
 			raise ImproperlyConfigured(
 				MISSING_SETTING.format(
-					application_id=application_id, setting=(APNS_SETTINGS_CERT_CREDS, APNS_AUTH_CREDS_REQUIRED)))
+					application_id=application_id,
+					setting=(APNS_SETTINGS_CERT_CREDS,
+					APNS_AUTH_CREDS_REQUIRED)))
 		certPath = None
 		if hasCertCreds:
 			certPath = "CERTIFICATE"
