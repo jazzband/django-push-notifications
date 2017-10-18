@@ -26,7 +26,8 @@ PLATFORMS = [
 	"APNS",
 	"FCM",
 	"GCM",
-	"WNS"
+	"WNS",
+	"WP"
 ]
 
 # Settings that all applications must have
@@ -56,6 +57,10 @@ FCM_OPTIONAL_SETTINGS = GCM_OPTIONAL_SETTINGS = [
 WNS_REQUIRED_SETTINGS = ["PACKAGE_SECURITY_ID", "SECRET_KEY"]
 
 WNS_OPTIONAL_SETTINGS = ["WNS_ACCESS_URL"]
+
+WP_REQUIRED_SETTINGS = ["PRIVATE_KEY", "CLAIMS"]
+
+WP_OPTIONAL_SETTINGS = ["ERROR_TIMEOUT", "POST_URL"]
 
 
 class AppConfig(BaseConfig):
@@ -177,6 +182,21 @@ class AppConfig(BaseConfig):
 
 		application_config.setdefault("WNS_ACCESS_URL", "https://login.live.com/accesstoken.srf")
 
+	def _validate_wp_config(self, application_id, application_config):
+		allowed = REQUIRED_SETTINGS + OPTIONAL_SETTINGS + WP_REQUIRED_SETTINGS + \
+			WP_OPTIONAL_SETTINGS
+
+		self._validate_allowed_settings(application_id, application_config, allowed)
+		self._validate_required_settings(
+			application_id, application_config, WP_REQUIRED_SETTINGS
+		)
+		application_config.setdefault("POST_URL", {
+			"CHROME": 'https://fcm.googleapis.com/fcm/send',
+			"OPERA": 'https://fcm.googleapis.com/fcm/send',
+			"FIREFOX": 'https://updates.push.services.mozilla.com/wpush/v2'
+		})
+
+
 	def _validate_allowed_settings(self, application_id, application_config, allowed_settings):
 		"""Confirm only allowed settings are present."""
 
@@ -282,3 +302,12 @@ class AppConfig(BaseConfig):
 
 	def get_wns_secret_key(self, application_id=None):
 		return self._get_application_settings(application_id, "WNS", "SECRET_KEY")
+
+	def get_wp_post_url(self, application_id, browser):
+		return self._get_application_settings(application_id, "WP", "POST_URL")[browser]
+
+	def get_wp_private_key(self, application_id=None):
+		return self._get_application_settings(application_id, "WP", "PRIVATE_KEY")
+
+	def get_wp_claims(self, application_id=None):
+		return self._get_application_settings(application_id, "WP", "CLAIMS")
