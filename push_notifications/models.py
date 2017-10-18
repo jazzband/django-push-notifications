@@ -12,6 +12,10 @@ CLOUD_MESSAGE_TYPES = (
 	("GCM", "Google Cloud Message"),
 )
 
+BROWSER_TYPES = (
+	("CHROME", "Chrome"),
+	("FIREFOX", "Firefox"),
+)
 
 @python_2_unicode_compatible
 class Device(models.Model):
@@ -74,7 +78,6 @@ class GCMDeviceQuerySet(models.query.QuerySet):
 					if reg_ids:
 						r = gcm_send_message(reg_ids, data, cloud_type, application_id=app_id, **kwargs)
 						response.append(r)
-
 			return response
 
 
@@ -206,3 +209,44 @@ class WNSDevice(Device):
 		return wns_send_message(
 			uri=self.registration_id, message=message, application_id=self.application_id, **kwargs
 		)
+
+
+class WebPushDeviceManager(models.Manager):
+	def get_queryset(self):
+		return WebPushDeviceQuerySet(self.model)
+
+
+class WebPushDeviceQuerySet(models.query.QuerySet):
+	def send_message(self, message, **kwargs):
+		devices = self.filter(active=True).order_by("application_id").distinct()
+		res = []
+		for device in devices:
+			res.append(device.send_message(message))
+		return res
+
+
+class WebPushDevice(Device):
+	registration_id = models.TextField(verbose_name=_("Registration ID"))
+	p256dh = models.TextField(verbose_name=_("User public encryption key"))
+	auth = models.TextField(verbose_name=_("User auth secret"))
+	browser = models.CharField(
+		verbose_name=_("Browser"), max_length=10,
+		choices=BROWSER_TYPES, default=BROWSER_TYPES[0][0],
+		help_text=_("Currently only support to Chrome and Firefox browsers")
+	)
+	objects = WebPushDeviceManager()
+
+	class Meta:
+		verbose_name = _("WebPush device")
+
+
+	def send_message(self, message, **kwargs):
+		from .webpush import webpush_send_message
+
+		return webpush_send_message(
+			uri=self.registration_id, message=message, browser=self.browser,
+			auth=self.auth, p256dh=self.p256dh, application_id=self.application_id, **kwargs)
+
+	@property
+	def device_id(self):
+		return None

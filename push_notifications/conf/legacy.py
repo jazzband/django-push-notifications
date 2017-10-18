@@ -122,3 +122,15 @@ class LegacyConfig(BaseConfig):
 	def get_wns_secret_key(self, application_id=None):
 		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
 		return self._get_application_settings(application_id, "WNS_SECRET_KEY", msg)
+
+	def get_browser_post_url(self, application_id, browser):
+		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
+		return self._get_application_settings(application_id, "BROWSER_POST_URL", msg)[browser]
+
+	def get_browser_private_key(self, application_id=None):
+		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
+		return self._get_application_settings(application_id, "BROWSER_PRIVATE_KEY", msg)
+
+	def get_browser_claims(self, application_id=None):
+		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
+		return self._get_application_settings(application_id, "BROWSER_CLAIMS", msg)
