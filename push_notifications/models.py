@@ -15,6 +15,7 @@ CLOUD_MESSAGE_TYPES = (
 BROWSER_TYPES = (
 	("CHROME", "Chrome"),
 	("FIREFOX", "Firefox"),
+	("OPERA", "Opera"),
 )
 
 @python_2_unicode_compatible

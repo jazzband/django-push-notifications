@@ -39,7 +39,8 @@ PUSH_NOTIFICATIONS_SETTINGS.setdefault(
 # BROWSER
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("BROWSER_POST_URL", {
 	"CHROME": PUSH_NOTIFICATIONS_SETTINGS['FCM_POST_URL'],
-	"FIREFOX": 'https://updates.push.services.mozilla.com/wpush/v2'
+	"OPERA": PUSH_NOTIFICATIONS_SETTINGS['FCM_POST_URL'],
+	"FIREFOX": 'https://updates.push.services.mozilla.com/wpush/v2',
 })
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("BROWSER_PRIVATE_KEY", None)
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("BROWSER_CLAIMS", None)

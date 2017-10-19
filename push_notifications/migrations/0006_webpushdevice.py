@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
                 ('registration_id', models.TextField(verbose_name='Registration ID')),
                 ('p256dh', models.TextField(verbose_name='User public encryption key')),
                 ('auth', models.TextField(verbose_name='User auth secret')),
-                ('browser', models.CharField(default='CHROME', help_text='Currently only support to Chrome and Firefox browsers', max_length=10, verbose_name='Browser', choices=[('CHROME', 'Chrome'), ('FIREFOX', 'Firefox')])),
+                ('browser', models.CharField(default='CHROME', help_text='Currently only support to Chrome and Firefox browsers', max_length=10, verbose_name='Browser', choices=[('CHROME', 'Chrome'), ('FIREFOX', 'Firefox'), ("OPERA", "Opera")])),
                 ('user', models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, null=True)),
             ],
             options={

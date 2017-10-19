@@ -192,6 +192,7 @@ class AppConfig(BaseConfig):
 		)
 		application_config.setdefault("POST_URL", {
 			"CHROME": 'https://fcm.googleapis.com/fcm/send',
+			"OPERA": 'https://fcm.googleapis.com/fcm/send',
 			"FIREFOX": 'https://updates.push.services.mozilla.com/wpush/v2'
 		})
 
