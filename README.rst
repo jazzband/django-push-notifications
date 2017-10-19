@@ -49,6 +49,8 @@ Edit your settings.py file:
 		"APNS_TOPIC": "com.example.push_test",
 		"WNS_PACKAGE_SECURITY_ID": "[your package security id, e.g: 'ms-app://e-3-4-6234...']",
 		"WNS_SECRET_KEY": "[your app secret key, e.g.: 'KDiejnLKDUWodsjmewuSZkk']",
+		"BROWSER_PRIVATE_KEY": "/path/to/your/private.pem",
+		"BROWSER_CLAIMS": {'sub': "mailto: development@example.com"}
 	}
 
 .. note::
@@ -92,6 +94,134 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 
 - ``USER_MODEL``: Your user model of choice. Eg. ``myapp.User``. Defaults to ``settings.AUTH_USER_MODEL``.
 - ``UPDATE_ON_DUPLICATE_REG_ID``: Transform create of an existing Device (based on registration id) into a update. See below `Update of device with duplicate registration ID`_ for more details.
+
+**Browser settings**
+
+Install:
+********
+
+.. code-block:: python
+
+	pip install pywebpush
+	pip install py-vapid
+
+Getting keys:
+*************
+
+- Create file (claim.json) like this:
+
+.. code-block:: bash
+
+	{
+		"sub": "mailto: development@example.com",
+		"aud": "https://android.googleapis.com"
+	}
+
+- Generate public and private keys:
+
+.. code-block:: bash
+
+	vapid --sign claim.json
+	
+	No private_key.pem file found.
+	Do you want me to create one for you? (Y/n)Y
+	Do you want me to create one for you? (Y/n)Y
+	Generating private_key.pem
+	Generating public_key.pem
+	Include the following headers in your request:
+
+	Crypto-Key: p256ecdsa=BEFuGfKKEFp-kEBMxAIw7ng8HeH_QwnH5_h55ijKD4FRvgdJU1GVlDo8K5U5ak4cMZdQTUJlkA34llWF0xHya70
+
+	Authorization: WebPush eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJhdWQiOiJodHRwczovL2FuZHJvaWQuZ29vZ2xlYXBpcy5jb20iLCJleHAiOiIxNTA4NDkwODM2Iiwic3ViIjoibWFpbHRvOiBkZXZlbG9wbWVudEBleGFtcGxlLmNvbSJ9.r5CYMs86X3JZ4AEs76pXY5PxsnEhIFJ-0ckbibmFHZuyzfIpf1ZGIJbSI7knA4ufu7Hm8RFfEg5wWN1Yf-dR2A
+
+- Generate client public key (applicationServerKey)
+
+.. code-block:: bash
+
+	vapid --applicationServerKey
+	
+	Application Server Key = BEFuGfKKEFp-kEBMxAIw7ng8HeH_QwnH5_h55ijKD4FRvgdJU1GVlDo8K5U5ak4cMZdQTUJlkA34llWF0xHya70
+
+
+Configure settings:
+*******************
+
+- ``BROWSER_PRIVATE_KEY``: Absolute path to your private certificate file: os.path.join(BASE_DIR, "private_key.pem")
+- ``BROWSER_CLAIMS``: Dictionary with the same sub info like claims file: {'sub': "mailto: development@example.com"}
+- ``BROWSER_ERROR_TIMEOUT``: The timeout on Browser POSTs. (Optional)
+- ``BROWSER_POST_URL``: A dictionary (key per browser) with the full url that webpush notifications will be POSTed to. (Optional)
+
+
+Configure client (javascript):
+*****************************
+
+.. code-block:: javascript
+
+	// Utils functions:
+	
+	function urlBase64ToUint8Array (base64String) {
+		var padding = '='.repeat((4 - base64String.length % 4) % 4)
+		var base64 = (base64String + padding)
+			.replace(/\-/g, '+')
+			.replace(/_/g, '/')
+
+		var rawData = window.atob(base64)
+		var outputArray = new Uint8Array(rawData.length)
+
+		for (var i = 0; i < rawData.length; ++i) {
+			outputArray[i] = rawData.charCodeAt(i)
+		}
+		return outputArray;
+	}
+	function loadVersionBrowser (userAgent) {
+		var ua = userAgent, tem, M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
+		if (/trident/i.test(M[1])) {
+			tem = /\brv[ :]+(\d+)/g.exec(ua) || [];
+			return {name: 'IE', version: (tem[1] || '')};
+		}
+		if (M[1] === 'Chrome') {
+			tem = ua.match(/\bOPR\/(\d+)/);
+			if (tem != null) {
+				return {name: 'Opera', version: tem[1]};
+			}
+		}
+		M = M[2] ? [M[1], M[2]] : [navigator.appName, navigator.appVersion, '-?'];
+		if ((tem = ua.match(/version\/(\d+)/i)) != null) {
+			M.splice(1, 1, tem[1]);
+		}
+		return {
+			name: M[0],
+			version: M[1]
+		};
+	};
+	var applicationServerKey = "BEFuGfKKEFp-kEBMxAIw7ng8HeH_QwnH5_h55ijKD4FRvgdJU1GVlDo8K5U5ak4cMZdQTUJlkA34llWF0xHya70";
+	....
+	
+	// In your ready listener
+	if ('serviceWorker' in navigator) {
+		// The service worker has to store in the root of the app
+		// http://stackoverflow.com/questions/29874068/navigator-serviceworker-is-never-ready
+		var browser = loadVersionBrowser();
+		navigator.serviceWorker.register('navigatorPush.service.js?version=2.0.0').then(function (reg) {
+			reg.pushManager.subscribe({
+				userVisibleOnly: true,
+				applicationServerKey: urlBase64ToUint8Array(applicationServerKey)
+			}).then(function (sub) {
+				var endpointParts = sub.endpoint.split('/');
+                var registration_id = endpointParts[endpointParts.length - 1];
+				var data = {
+					'browser': browser.name.toUpperCase(),
+					'p256dh': btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('p256dh')))),
+					'auth': btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('auth')))),
+					'name': 'XXXXX',
+					'registration_id': registration_id
+				};
+				requestPOSTToServer(data);
+			})
+		}).catch(function (err) {
+			console.log(':^(', err);
+		});
+
 
 Sending messages
 ----------------
