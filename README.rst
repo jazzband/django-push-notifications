@@ -209,7 +209,7 @@ Configure client (javascript):
 				applicationServerKey: urlBase64ToUint8Array(applicationServerKey)
 			}).then(function (sub) {
 				var endpointParts = sub.endpoint.split('/');
-                var registration_id = endpointParts[endpointParts.length - 1];
+				var registration_id = endpointParts[endpointParts.length - 1];
 				var data = {
 					'browser': browser.name.toUpperCase(),
 					'p256dh': btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('p256dh')))),
