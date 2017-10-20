@@ -303,9 +303,6 @@ class AppConfig(BaseConfig):
 	def get_wns_secret_key(self, application_id=None):
 		return self._get_application_settings(application_id, "WNS", "SECRET_KEY")
 
-	def get_wns_secret_key(self, application_id=None):
-		return self._get_application_settings(application_id, "WNS", "SECRET_KEY")
-
 	def get_browser_post_url(self, application_id, browser):
 		return self._get_application_settings(application_id, "BROWSER", "POST_URL")[browser]
 
