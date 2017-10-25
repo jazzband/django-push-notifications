@@ -79,6 +79,7 @@ class GCMDeviceQuerySet(models.query.QuerySet):
 					if reg_ids:
 						r = gcm_send_message(reg_ids, data, cloud_type, application_id=app_id, **kwargs)
 						response.append(r)
+
 			return response
 
 
