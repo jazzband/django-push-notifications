@@ -50,8 +50,8 @@ Edit your settings.py file:
 		"APNS_TOPIC": "com.example.push_test",
 		"WNS_PACKAGE_SECURITY_ID": "[your package security id, e.g: 'ms-app://e-3-4-6234...']",
 		"WNS_SECRET_KEY": "[your app secret key, e.g.: 'KDiejnLKDUWodsjmewuSZkk']",
-		"BROWSER_PRIVATE_KEY": "/path/to/your/private.pem",
-		"BROWSER_CLAIMS": {'sub': "mailto: development@example.com"}
+		"WP_PRIVATE_KEY": "/path/to/your/private.pem",
+		"WP_CLAIMS": {'sub': "mailto: development@example.com"}
 	}
 
 .. note::
@@ -96,7 +96,7 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 - ``USER_MODEL``: Your user model of choice. Eg. ``myapp.User``. Defaults to ``settings.AUTH_USER_MODEL``.
 - ``UPDATE_ON_DUPLICATE_REG_ID``: Transform create of an existing Device (based on registration id) into a update. See below `Update of device with duplicate registration ID`_ for more details.
 
-**Browser settings**
+**WP settings**
 
 - Install:
 
@@ -146,7 +146,7 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 
 - ``WP_PRIVATE_KEY``: Absolute path to your private certificate file: os.path.join(BASE_DIR, "private_key.pem")
 - ``WP_CLAIMS``: Dictionary with the same sub info like claims file: {'sub': "mailto: development@example.com"}
-- ``WP_ERROR_TIMEOUT``: The timeout on Browser POSTs. (Optional)
+- ``WP_ERROR_TIMEOUT``: The timeout on WebPush POSTs. (Optional)
 - ``WP_POST_URL``: A dictionary (key per browser supported) with the full url that webpush notifications will be POSTed to. (Optional)
 
 
