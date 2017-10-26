@@ -1,6 +1,9 @@
 from . import NotificationError
 from .conf import get_manager
 
+from pywebpush import webpush
+from pywebpush import WebPushException
+
 
 class WebPushError(NotificationError):
 	pass
