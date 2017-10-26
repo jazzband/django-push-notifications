@@ -22,9 +22,9 @@ class Migration(migrations.Migration):
                 ('date_created', models.DateTimeField(auto_now_add=True, verbose_name='Creation date', null=True)),
                 ('application_id', models.CharField(help_text='Opaque application identity, should be filled in for multiple key/certificate access', max_length=64, null=True, verbose_name='Application ID', blank=True)),
                 ('registration_id', models.TextField(verbose_name='Registration ID')),
-                ('p256dh', models.TextField(verbose_name='User public encryption key')),
-                ('auth', models.TextField(verbose_name='User auth secret')),
-                ('browser', models.CharField(default='CHROME', help_text='Currently only support to Chrome and Firefox browsers', max_length=10, verbose_name='Browser', choices=[('CHROME', 'Chrome'), ('FIREFOX', 'Firefox'), ("OPERA", "Opera")])),
+                ('p256dh', models.CharField(max_length=88, verbose_name='User public encryption key')),
+                ('auth', models.CharField(max_length=24, verbose_name='User auth secret')),
+                ('browser', models.CharField(default='CHROME', help_text='Currently only support to Chrome, Firefox and Opera browsers', max_length=10, verbose_name='Browser', choices=[('CHROME', 'Chrome'), ('FIREFOX', 'Firefox'), ('OPERA', 'Opera')])),
                 ('user', models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, null=True)),
             ],
             options={

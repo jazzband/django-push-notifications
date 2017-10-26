@@ -229,8 +229,12 @@ class WebPushDeviceQuerySet(models.query.QuerySet):
 
 class WebPushDevice(Device):
 	registration_id = models.TextField(verbose_name=_("Registration ID"))
-	p256dh = models.TextField(verbose_name=_("User public encryption key"))
-	auth = models.TextField(verbose_name=_("User auth secret"))
+	p256dh = models.CharField(
+		verbose_name=_("User public encryption key"),
+		max_length=88)
+	auth = models.CharField(
+		verbose_name=_("User auth secret"),
+		max_length=24)
 	browser = models.CharField(
 		verbose_name=_("Browser"), max_length=10,
 		choices=BROWSER_TYPES, default=BROWSER_TYPES[0][0],
