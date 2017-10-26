@@ -27,7 +27,7 @@ PLATFORMS = [
 	"FCM",
 	"GCM",
 	"WNS",
-	"BROWSER"
+	"WP"
 ]
 
 # Settings that all applications must have
@@ -58,9 +58,9 @@ WNS_REQUIRED_SETTINGS = ["PACKAGE_SECURITY_ID", "SECRET_KEY"]
 
 WNS_OPTIONAL_SETTINGS = ["WNS_ACCESS_URL"]
 
-BROWSER_REQUIRED_SETTINGS = ["PRIVATE_KEY", "CLAIMS"]
+WP_REQUIRED_SETTINGS = ["PRIVATE_KEY", "CLAIMS"]
 
-BROWSER_OPTIONAL_SETTINGS = ["ERROR_TIMEOUT", "POST_URL"]
+WP_OPTIONAL_SETTINGS = ["ERROR_TIMEOUT", "POST_URL"]
 
 
 class AppConfig(BaseConfig):
@@ -182,13 +182,13 @@ class AppConfig(BaseConfig):
 
 		application_config.setdefault("WNS_ACCESS_URL", "https://login.live.com/accesstoken.srf")
 
-	def _validate_browser_config(self, application_id, application_config):
-		allowed = REQUIRED_SETTINGS + OPTIONAL_SETTINGS + BROWSER_REQUIRED_SETTINGS + \
-			BROWSER_OPTIONAL_SETTINGS
+	def _validate_wp_config(self, application_id, application_config):
+		allowed = REQUIRED_SETTINGS + OPTIONAL_SETTINGS + WP_REQUIRED_SETTINGS + \
+			WP_OPTIONAL_SETTINGS
 
 		self._validate_allowed_settings(application_id, application_config, allowed)
 		self._validate_required_settings(
-			application_id, application_config, BROWSER_REQUIRED_SETTINGS
+			application_id, application_config, WP_REQUIRED_SETTINGS
 		)
 		application_config.setdefault("POST_URL", {
 			"CHROME": 'https://fcm.googleapis.com/fcm/send',
@@ -304,10 +304,10 @@ class AppConfig(BaseConfig):
 		return self._get_application_settings(application_id, "WNS", "SECRET_KEY")
 
 	def get_browser_post_url(self, application_id, browser):
-		return self._get_application_settings(application_id, "BROWSER", "POST_URL")[browser]
+		return self._get_application_settings(application_id, "WP", "POST_URL")[browser]
 
 	def get_browser_private_key(self, application_id=None):
-		return self._get_application_settings(application_id, "BROWSER", "PRIVATE_KEY")
+		return self._get_application_settings(application_id, "WP", "PRIVATE_KEY")
 
 	def get_browser_claims(self, application_id=None):
-		return self._get_application_settings(application_id, "BROWSER", "CLAIMS")
+		return self._get_application_settings(application_id, "WP", "CLAIMS")
