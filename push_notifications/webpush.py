@@ -7,7 +7,7 @@ class WebPushError(NotificationError):
 
 
 def get_subscription_info(application_id, uri, browser, auth, p256dh):
-	url = get_manager().get_browser_post_url(application_id, browser)
+	url = get_manager().get_wp_post_url(application_id, browser)
 	return {
 		"endpoint": "%s/%s" % (url, uri),
 		"keys": {
@@ -23,12 +23,13 @@ def webpush_send_message(uri, message, browser, auth, p256dh, application_id=Non
 		from pywebpush import WebPushException
 	except ImportError:
 		raise WebPushError("Please install pywebpush package: pip install pywebpush")
+
 	try:
 		response = webpush(
 			subscription_info=get_subscription_info(application_id, uri, browser, auth, p256dh),
 			data=message,
-			vapid_private_key=get_manager().get_browser_private_key(application_id),
-			vapid_claims=get_manager().get_browser_claims(application_id),
+			vapid_private_key=get_manager().get_wp_private_key(application_id),
+			vapid_claims=get_manager().get_wp_claims(application_id),
 			**kwargs)
 		results = {"results": [{}]}
 		if not response.ok:

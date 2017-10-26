@@ -303,11 +303,11 @@ class AppConfig(BaseConfig):
 	def get_wns_secret_key(self, application_id=None):
 		return self._get_application_settings(application_id, "WNS", "SECRET_KEY")
 
-	def get_browser_post_url(self, application_id, browser):
+	def get_wp_post_url(self, application_id, browser):
 		return self._get_application_settings(application_id, "WP", "POST_URL")[browser]
 
-	def get_browser_private_key(self, application_id=None):
+	def get_wp_private_key(self, application_id=None):
 		return self._get_application_settings(application_id, "WP", "PRIVATE_KEY")
 
-	def get_browser_claims(self, application_id=None):
+	def get_wp_claims(self, application_id=None):
 		return self._get_application_settings(application_id, "WP", "CLAIMS")
