@@ -19,12 +19,6 @@ def get_subscription_info(application_id, uri, browser, auth, p256dh):
 
 def webpush_send_message(uri, message, browser, auth, p256dh, application_id=None, **kwargs):
 	try:
-		from pywebpush import webpush
-		from pywebpush import WebPushException
-	except ImportError:
-		raise WebPushError("Please install pywebpush package: pip install pywebpush")
-
-	try:
 		response = webpush(
 			subscription_info=get_subscription_info(application_id, uri, browser, auth, p256dh),
 			data=message,
