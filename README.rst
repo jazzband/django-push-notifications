@@ -23,7 +23,7 @@ Dependencies
 - Python 2.7 or 3.4+
 - Django 1.10+
 - For the API module, Django REST Framework 3.5+ is required.
-- For WebPush (browser), pywebpush 1.3.0+ is required and py-vapid 1.3.0+
+- For WebPush (WP), pywebpush 1.3.0+ is required and py-vapid 1.3.0+
 
 Setup
 -----
@@ -98,18 +98,16 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 
 **Browser settings**
 
-Install:
-********
+- Install:
 
 .. code-block:: python
 
 	pip install pywebpush
-	pip install py-vapid
+	pip install py-vapid  (Only for generating key)
 
-Getting keys:
-*************
+- Getting keys:
 
-- Create file (claim.json) like this:
+	- Create file (claim.json) like this:
 
 .. code-block:: bash
 
@@ -118,7 +116,7 @@ Getting keys:
 		"aud": "https://android.googleapis.com"
 	}
 
-- Generate public and private keys:
+	- Generate public and private keys:
 
 .. code-block:: bash
 
@@ -135,7 +133,7 @@ Getting keys:
 
 	Authorization: WebPush eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJhdWQiOiJodHRwczovL2FuZHJvaWQuZ29vZ2xlYXBpcy5jb20iLCJleHAiOiIxNTA4NDkwODM2Iiwic3ViIjoibWFpbHRvOiBkZXZlbG9wbWVudEBleGFtcGxlLmNvbSJ9.r5CYMs86X3JZ4AEs76pXY5PxsnEhIFJ-0ckbibmFHZuyzfIpf1ZGIJbSI7knA4ufu7Hm8RFfEg5wWN1Yf-dR2A
 
-- Generate client public key (applicationServerKey)
+	- Generate client public key (applicationServerKey)
 
 .. code-block:: bash
 
@@ -144,17 +142,15 @@ Getting keys:
 	Application Server Key = BEFuGfKKEFp-kEBMxAIw7ng8HeH_QwnH5_h55ijKD4FRvgdJU1GVlDo8K5U5ak4cMZdQTUJlkA34llWF0xHya70
 
 
-Configure settings:
-*******************
+- Configure settings:
 
-- ``BROWSER_PRIVATE_KEY``: Absolute path to your private certificate file: os.path.join(BASE_DIR, "private_key.pem")
-- ``BROWSER_CLAIMS``: Dictionary with the same sub info like claims file: {'sub': "mailto: development@example.com"}
-- ``BROWSER_ERROR_TIMEOUT``: The timeout on Browser POSTs. (Optional)
-- ``BROWSER_POST_URL``: A dictionary (key per browser) with the full url that webpush notifications will be POSTed to. (Optional)
+- ``WP_PRIVATE_KEY``: Absolute path to your private certificate file: os.path.join(BASE_DIR, "private_key.pem")
+- ``WP_CLAIMS``: Dictionary with the same sub info like claims file: {'sub': "mailto: development@example.com"}
+- ``WP_ERROR_TIMEOUT``: The timeout on Browser POSTs. (Optional)
+- ``WP_POST_URL``: A dictionary (key per browser supported) with the full url that webpush notifications will be POSTed to. (Optional)
 
 
-Configure client (javascript):
-*****************************
+- Configure client (javascript):
 
 .. code-block:: javascript
 
