@@ -59,7 +59,9 @@ class GCMDeviceQuerySet(models.query.QuerySet):
 			if message is not None:
 				data["message"] = message
 
-			app_ids = self.filter(active=True).values_list("application_id", flat=True).distinct()
+			app_ids = self.filter(active=True).order_by(
+				"application_id"
+			).values_list("application_id", flat=True).distinct()
 			response = []
 			for cloud_type in ("FCM", "GCM"):
 				for app_id in app_ids:
@@ -118,7 +120,8 @@ class APNSDeviceQuerySet(models.query.QuerySet):
 		if self:
 			from .apns import apns_send_bulk_message
 
-			app_ids = self.filter(active=True).values_list("application_id", flat=True).distinct()
+			app_ids = self.filter(active=True).order_by("application_id")\
+				.values_list("application_id", flat=True).distinct()
 			res = []
 			for app_id in app_ids:
 				reg_ids = list(self.filter(active=True, application_id=app_id).values_list(
@@ -170,7 +173,8 @@ class WNSDeviceQuerySet(models.query.QuerySet):
 		if self:
 			from .wns import wns_send_bulk_message
 
-			app_ids = self.filter(active=True).values_list("application_id", flat=True).distinct()
+			app_ids = self.filter(active=True).order_by("application_id")\
+				.values_list("application_id", flat=True).distinct()
 			res = []
 			for app_id in app_ids:
 				reg_ids = list(self.filter(active=True, application_id=app_id).values_list(
