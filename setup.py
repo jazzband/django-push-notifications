@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-from setuptools import setup, find_packages
-
+from setuptools import setup
 
 setup(
     name='django-push-notifications',
@@ -12,7 +11,7 @@ setup(
     author_email='jerome@leclan.ch',
     url='https://github.com/jleclanche/django-push-notifications/',
     license='BSD',
-    packages=find_packages(),
+    packages=['push_notifications']
     include_package_data=True,
     zip_safe=False,
     install_requires=[

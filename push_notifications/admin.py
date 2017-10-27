@@ -14,7 +14,6 @@ class DeviceAdmin(admin.ModelAdmin):
 	list_filter = ("active",)
 	actions = ("send_message", "send_bulk_message", "enable", "disable")
 	raw_id_fields = ("user",)
-        readonly_fields = ('device_id', )
 
 	if hasattr(User, "USERNAME_FIELD"):
 		search_fields = ("name", "device_id", "user__%s" % (User.USERNAME_FIELD))
