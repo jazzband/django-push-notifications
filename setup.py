@@ -11,7 +11,7 @@ setup(
     author_email='jerome@leclan.ch',
     url='https://github.com/jleclanche/django-push-notifications/',
     license='BSD',
-    packages=['push_notifications']
+    packages=['push_notifications'],
     include_package_data=True,
     zip_safe=False,
     install_requires=[
