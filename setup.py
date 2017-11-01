@@ -3,4 +3,6 @@
 from setuptools import setup
 
 
-setup()
+setup(
+    name="django-push-notifications"
+)
