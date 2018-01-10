@@ -151,12 +151,12 @@ class DeviceViewSetMixin(object):
 			return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 	def perform_create(self, serializer):
-		if self.request.user.is_authenticated():
+		if self.request.user.is_authenticated:
 			serializer.save(user=self.request.user)
 		return super(DeviceViewSetMixin, self).perform_create(serializer)
 
 	def perform_update(self, serializer):
-		if self.request.user.is_authenticated():
+		if self.request.user.is_authenticated:
 			serializer.save(user=self.request.user)
 		return super(DeviceViewSetMixin, self).perform_update(serializer)
 
