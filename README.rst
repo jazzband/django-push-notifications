@@ -23,7 +23,8 @@ Dependencies
 - Python 2.7 or 3.4+
 - Django 1.10+
 - For the API module, Django REST Framework 3.5+ is required.
-- For WebPush (WP), pywebpush 1.3.0+ is required and py-vapid 1.3.0+
+- For WebPush (WP), pywebpush 1.3.0+ is required. py-vapid 1.3.0+ is required for generating the WebPush private key; however this
+  step does not need to occur on the application server.
 
 Setup
 -----
