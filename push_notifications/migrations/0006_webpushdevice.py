@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
                 ('p256dh', models.CharField(max_length=88, verbose_name='User public encryption key')),
                 ('auth', models.CharField(max_length=24, verbose_name='User auth secret')),
                 ('browser', models.CharField(default='CHROME', help_text='Currently only support to Chrome, Firefox and Opera browsers', max_length=10, verbose_name='Browser', choices=[('CHROME', 'Chrome'), ('FIREFOX', 'Firefox'), ('OPERA', 'Opera')])),
-                ('user', models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('user', models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name': 'WebPush device',
