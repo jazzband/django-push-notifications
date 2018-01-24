@@ -311,7 +311,7 @@ class AppConfig(BaseConfig):
 		return r
 
 	def get_apns_auth_creds(self, application_id=None):
-		return
+		return \
 		(self._get_apns_auth_key_path(application_id),
 			self._get_apns_auth_key_id(application_id),
 			self._get_apns_team_id(application_id))
