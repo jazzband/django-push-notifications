@@ -322,7 +322,7 @@ FCM/GCM and APNS services have slightly different semantics. The app tries to of
 	APNS does not support sending payloads that exceed 2048 bytes (increased from 256 in 2014).
 	The message is only one part of the payload, if
 	once constructed the payload exceeds the maximum size, an ``APNSDataOverflow`` exception will be raised before anything is sent.
-  Reference: `Apple Payload Documentation <https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/CreatingtheNotificationPayload.html#//apple_ref/doc/uid/TP40008194-CH10-SW1>`_
+	Reference: `Apple Payload Documentation <https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/CreatingtheNotificationPayload.html#//apple_ref/doc/uid/TP40008194-CH10-SW1>`_
 
 Sending messages in bulk
 ------------------------
