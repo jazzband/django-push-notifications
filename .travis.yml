@@ -1,4 +1,4 @@
-# https://travis-ci.org/django-push-notifications/django-push-notifications
+# https://travis-ci.org/jazzband/django-push-notifications
 sudo: false
 language: python
 python: "3.6"
