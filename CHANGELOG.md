@@ -1,3 +1,7 @@
+## 1.7.0 (unreleased)
+* BACKWARDS-INCOMPATIBLE: Drop support for Django Rest Framework < 3.7
+
+
 ## 1.6.0 (2018-01-31)
 * BACKWARDS-INCOMPATIBLE: Drop support for Django < 1.11
 * DJANGO: Support Django 2.0
