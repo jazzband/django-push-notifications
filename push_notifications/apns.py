@@ -11,7 +11,6 @@ from apns2 import errors as apns2_errors
 from apns2 import payload as apns2_payload
 
 from . import NotificationError, models
-from .apns_errors import reason_for_exception_class
 from .conf import get_manager
 
 
@@ -116,7 +115,8 @@ def apns_send_message(registration_id, alert, application_id=None, certfile=None
 			device = models.APNSDevice.objects.get(registration_id=registration_id)
 			device.active = False
 			device.save()
-		raise APNSServerError(status=reason_for_exception_class(apns2_exception.__class__))
+
+		raise APNSServerError(status=apns2_exception.__class__.__name__)
 
 
 def apns_send_bulk_message(
