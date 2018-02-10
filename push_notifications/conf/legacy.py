@@ -1,7 +1,8 @@
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.six import string_types
-from .base import BaseConfig
+
 from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from .base import BaseConfig
 
 
 __all__ = [

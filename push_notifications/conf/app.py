@@ -1,7 +1,9 @@
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.six import string_types
-from .base import BaseConfig, check_apns_certificate
+
 from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from .base import BaseConfig, check_apns_certificate
+
 
 SETTING_MISMATCH = (
 	"Application '{application_id}' ({platform}) does not support the setting '{setting}'."

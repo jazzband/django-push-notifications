@@ -8,6 +8,13 @@ https://msdn.microsoft.com/en-us/windows/uwp/controls-and-patterns/tiles-and-not
 import json
 import xml.etree.ElementTree as ET
 
+from django.core.exceptions import ImproperlyConfigured
+
+from . import NotificationError
+from .conf import get_manager
+from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+
+
 try:
 	from urllib.error import HTTPError
 	from urllib.parse import urlencode
@@ -17,10 +24,6 @@ except ImportError:
 	from urllib2 import HTTPError, Request, urlopen
 	from urllib import urlencode
 
-from django.core.exceptions import ImproperlyConfigured
-from . import NotificationError
-from .conf import get_manager
-from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 
 class WNSError(NotificationError):

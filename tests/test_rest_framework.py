@@ -1,4 +1,5 @@
 from django.test import TestCase
+
 from push_notifications.api.rest_framework import (
 	APNSDeviceSerializer, GCMDeviceSerializer, ValidationError
 )

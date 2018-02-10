@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer, Serializer, ValidationError
 from rest_framework.viewsets import ModelViewSet
 
-from ..fields import hex_re, UNSIGNED_64BIT_INT_MAX_VALUE
-from ..models import APNSDevice, GCMDevice, WNSDevice, WebPushDevice
+from ..fields import UNSIGNED_64BIT_INT_MAX_VALUE, hex_re
+from ..models import APNSDevice, GCMDevice, WebPushDevice, WNSDevice
 from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 

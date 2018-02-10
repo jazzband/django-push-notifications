@@ -7,16 +7,19 @@ https://firebase.google.com/docs/cloud-messaging/
 
 import json
 
+from django.core.exceptions import ImproperlyConfigured
+
+from . import NotificationError
+from .conf import get_manager
+from .models import GCMDevice
+
+
 try:
 	from urllib.request import Request, urlopen
 except ImportError:
 	# Python 2 support
 	from urllib2 import Request, urlopen
 
-from django.core.exceptions import ImproperlyConfigured
-from . import NotificationError
-from .conf import get_manager
-from .models import GCMDevice
 
 
 # Valid keys for FCM messages. Reference:

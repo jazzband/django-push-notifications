@@ -1,10 +1,13 @@
 from __future__ import absolute_import
+
 import json
 
 from django.test import TestCase
 from django.utils import timezone
+
 from push_notifications.gcm import GCMError, send_bulk_message
 from push_notifications.models import APNSDevice, GCMDevice
+
 from . import responses
 from ._mock import mock
 

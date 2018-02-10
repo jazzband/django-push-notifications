@@ -1,11 +1,13 @@
 from django.apps import apps
 from django.contrib import admin, messages
 from django.utils.translation import ugettext_lazy as _
+
 from .apns import APNSServerError
 from .gcm import GCMError
-from .webpush import WebPushError
-from .models import APNSDevice, GCMDevice, WNSDevice, WebPushDevice
+from .models import APNSDevice, GCMDevice, WebPushDevice, WNSDevice
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from .webpush import WebPushError
+
 
 User = apps.get_model(*SETTINGS["USER_MODEL"].split("."))
 

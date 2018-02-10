@@ -1,5 +1,6 @@
 from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase
+
 from push_notifications.conf import LegacyConfig
 
 
