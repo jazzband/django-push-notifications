@@ -9,16 +9,10 @@ import json
 
 from django.core.exceptions import ImproperlyConfigured
 
+from .compat import Request, urlopen
 from .conf import get_manager
 from .exceptions import NotificationError
 from .models import GCMDevice
-
-
-try:
-	from urllib.request import Request, urlopen
-except ImportError:
-	# Python 2 support
-	from urllib2 import Request, urlopen
 
 
 # Valid keys for FCM messages. Reference:

@@ -10,19 +10,10 @@ import xml.etree.ElementTree as ET
 
 from django.core.exceptions import ImproperlyConfigured
 
+from .compat import HTTPError, Request, urlencode, urlopen
 from .conf import get_manager
 from .exceptions import NotificationError
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
-
-
-try:
-	from urllib.error import HTTPError
-	from urllib.parse import urlencode
-	from urllib.request import Request, urlopen
-except ImportError:
-	# Python 2 support
-	from urllib2 import HTTPError, Request, urlopen
-	from urllib import urlencode
 
 
 class WNSError(NotificationError):
