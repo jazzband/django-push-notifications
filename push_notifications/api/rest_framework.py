@@ -125,6 +125,7 @@ class WebPushDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer
 			"p256dh", "auth", "browser", "application_id",
 		)
 
+
 # Permissions
 class IsOwner(permissions.BasePermission):
 	def has_object_permission(self, request, view, obj):

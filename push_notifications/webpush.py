@@ -1,7 +1,7 @@
 from pywebpush import WebPushException, webpush
 
-from .exceptions import NotificationError
 from .conf import get_manager
+from .exceptions import NotificationError
 
 
 class WebPushError(NotificationError):
@@ -14,23 +14,28 @@ def get_subscription_info(application_id, uri, browser, auth, p256dh):
 		"endpoint": "%s/%s" % (url, uri),
 		"keys": {
 			"auth": auth,
-			"p256dh": p256dh
+			"p256dh": p256dh,
 		}
 	}
 
 
-def webpush_send_message(uri, message, browser, auth, p256dh, application_id=None, **kwargs):
+def webpush_send_message(
+	uri, message, browser, auth, p256dh, application_id=None, **kwargs
+):
+	subscription_info = get_subscription_info(application_id, uri, browser, auth, p256dh)
+
 	try:
 		response = webpush(
-			subscription_info=get_subscription_info(application_id, uri, browser, auth, p256dh),
+			subscription_info=subscription_info,
 			data=message,
 			vapid_private_key=get_manager().get_wp_private_key(application_id),
 			vapid_claims=get_manager().get_wp_claims(application_id),
-			**kwargs)
+			**kwargs
+		)
 		results = {"results": [{}]}
 		if not response.ok:
-			results["results"][0]['error'] = response.content
-			results["results"][0]['original_registration_id'] = response.content
+			results["results"][0]["error"] = response.content
+			results["results"][0]["original_registration_id"] = response.content
 		else:
 			results["success"] = 1
 		return results

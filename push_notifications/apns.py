@@ -11,8 +11,8 @@ from apns2 import errors as apns2_errors
 from apns2 import payload as apns2_payload
 
 from . import models
-from .exceptions import NotificationError
 from .conf import get_manager
+from .exceptions import NotificationError
 
 
 class APNSError(NotificationError):

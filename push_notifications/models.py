@@ -19,6 +19,7 @@ BROWSER_TYPES = (
 	("OPERA", "Opera"),
 )
 
+
 @python_2_unicode_compatible
 class Device(models.Model):
 	name = models.CharField(max_length=255, verbose_name=_("Name"), blank=True, null=True)
@@ -176,22 +177,23 @@ class WNSDeviceManager(models.Manager):
 
 class WNSDeviceQuerySet(models.query.QuerySet):
 	def send_message(self, message, **kwargs):
-		if self:
-			from .wns import wns_send_bulk_message
+		from .wns import wns_send_bulk_message
 
-			app_ids = self.filter(active=True).order_by("application_id")\
-				.values_list("application_id", flat=True).distinct()
-			res = []
-			for app_id in app_ids:
-				reg_ids = list(self.filter(active=True, application_id=app_id).values_list(
-					"registration_id", flat=True
-				))
-				r = wns_send_bulk_message(uri_list=reg_ids, message=message, **kwargs)
-				if hasattr(r, "keys"):
-					res += [r]
-				elif hasattr(r, "__getitem__"):
-					res += r
-			return res
+		app_ids = self.filter(active=True).order_by("application_id").values_list(
+			"application_id", flat=True
+		).distinct()
+		res = []
+		for app_id in app_ids:
+			reg_ids = self.filter(active=True, application_id=app_id).values_list(
+				"registration_id", flat=True
+			)
+			r = wns_send_bulk_message(uri_list=list(reg_ids), message=message, **kwargs)
+			if hasattr(r, "keys"):
+				res += [r]
+			elif hasattr(r, "__getitem__"):
+				res += r
+
+		return res
 
 
 class WNSDevice(Device):
@@ -210,7 +212,8 @@ class WNSDevice(Device):
 		from .wns import wns_send_message
 
 		return wns_send_message(
-			uri=self.registration_id, message=message, application_id=self.application_id, **kwargs
+			uri=self.registration_id, message=message, application_id=self.application_id,
+			**kwargs
 		)
 
 
@@ -225,6 +228,7 @@ class WebPushDeviceQuerySet(models.query.QuerySet):
 		res = []
 		for device in devices:
 			res.append(device.send_message(message))
+
 		return res
 
 
@@ -246,6 +250,9 @@ class WebPushDevice(Device):
 	class Meta:
 		verbose_name = _("WebPush device")
 
+	@property
+	def device_id(self):
+		return None
 
 	def send_message(self, message, **kwargs):
 		from .webpush import webpush_send_message
@@ -253,7 +260,3 @@ class WebPushDevice(Device):
 		return webpush_send_message(
 			uri=self.registration_id, message=message, browser=self.browser,
 			auth=self.auth, p256dh=self.p256dh, application_id=self.application_id, **kwargs)
-
-	@property
-	def device_id(self):
-		return None

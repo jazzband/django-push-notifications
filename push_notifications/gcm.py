@@ -21,7 +21,6 @@ except ImportError:
 	from urllib2 import Request, urlopen
 
 
-
 # Valid keys for FCM messages. Reference:
 # https://firebase.google.com/docs/cloud-messaging/http-server-ref
 FCM_TARGETS_KEYS = [

@@ -25,7 +25,6 @@ except ImportError:
 	from urllib import urlencode
 
 
-
 class WNSError(NotificationError):
 	pass
 
