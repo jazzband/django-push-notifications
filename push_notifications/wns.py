@@ -10,8 +10,8 @@ import xml.etree.ElementTree as ET
 
 from django.core.exceptions import ImproperlyConfigured
 
-from . import NotificationError
 from .conf import get_manager
+from .exceptions import NotificationError
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 

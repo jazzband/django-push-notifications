@@ -9,8 +9,8 @@ import json
 
 from django.core.exceptions import ImproperlyConfigured
 
-from . import NotificationError
 from .conf import get_manager
+from .exceptions import NotificationError
 from .models import GCMDevice
 
 

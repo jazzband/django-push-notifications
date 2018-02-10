@@ -1,6 +1,6 @@
 from pywebpush import WebPushException, webpush
 
-from . import NotificationError
+from .exceptions import NotificationError
 from .conf import get_manager
 
 

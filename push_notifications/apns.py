@@ -10,7 +10,8 @@ from apns2 import client as apns2_client
 from apns2 import errors as apns2_errors
 from apns2 import payload as apns2_payload
 
-from . import NotificationError, models
+from . import models
+from .exceptions import NotificationError
 from .conf import get_manager
 
 
