@@ -1,5 +1,11 @@
-### Coding style
+## Jazzband
 
+[![Jazzband](https://jazzband.co/static/img/jazzband.svg)](https://jazzband.co/)
+
+This is a [Jazzband](https://jazzband.co/) project. By contributing you agree to abide by the [Contributor Code of Conduct](https://jazzband.co/about/conduct) and follow the [guidelines](https://jazzband.co/about/guidelines).
+
+
+## Coding style
 This project follows the [HearthSim Styleguide](https://hearthsim.info/styleguide/).
 
 In short:
@@ -11,9 +17,10 @@ In short:
 
 Also see: [How to name things in programming](http://www.slideshare.net/pirhilton/how-to-name-things-the-hardest-problem-in-programming)
 
+Flake8 tests are available with `tox -e flake8`. Run them before you commit!
 
-### Commits and Pull Requests
 
+## Commits and Pull Requests
 Keep the commit log as healthy as the code. It is one of the first places new contributors will look at the project.
 
 1. No more than one change per commit. There should be no changes in a commit which are unrelated to its message.
