@@ -21,6 +21,7 @@ The app also implements an admin panel, through which you can test single and bu
 FCM/GCM, APNS or WNS devices and in the action dropdown, select "Send test message" or "Send test message in bulk", accordingly.
 Note that sending a non-bulk test message to more than one device will just iterate over the devices and send multiple
 single messages.
+UPDATE_ON_DUPLICATE_REG_ID: Transform create of an existing Device (based on registration id) into a update. See below Update of device with duplicate registration ID for more details.
 
 Dependencies
 ------------
@@ -77,6 +78,11 @@ In order to use FCM/GCM, you are required to include ``FCM_API_KEY`` or ``GCM_AP
 For APNS, you are required to include ``APNS_CERTIFICATE``.
 For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY``.
 
+**General settings**
+
+- ``USER_MODEL``: Your user model of choice. Eg. ``myapp.User``. Defaults to ``settings.AUTH_USER_MODEL``.
+- ``UPDATE_ON_DUPLICATE_REG_ID``: Transform create of an existing Device (based on registration id) into a update. See below `Update of device with duplicate registration ID`_ for more details.
+
 **APNS settings**
 
 - ``APNS_CERTIFICATE``: Absolute path to your APNS certificate file. Certificates with passphrases are not supported.
@@ -95,11 +101,7 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 **WNS settings**
 
 - ``WNS_PACKAGE_SECURITY_KEY``: TODO
-- ``WNS_SECRET_KEY``: TODO
-
-
-- ``USER_MODEL``: Your user model of choice. Eg. ``myapp.User``. Defaults to ``settings.AUTH_USER_MODEL``.
-- ``UPDATE_ON_DUPLICATE_REG_ID``: Transform create of an existing Device (based on registration id) into a update. See below `Update of device with duplicate registration ID`_ for more details.
+- ``WNS_SECRET_KEY``: TODO  
 
 **WP settings**
 
