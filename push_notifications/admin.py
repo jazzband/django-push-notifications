@@ -61,6 +61,8 @@ class DeviceAdmin(admin.ModelAdmin):
 			except TypeError:
 				for entry in ret[0][0]:
 					errors = errors + [r["error"] for r in entry["results"] if "error" in r]
+			except IndexError:
+				pass
 		if errors:
 			self.message_user(
 				request, _("Some messages could not be processed: %r" % (", ".join(errors))),
