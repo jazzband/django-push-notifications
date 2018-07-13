@@ -4,6 +4,8 @@ from __future__ import unicode_literals
 
 from django.db import migrations, models
 
+from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+
 
 class Migration(migrations.Migration):
 
@@ -15,6 +17,21 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='gcmdevice',
             name='registration_id',
-            field=models.TextField(unique=True, verbose_name='Registration ID'),
+            field=models.TextField(unique=SETTINGS['UNIQUE_REG_ID'], verbose_name='Registration ID'),
+        ),
+        migrations.AlterField(
+            model_name='apnsdevice',
+            name='registration_id',
+            field=models.CharField(unique=SETTINGS['UNIQUE_REG_ID'], max_length=200, verbose_name='Registration ID'),
+        ),
+        migrations.AlterField(
+            model_name='wnsdevice',
+            name='registration_id',
+            field=models.TextField(unique=SETTINGS['UNIQUE_REG_ID'], verbose_name='Notification URI'),
+        ),
+        migrations.AlterField(
+            model_name='webpushdevice',
+            name='registration_id',
+            field=models.TextField(unique=SETTINGS['UNIQUE_REG_ID'], verbose_name='Registration ID'),
         ),
     ]

@@ -3,9 +3,20 @@ from django.conf import settings
 
 PUSH_NOTIFICATIONS_SETTINGS = getattr(settings, "PUSH_NOTIFICATIONS_SETTINGS", {})
 
+# APP Configuration
 PUSH_NOTIFICATIONS_SETTINGS.setdefault(
-	"CONFIG", "push_notifications.conf.LegacyConfig"
+	"CONFIG", "push_notifications.conf.LegacyConfig",
 )
+
+# Model configuration (for all device models)
+PUSH_NOTIFICATIONS_SETTINGS.setdefault("USER_MODEL", settings.AUTH_USER_MODEL)
+
+PUSH_NOTIFICATIONS_SETTINGS.setdefault(
+	"UNIQUE_REG_ID", False,
+)
+
+# API endpoint settings
+PUSH_NOTIFICATIONS_SETTINGS.setdefault("UPDATE_ON_DUPLICATE_REG_ID", False)
 
 # GCM
 PUSH_NOTIFICATIONS_SETTINGS.setdefault(
@@ -45,9 +56,3 @@ PUSH_NOTIFICATIONS_SETTINGS.setdefault("WP_POST_URL", {
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("WP_PRIVATE_KEY", None)
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("WP_CLAIMS", None)
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("WP_ERROR_TIMEOUT", None)
-
-# User model
-PUSH_NOTIFICATIONS_SETTINGS.setdefault("USER_MODEL", settings.AUTH_USER_MODEL)
-
-# API endpoint settings
-PUSH_NOTIFICATIONS_SETTINGS.setdefault("UPDATE_ON_DUPLICATE_REG_ID", False)
