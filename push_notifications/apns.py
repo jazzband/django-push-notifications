@@ -51,8 +51,8 @@ def _apns_prepare(
 		else:
 			apns2_alert = alert
 
-			if callable(badge):
-				badge = badge(token)
+		if callable(badge):
+			badge = badge(token)
 
 		return apns2_payload.Payload(
 			apns2_alert, badge, sound, content_available, mutable_content, category,
