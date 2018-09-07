@@ -5,6 +5,7 @@ import json
 from django.test import TestCase
 from django.utils import timezone
 
+from push_notifications.conf import AppConfig
 from push_notifications.gcm import GCMError, send_bulk_message
 from push_notifications.models import APNSDevice, GCMDevice
 
@@ -63,6 +64,56 @@ class GCMModelTestCase(TestCase):
 				}, separators=(",", ":"), sort_keys=True).encode("utf-8"),
 				"application/json", application_id=None
 			)
+
+	def test_gcm_send_message_extra_multiple_device(self):
+		my_manager = AppConfig(settings={
+			"APPLICATIONS": {
+				"my_fcm_app": {
+					"PLATFORM": "FCM",
+					"API_KEY": "...",
+				},
+				"other_fcm_app": {
+					"PLATFORM": "FCM",
+					"API_KEY": "...",
+				}
+			}
+		})
+
+		with mock.patch(
+			"push_notifications.gcm.get_manager", return_value=my_manager
+		):
+			# Reload the manager with new settings
+			GCMDevice.objects.create(
+				registration_id="abc", cloud_message_type="FCM", application_id="my_fcm_app"
+			)
+			GCMDevice.objects.create(
+				registration_id="def", cloud_message_type="FCM", application_id="other_fcm_app"
+			)
+			with mock.patch(
+				"push_notifications.gcm._fcm_send", return_value=responses.GCM_JSON
+			) as p:
+				GCMDevice.objects.all().send_message(
+					None, extra={"title": "bar", "body": "foo"}, collapse_key="test_key"
+				)
+				self.assertEquals(p.call_count, 2)
+				p.assert_has_calls([
+					mock.call(
+						json.dumps({
+							"collapse_key": "test_key",
+							"notification": {"title": "bar", "body": "foo"},
+							"registration_ids": ["abc"]
+						}, separators=(",", ":"), sort_keys=True).encode("utf-8"),
+						"application/json", application_id="my_fcm_app"
+					),
+					mock.call(
+						json.dumps({
+							"collapse_key": "test_key",
+							"notification": {"title": "bar", "body": "foo"},
+							"registration_ids": ["def"]
+						}, separators=(",", ":"), sort_keys=True).encode("utf-8"),
+						"application/json", application_id="other_fcm_app"
+					),
+				])
 
 	def test_gcm_send_message_collapse_key(self):
 		device = GCMDevice.objects.create(registration_id="abc", cloud_message_type="GCM")
