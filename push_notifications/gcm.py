@@ -119,6 +119,8 @@ def _cm_send_request(
 
 	payload = {"registration_ids": registration_ids} if registration_ids else {}
 
+	data = data.copy()
+
 	# If using FCM, optionnally autodiscovers notification related keys
 	# https://firebase.google.com/docs/cloud-messaging/concept-options#notifications_and_data_messages
 	if cloud_type == "FCM" and use_fcm_notifications:
