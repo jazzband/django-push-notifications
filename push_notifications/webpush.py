@@ -64,7 +64,7 @@ def webpush_send_message(device, message, results=None, **kwargs):
 				 "original_registration_id": device.registration_id})
 		return results
 	except WebPushException as e:
-		if "<Response [410]>" in e.message or "NotRegistered" in e.message or "InvalidRegistration" in e.message or "UnauthorizedRegistration" in e.message:
+		if "<Response [410]>" in e.message or "NotRegistered" in e.message or "InvalidRegistration" in e.message or "UnauthorizedRegistration" in e.message or "InvalidTokenFormat" in e.message:
 			results["failure"] += 1
 			results["results"].append(
 				{"error": e.message,
@@ -75,4 +75,3 @@ def webpush_send_message(device, message, results=None, **kwargs):
 			return results
 		else:
 			raise WebPushError(e.message)
-		
