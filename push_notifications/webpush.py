@@ -2,7 +2,6 @@ from pywebpush import WebPushException, webpush
 
 from .conf import get_manager
 from .exceptions import NotificationError
-
 from .models import WebPushDevice
 
 
@@ -60,15 +59,22 @@ def webpush_send_message(device, message, results=None, **kwargs):
 		else:
 			results["failure"] += 1
 			results["results"].append(
-				{"error": response.content,
-				 "original_registration_id": device.registration_id})
+				{
+					"error": response.content,
+					"original_registration_id": device.registration_id
+				})
 		return results
 	except WebPushException as e:
-		if "<Response [410]>" in e.message or "NotRegistered" in e.message or "InvalidRegistration" in e.message or "UnauthorizedRegistration" in e.message or "InvalidTokenFormat" in e.message:
+		controlled_errors = (
+			"<Response [410]>", "NotRegistered", "InvalidRegistration",
+			"UnauthorizedRegistration", "InvalidTokenFormat")
+		if any(controlled_error in e.message for controlled_error in controlled_errors):
 			results["failure"] += 1
 			results["results"].append(
-				{"error": e.message,
-				 "original_registration_id": device.registration_id})
+				{
+					"error": e.message,
+					"original_registration_id": device.registration_id
+				})
 			if not bulk:
 				device.active = False
 				device.save(update_fields=("active",))
