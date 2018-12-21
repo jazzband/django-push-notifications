@@ -26,7 +26,7 @@ FCM_OPTIONS_KEYS = [
 ]
 FCM_NOTIFICATIONS_PAYLOAD_KEYS = [
 	"title", "body", "icon", "sound", "badge", "color", "tag", "click_action",
-	"body_loc_key", "body_loc_args", "title_loc_key", "title_loc_args"
+	"body_loc_key", "body_loc_args", "title_loc_key", "title_loc_args", "android_channel_id"
 ]
 
 
@@ -118,6 +118,8 @@ def _cm_send_request(
 	"""
 
 	payload = {"registration_ids": registration_ids} if registration_ids else {}
+
+	data = data.copy()
 
 	# If using FCM, optionnally autodiscovers notification related keys
 	# https://firebase.google.com/docs/cloud-messaging/concept-options#notifications_and_data_messages
