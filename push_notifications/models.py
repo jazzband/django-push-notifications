@@ -47,8 +47,9 @@ class Device(models.Model):
 
 	def __str__(self):
 		return (
-			self.name or str(self.device_id or "") or
-			"%s for %s" % (self.__class__.__name__, self.user or "unknown user")
+			self.name
+			or str(self.device_id or "")
+			or "%s for %s" % (self.__class__.__name__, self.user or "unknown user")
 		)
 
 
