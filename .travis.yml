@@ -1,17 +1,14 @@
 # https://travis-ci.org/jazzband/django-push-notifications
 sudo: false
 language: python
-python: "3.6"
+python: "3.7"
 dist: xenial
 
 env:
   - TOXENV=py27-django111
-  - TOXENV=py36-django111
-  - TOXENV=py36-django20
-  - TOXENV=py36-djangomaster
   - TOXENV=py37-django111
   - TOXENV=py37-django20
-  - TOXENV=py37-djangomaster
+  - TOXENV=py37-django22
   - TOXENV=flake8
 
 cache:
