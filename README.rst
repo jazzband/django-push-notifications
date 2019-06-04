@@ -1,6 +1,6 @@
 django-push-notifications
 =========================
-.. image:: https://api.travis-ci.org/jazzband/django-push-notifications.png
+.. image:: https://travis-ci.org/jazzband/django-push-notifications.svg?branch=master
 	:target: https://travis-ci.org/jazzband/django-push-notifications
 
 .. image:: https://jazzband.co/static/img/badge.svg
