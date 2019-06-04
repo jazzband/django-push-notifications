@@ -32,20 +32,20 @@ class LegacyConfig(BaseConfig):
 
 	def get_gcm_api_key(self, application_id=None):
 		msg = (
-			"Set PUSH_NOTIFICATIONS_SETTINGS[\"GCM_API_KEY\"] to send messages through GCM."
+			'Set PUSH_NOTIFICATIONS_SETTINGS["GCM_API_KEY"] to send messages through GCM.'
 		)
 		return self._get_application_settings(application_id, "GCM_API_KEY", msg)
 
 	def get_fcm_api_key(self, application_id=None):
 		msg = (
-			"Set PUSH_NOTIFICATIONS_SETTINGS[\"FCM_API_KEY\"] to send messages through FCM."
+			'Set PUSH_NOTIFICATIONS_SETTINGS["FCM_API_KEY"] to send messages through FCM.'
 		)
 		return self._get_application_settings(application_id, "FCM_API_KEY", msg)
 
 	def get_post_url(self, cloud_type, application_id=None):
 		key = "{}_POST_URL".format(cloud_type)
 		msg = (
-			"Set PUSH_NOTIFICATIONS_SETTINGS[\"{}\"] to send messages through {}.".format(
+			'Set PUSH_NOTIFICATIONS_SETTINGS["{}"] to send messages through {}.'.format(
 				key, cloud_type
 			)
 		)
@@ -54,7 +54,7 @@ class LegacyConfig(BaseConfig):
 	def get_error_timeout(self, cloud_type, application_id=None):
 		key = "{}_ERROR_TIMEOUT".format(cloud_type)
 		msg = (
-			"Set PUSH_NOTIFICATIONS_SETTINGS[\"{}\"] to send messages through {}.".format(
+			'Set PUSH_NOTIFICATIONS_SETTINGS["{}"] to send messages through {}.'.format(
 				key, cloud_type
 			)
 		)
@@ -63,7 +63,7 @@ class LegacyConfig(BaseConfig):
 	def get_max_recipients(self, cloud_type, application_id=None):
 		key = "{}_MAX_RECIPIENTS".format(cloud_type)
 		msg = (
-			"Set PUSH_NOTIFICATIONS_SETTINGS[\"{}\"] to send messages through {}.".format(
+			'Set PUSH_NOTIFICATIONS_SETTINGS["{}"] to send messages through {}.'.format(
 				key, cloud_type
 			)
 		)
