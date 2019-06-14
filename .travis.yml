@@ -26,3 +26,15 @@ notifications:
   email:
     on_failure: always
     on_success: change
+
+deploy:
+  provider: pypi
+  user: jazzband
+  server: https://jazzband.co/projects/django-push-notifications/upload
+  distributions: sdist bdist_wheel
+  password:
+    secure: WIP
+  on:
+    tags: true
+    repo: jazzband/django-push-notifications
+
