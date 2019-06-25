@@ -25,4 +25,6 @@ ROOT_URLCONF = "core.urls"
 
 SECRET_KEY = "foobar"
 
-PUSH_NOTIFICATIONS_SETTINGS = {}
+PUSH_NOTIFICATIONS_SETTINGS = {
+	"WP_CLAIMS": {"sub": "mailto: jazzband@example.com"}
+}
