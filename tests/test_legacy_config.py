@@ -1,7 +1,8 @@
 from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase
 
-from push_notifications.conf import LegacyConfig
+from push_notifications.conf import LegacyConfig, get_manager
+from push_notifications.webpush import WebPushError, webpush_send_message
 
 
 class LegacyConfigTestCase(TestCase):
@@ -34,3 +35,12 @@ class LegacyConfigTestCase(TestCase):
 			"LegacySettings does not support application_id. To enable multiple"
 			" application support, use push_notifications.conf.AppSettings."
 		)
+
+	def test_immutable_wp_claims(self):
+		vapid_claims_pre = get_manager().get_wp_claims(None).copy()
+		try:
+			webpush_send_message("", {}, "CHROME", "", "")
+		except WebPushError:
+			pass
+		vapid_claims_after = get_manager().get_wp_claims(None)
+		self.assertDictEqual(vapid_claims_pre, vapid_claims_after)
