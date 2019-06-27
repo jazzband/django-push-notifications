@@ -7,6 +7,7 @@
 * FCM: Add FCM channels support for custom notification sound on Android Oreo
 * BUGFIX: Fix error when send a message and the device is not active
 * BUGFIX: Fix error when APN bulk messages sent with localized keys and badge function
+* BUGFIX: Fix `Push failed: 403 fobidden` error when sending message to Chrome WebPushDevice
 
 
 ## 1.6.0 (2018-01-31)
