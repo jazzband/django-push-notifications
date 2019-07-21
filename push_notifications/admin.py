@@ -1,5 +1,6 @@
 from django.apps import apps
 from django.contrib import admin, messages
+from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
 from .apns import APNSServerError
@@ -44,7 +45,7 @@ class DeviceAdmin(admin.ModelAdmin):
 			except APNSServerError as e:
 				errors.append(e.status)
 			except WebPushError as e:
-				errors.append(e.message)
+				errors.append(force_text(e))
 
 			if bulk:
 				break
