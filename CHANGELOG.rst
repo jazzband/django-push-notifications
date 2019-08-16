@@ -1,3 +1,10 @@
+v1.6.1 [2019-08-16]
+====================
+
+* Pin dependency to apns to <0.6.0 to fix a Python version
+  incompatibility.
+* Add configuration for semi-automatic releases via Jazzband.
+
 v1.6.0 (2018-01-31)
 ===================
 * BACKWARDS-INCOMPATIBLE: Drop support for Django < 1.11
