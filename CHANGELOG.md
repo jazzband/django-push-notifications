@@ -10,6 +10,11 @@
 * BUGFIX: Fix `Push failed: 403 fobidden` error when sending message to Chrome WebPushDevice
 
 
+## 1.6.1 (2019-08-16)
+* Pin dependency to apns to <0.6.0 to fix a Python version
+  incompatibility.
+* Add configuration for semi-automatic releases via Jazzband.
+
 ## 1.6.0 (2018-01-31)
 * BACKWARDS-INCOMPATIBLE: Drop support for Django < 1.11
 * DJANGO: Support Django 2.0
