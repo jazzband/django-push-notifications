@@ -53,7 +53,7 @@ class AppConfigTestCase(TestCase):
 		self.assertEqual(
 			str(ic.exception),
 			"PUSH_NOTIFICATIONS_SETTINGS.APPLICATIONS['{}']['PLATFORM'] is required."
-			" Must be one of: APNS, FCM, GCM, WNS.".format(application_id)
+			" Must be one of: APNS, FCM, GCM, WNS, WP.".format(application_id)
 		)
 
 	def test_platform_invalid(self):
@@ -75,7 +75,7 @@ class AppConfigTestCase(TestCase):
 		self.assertEqual(
 			str(ic.exception),
 			"PUSH_NOTIFICATIONS_SETTINGS.APPLICATIONS['{}']['PLATFORM'] is invalid."
-			" Must be one of: APNS, FCM, GCM, WNS.".format(application_id)
+			" Must be one of: APNS, FCM, GCM, WNS, WP.".format(application_id)
 		)
 
 	def test_platform_invalid_setting(self):
