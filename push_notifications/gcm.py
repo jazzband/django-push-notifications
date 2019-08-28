@@ -7,15 +7,11 @@ https://firebase.google.com/docs/cloud-messaging/
 
 import json
 
-try:
-	from urllib.request import Request, urlopen
-except ImportError:
-	# Python 2 support
-	from urllib2 import Request, urlopen
-
 from django.core.exceptions import ImproperlyConfigured
-from . import NotificationError
+
+from .compat import Request, urlopen
 from .conf import get_manager
+from .exceptions import NotificationError
 from .models import GCMDevice
 
 
@@ -30,7 +26,7 @@ FCM_OPTIONS_KEYS = [
 ]
 FCM_NOTIFICATIONS_PAYLOAD_KEYS = [
 	"title", "body", "icon", "sound", "badge", "color", "tag", "click_action",
-	"body_loc_key", "body_loc_args", "title_loc_key", "title_loc_args"
+	"body_loc_key", "body_loc_args", "title_loc_key", "title_loc_args", "android_channel_id"
 ]
 
 
@@ -102,7 +98,7 @@ def _cm_handle_response(registration_ids, response_data, cloud_type, application
 			removed = GCMDevice.objects.filter(
 				registration_id__in=ids_to_remove, cloud_message_type=cloud_type
 			)
-			removed.update(active=0)
+			removed.update(active=False)
 
 		for old_id, new_id in old_new_ids:
 			_cm_handle_canonical_id(new_id, old_id, cloud_type)
@@ -122,6 +118,8 @@ def _cm_send_request(
 	"""
 
 	payload = {"registration_ids": registration_ids} if registration_ids else {}
+
+	data = data.copy()
 
 	# If using FCM, optionnally autodiscovers notification related keys
 	# https://firebase.google.com/docs/cloud-messaging/concept-options#notifications_and_data_messages
@@ -182,9 +180,7 @@ def send_message(registration_ids, data, cloud_type, application_id=None, **kwar
 	A reference of extra keyword arguments sent to the server is available here:
 	https://firebase.google.com/docs/cloud-messaging/http-server-ref#table1
 	"""
-	if cloud_type == "FCM":
-		max_recipients = get_manager().get_max_recipients(cloud_type, application_id)
-	elif cloud_type == "GCM":
+	if cloud_type in ("FCM", "GCM"):
 		max_recipients = get_manager().get_max_recipients(cloud_type, application_id)
 	else:
 		raise ImproperlyConfigured("cloud_type must be FCM or GCM not %s" % str(cloud_type))

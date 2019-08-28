@@ -1,8 +1,7 @@
 from apns2.client import NotificationPriority
-
 from django.test import TestCase
 
-from push_notifications.apns import _apns_send, APNSUnsupportedPriority
+from push_notifications.apns import APNSUnsupportedPriority, _apns_send
 
 from ._mock import mock
 

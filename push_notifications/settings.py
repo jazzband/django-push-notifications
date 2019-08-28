@@ -36,6 +36,16 @@ PUSH_NOTIFICATIONS_SETTINGS.setdefault(
 	"WNS_ACCESS_URL", "https://login.live.com/accesstoken.srf"
 )
 
+# WP (WebPush)
+PUSH_NOTIFICATIONS_SETTINGS.setdefault("WP_POST_URL", {
+	"CHROME": PUSH_NOTIFICATIONS_SETTINGS["FCM_POST_URL"],
+	"OPERA": PUSH_NOTIFICATIONS_SETTINGS["FCM_POST_URL"],
+	"FIREFOX": "https://updates.push.services.mozilla.com/wpush/v2",
+})
+PUSH_NOTIFICATIONS_SETTINGS.setdefault("WP_PRIVATE_KEY", None)
+PUSH_NOTIFICATIONS_SETTINGS.setdefault("WP_CLAIMS", None)
+PUSH_NOTIFICATIONS_SETTINGS.setdefault("WP_ERROR_TIMEOUT", None)
+
 # User model
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("USER_MODEL", settings.AUTH_USER_MODEL)
 

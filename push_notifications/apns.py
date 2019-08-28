@@ -11,9 +11,8 @@ from apns2 import errors as apns2_errors
 from apns2 import payload as apns2_payload
 
 from . import models
-from . import NotificationError
-from .apns_errors import reason_for_exception_class
 from .conf import get_manager
+from .exceptions import NotificationError
 
 
 class APNSError(NotificationError):
@@ -52,8 +51,8 @@ def _apns_prepare(
 		else:
 			apns2_alert = alert
 
-			if callable(badge):
-				badge = badge(token)
+		if callable(badge):
+			badge = badge(token)
 
 		return apns2_payload.Payload(
 			apns2_alert, badge, sound, content_available, mutable_content, category,
@@ -119,7 +118,8 @@ def apns_send_message(registration_id, alert, application_id=None, certfile=None
 			device = models.APNSDevice.objects.get(registration_id=registration_id)
 			device.active = False
 			device.save()
-		raise APNSServerError(status=reason_for_exception_class(apns2_exception.__class__))
+
+		raise APNSServerError(status=apns2_exception.__class__.__name__)
 
 
 def apns_send_bulk_message(

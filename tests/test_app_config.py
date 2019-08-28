@@ -2,6 +2,7 @@ import os
 
 from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase
+
 from push_notifications.conf import AppConfig
 
 
@@ -10,57 +11,44 @@ class AppConfigTestCase(TestCase):
 		"""Using AppConfig without an application_id raises ImproperlyConfigured."""
 
 		manager = AppConfig()
-		with self.assertRaises(ImproperlyConfigured) as ic:
+		with self.assertRaises(ImproperlyConfigured):
 			manager._get_application_settings(None, None, None)
 
-		self.assertEqual(
-			str(ic.exception),
-			"push_notifications.conf.AppConfig requires the application_id be "
-			"specified at all times."
-		)
-
 	def test_application_not_found(self):
-		"""Using AppConfig with an application_id that does not exist raises
-		ImproperlyConfigured."""
+		"""
+		Using AppConfig with an application_id that does not exist raises
+		ImproperlyConfigured.
+		"""
 
 		application_id = "my_fcm_app"
 
 		manager = AppConfig()
 
-		with self.assertRaises(ImproperlyConfigured) as ic:
+		with self.assertRaises(ImproperlyConfigured):
 			manager._get_application_settings(application_id, "FCM", "API_KEY")
 
-		self.assertEqual(
-			str(ic.exception),
-			"No application configured with application_id: {}.".format(application_id)
-		)
-
 	def test_platform_configured(self):
-		"""Using AppConfig with an application config that does not define PLATFORM
-		raises ImproperlyConfigured."""
+		"""
+		Using AppConfig with an application config that does not define PLATFORM
+		raises ImproperlyConfigured.
+		"""
 
 		application_id = "my_fcm_app"
-
 		PUSH_SETTINGS = {
 			"APPLICATIONS": {
 				application_id: {}
 			}
 		}
 
-		with self.assertRaises(ImproperlyConfigured) as ic:
+		with self.assertRaises(ImproperlyConfigured):
 			AppConfig(PUSH_SETTINGS)
 
-		self.assertEqual(
-			str(ic.exception),
-			"PUSH_NOTIFICATIONS_SETTINGS.APPLICATIONS['{}']['PLATFORM'] is required."
-			" Must be one of: APNS, FCM, GCM, WNS.".format(application_id)
-		)
-
 	def test_platform_invalid(self):
-		"""Using AppConfig with an invalid platform raises ImproperlyConfigured."""
+		"""
+		Using AppConfig with an invalid platform raises ImproperlyConfigured.
+		"""
 
 		application_id = "my_fcm_app"
-
 		PUSH_SETTINGS = {
 			"APPLICATIONS": {
 				application_id: {
@@ -69,20 +57,15 @@ class AppConfigTestCase(TestCase):
 			}
 		}
 
-		with self.assertRaises(ImproperlyConfigured) as ic:
+		with self.assertRaises(ImproperlyConfigured):
 			AppConfig(PUSH_SETTINGS)
 
-		self.assertEqual(
-			str(ic.exception),
-			"PUSH_NOTIFICATIONS_SETTINGS.APPLICATIONS['{}']['PLATFORM'] is invalid."
-			" Must be one of: APNS, FCM, GCM, WNS.".format(application_id)
-		)
-
 	def test_platform_invalid_setting(self):
-		"""Fetching application settings for the wrong platform raises ImproperlyConfigured."""
+		"""
+		Fetching application settings for the wrong platform raises ImproperlyConfigured.
+		"""
 
 		application_id = "my_fcm_app"
-
 		PUSH_SETTINGS = {
 			"APPLICATIONS": {
 				application_id: {
@@ -94,19 +77,15 @@ class AppConfigTestCase(TestCase):
 
 		manager = AppConfig(PUSH_SETTINGS)
 
-		with self.assertRaises(ImproperlyConfigured) as ic:
+		with self.assertRaises(ImproperlyConfigured):
 			manager._get_application_settings(application_id, "APNS", "CERTIFICATE")
 
-		self.assertEqual(
-			str(ic.exception),
-			"Application 'my_fcm_app' (FCM) does not support the setting 'CERTIFICATE'."
-		)
-
 	def test_missing_setting(self):
-		"""Missing application settings raises ImproperlyConfigured."""
+		"""
+		Missing application settings raises ImproperlyConfigured.
+		"""
 
 		application_id = "my_fcm_app"
-
 		PUSH_SETTINGS = {
 			"APPLICATIONS": {
 				application_id: {
@@ -115,16 +94,13 @@ class AppConfigTestCase(TestCase):
 			}
 		}
 
-		with self.assertRaises(ImproperlyConfigured) as ic:
+		with self.assertRaises(ImproperlyConfigured):
 			AppConfig(PUSH_SETTINGS)
 
-		self.assertEqual(
-			str(ic.exception),
-			"PUSH_NOTIFICATIONS_SETTINGS.APPLICATIONS['my_fcm_app']['API_KEY'] is missing."
-		)
-
 	def test_validate_apns_config(self):
-		"""Verify the settings for APNS platform."""
+		"""
+		Verify the settings for APNS platform.
+		"""
 
 		path = os.path.join(os.path.dirname(__file__), "test_data", "good_revoked.pem")
 
@@ -143,9 +119,7 @@ class AppConfigTestCase(TestCase):
 		}
 		AppConfig(PUSH_SETTINGS)
 
-		#
 		# missing required settings
-		#
 		PUSH_SETTINGS = {
 			"APPLICATIONS": {
 				"my_apns_app": {
@@ -154,17 +128,10 @@ class AppConfigTestCase(TestCase):
 			}
 		}
 
-		with self.assertRaises(ImproperlyConfigured) as ic:
+		with self.assertRaises(ImproperlyConfigured):
 			AppConfig(PUSH_SETTINGS)
 
-		self.assertEqual(
-			str(ic.exception),
-			"PUSH_NOTIFICATIONS_SETTINGS.APPLICATIONS['my_apns_app']['CERTIFICATE'] is missing."
-		)
-
-		#
 		# all optional settings have default values
-		#
 		PUSH_SETTINGS = {
 			"APPLICATIONS": {
 				"my_apns_app": {
@@ -199,9 +166,7 @@ class AppConfigTestCase(TestCase):
 		}
 		AppConfig(PUSH_SETTINGS)
 
-		#
 		# missing required settings
-		#
 		PUSH_SETTINGS = {
 			"APPLICATIONS": {
 				"my_fcm_app": {
@@ -210,17 +175,10 @@ class AppConfigTestCase(TestCase):
 			}
 		}
 
-		with self.assertRaises(ImproperlyConfigured) as ic:
+		with self.assertRaises(ImproperlyConfigured):
 			AppConfig(PUSH_SETTINGS)
 
-		self.assertEqual(
-			str(ic.exception),
-			"PUSH_NOTIFICATIONS_SETTINGS.APPLICATIONS['my_fcm_app']['API_KEY'] is missing."
-		)
-
-		#
 		# all optional settings have default values
-		#
 		PUSH_SETTINGS = {
 			"APPLICATIONS": {
 				"my_fcm_app": {
@@ -267,17 +225,10 @@ class AppConfigTestCase(TestCase):
 			}
 		}
 
-		with self.assertRaises(ImproperlyConfigured) as ic:
+		with self.assertRaises(ImproperlyConfigured):
 			AppConfig(PUSH_SETTINGS)
 
-		self.assertEqual(
-			str(ic.exception),
-			"PUSH_NOTIFICATIONS_SETTINGS.APPLICATIONS['my_gcm_app']['API_KEY'] is missing."
-		)
-
-		#
 		# all optional settings have default values
-		#
 		PUSH_SETTINGS = {
 			"APPLICATIONS": {
 				"my_gcm_app": {
@@ -295,11 +246,11 @@ class AppConfigTestCase(TestCase):
 		assert app_config["ERROR_TIMEOUT"] is None
 
 	def test_get_allowed_settings_wns(self):
-		"""Verify the settings allowed for WNS platform."""
+		"""
+		Verify the settings allowed for WNS platform.
+		"""
 
-		#
 		# all settings specified, required and optional, does not raise an error.
-		#
 		PUSH_SETTINGS = {
 			"APPLICATIONS": {
 				"my_wns_app": {
@@ -312,9 +263,7 @@ class AppConfigTestCase(TestCase):
 		}
 		AppConfig(PUSH_SETTINGS)
 
-		#
 		# missing required settings
-		#
 		PUSH_SETTINGS = {
 			"APPLICATIONS": {
 				"my_wns_app": {
@@ -323,18 +272,10 @@ class AppConfigTestCase(TestCase):
 			}
 		}
 
-		with self.assertRaises(ImproperlyConfigured) as ic:
+		with self.assertRaises(ImproperlyConfigured):
 			AppConfig(PUSH_SETTINGS)
 
-		self.assertEqual(
-			str(ic.exception),
-			"PUSH_NOTIFICATIONS_SETTINGS.APPLICATIONS['my_wns_app']"
-			"['PACKAGE_SECURITY_ID'] is missing."
-		)
-
-		#
 		# all optional settings have default values
-		#
 		PUSH_SETTINGS = {
 			"APPLICATIONS": {
 				"my_wns_app": {

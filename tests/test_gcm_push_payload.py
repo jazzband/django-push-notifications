@@ -1,6 +1,9 @@
 from __future__ import absolute_import
+
 from django.test import TestCase
+
 from push_notifications.gcm import send_bulk_message, send_message
+
 from ._mock import mock
 from .responses import GCM_JSON, GCM_JSON_MULTIPLE
 
