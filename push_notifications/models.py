@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
@@ -10,6 +11,12 @@ from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 CLOUD_MESSAGE_TYPES = (
 	("FCM", "Firebase Cloud Message"),
 	("GCM", "Google Cloud Message"),
+)
+
+BROWSER_TYPES = (
+	("CHROME", "Chrome"),
+	("FIREFOX", "Firefox"),
+	("OPERA", "Opera"),
 )
 
 
@@ -40,7 +47,8 @@ class Device(models.Model):
 
 	def __str__(self):
 		return (
-			self.name or str(self.device_id or "") or
+			self.name or
+			str(self.device_id or "") or
 			"%s for %s" % (self.__class__.__name__, self.user or "unknown user")
 		)
 
@@ -170,22 +178,23 @@ class WNSDeviceManager(models.Manager):
 
 class WNSDeviceQuerySet(models.query.QuerySet):
 	def send_message(self, message, **kwargs):
-		if self:
-			from .wns import wns_send_bulk_message
+		from .wns import wns_send_bulk_message
 
-			app_ids = self.filter(active=True).order_by("application_id")\
-				.values_list("application_id", flat=True).distinct()
-			res = []
-			for app_id in app_ids:
-				reg_ids = list(self.filter(active=True, application_id=app_id).values_list(
-					"registration_id", flat=True
-				))
-				r = wns_send_bulk_message(uri_list=reg_ids, message=message, **kwargs)
-				if hasattr(r, "keys"):
-					res += [r]
-				elif hasattr(r, "__getitem__"):
-					res += r
-			return res
+		app_ids = self.filter(active=True).order_by("application_id").values_list(
+			"application_id", flat=True
+		).distinct()
+		res = []
+		for app_id in app_ids:
+			reg_ids = self.filter(active=True, application_id=app_id).values_list(
+				"registration_id", flat=True
+			)
+			r = wns_send_bulk_message(uri_list=list(reg_ids), message=message, **kwargs)
+			if hasattr(r, "keys"):
+				res += [r]
+			elif hasattr(r, "__getitem__"):
+				res += r
+
+		return res
 
 
 class WNSDevice(Device):
@@ -204,5 +213,51 @@ class WNSDevice(Device):
 		from .wns import wns_send_message
 
 		return wns_send_message(
-			uri=self.registration_id, message=message, application_id=self.application_id, **kwargs
+			uri=self.registration_id, message=message, application_id=self.application_id,
+			**kwargs
 		)
+
+
+class WebPushDeviceManager(models.Manager):
+	def get_queryset(self):
+		return WebPushDeviceQuerySet(self.model)
+
+
+class WebPushDeviceQuerySet(models.query.QuerySet):
+	def send_message(self, message, **kwargs):
+		devices = self.filter(active=True).order_by("application_id").distinct()
+		res = []
+		for device in devices:
+			res.append(device.send_message(message))
+
+		return res
+
+
+class WebPushDevice(Device):
+	registration_id = models.TextField(verbose_name=_("Registration ID"))
+	p256dh = models.CharField(
+		verbose_name=_("User public encryption key"),
+		max_length=88)
+	auth = models.CharField(
+		verbose_name=_("User auth secret"),
+		max_length=24)
+	browser = models.CharField(
+		verbose_name=_("Browser"), max_length=10,
+		choices=BROWSER_TYPES, default=BROWSER_TYPES[0][0],
+		help_text=_("Currently only support to Chrome, Firefox and Opera browsers")
+	)
+	objects = WebPushDeviceManager()
+
+	class Meta:
+		verbose_name = _("WebPush device")
+
+	@property
+	def device_id(self):
+		return None
+
+	def send_message(self, message, **kwargs):
+		from .webpush import webpush_send_message
+
+		return webpush_send_message(
+			uri=self.registration_id, message=message, browser=self.browser,
+			auth=self.auth, p256dh=self.p256dh, application_id=self.application_id, **kwargs)

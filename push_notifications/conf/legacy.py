@@ -1,7 +1,8 @@
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.six import string_types
-from .base import BaseConfig
+
 from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from .base import BaseConfig
 
 
 __all__ = [
@@ -31,20 +32,20 @@ class LegacyConfig(BaseConfig):
 
 	def get_gcm_api_key(self, application_id=None):
 		msg = (
-			"Set PUSH_NOTIFICATIONS_SETTINGS[\"GCM_API_KEY\"] to send messages through GCM."
+			'Set PUSH_NOTIFICATIONS_SETTINGS["GCM_API_KEY"] to send messages through GCM.'
 		)
 		return self._get_application_settings(application_id, "GCM_API_KEY", msg)
 
 	def get_fcm_api_key(self, application_id=None):
 		msg = (
-			"Set PUSH_NOTIFICATIONS_SETTINGS[\"FCM_API_KEY\"] to send messages through FCM."
+			'Set PUSH_NOTIFICATIONS_SETTINGS["FCM_API_KEY"] to send messages through FCM.'
 		)
 		return self._get_application_settings(application_id, "FCM_API_KEY", msg)
 
 	def get_post_url(self, cloud_type, application_id=None):
 		key = "{}_POST_URL".format(cloud_type)
 		msg = (
-			"Set PUSH_NOTIFICATIONS_SETTINGS[\"{}\"] to send messages through {}.".format(
+			'Set PUSH_NOTIFICATIONS_SETTINGS["{}"] to send messages through {}.'.format(
 				key, cloud_type
 			)
 		)
@@ -53,7 +54,7 @@ class LegacyConfig(BaseConfig):
 	def get_error_timeout(self, cloud_type, application_id=None):
 		key = "{}_ERROR_TIMEOUT".format(cloud_type)
 		msg = (
-			"Set PUSH_NOTIFICATIONS_SETTINGS[\"{}\"] to send messages through {}.".format(
+			'Set PUSH_NOTIFICATIONS_SETTINGS["{}"] to send messages through {}.'.format(
 				key, cloud_type
 			)
 		)
@@ -62,7 +63,7 @@ class LegacyConfig(BaseConfig):
 	def get_max_recipients(self, cloud_type, application_id=None):
 		key = "{}_MAX_RECIPIENTS".format(cloud_type)
 		msg = (
-			"Set PUSH_NOTIFICATIONS_SETTINGS[\"{}\"] to send messages through {}.".format(
+			'Set PUSH_NOTIFICATIONS_SETTINGS["{}"] to send messages through {}.'.format(
 				key, cloud_type
 			)
 		)
@@ -122,3 +123,15 @@ class LegacyConfig(BaseConfig):
 	def get_wns_secret_key(self, application_id=None):
 		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
 		return self._get_application_settings(application_id, "WNS_SECRET_KEY", msg)
+
+	def get_wp_post_url(self, application_id, browser):
+		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
+		return self._get_application_settings(application_id, "WP_POST_URL", msg)[browser]
+
+	def get_wp_private_key(self, application_id=None):
+		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
+		return self._get_application_settings(application_id, "WP_PRIVATE_KEY", msg)
+
+	def get_wp_claims(self, application_id=None):
+		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
+		return self._get_application_settings(application_id, "WP_CLAIMS", msg)

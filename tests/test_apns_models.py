@@ -1,7 +1,8 @@
 from apns2.client import NotificationPriority
 from apns2.errors import BadTopic, PayloadTooLarge, Unregistered
 from django.conf import settings
-from django.test import override_settings, TestCase
+from django.test import TestCase, override_settings
+
 from push_notifications.apns import APNSError
 from push_notifications.models import APNSDevice
 

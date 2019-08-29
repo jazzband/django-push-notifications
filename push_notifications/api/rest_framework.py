@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer, Serializer, ValidationError
 from rest_framework.viewsets import ModelViewSet
 
-from ..fields import hex_re, UNSIGNED_64BIT_INT_MAX_VALUE
-from ..models import APNSDevice, GCMDevice, WNSDevice
+from ..fields import UNSIGNED_64BIT_INT_MAX_VALUE, hex_re
+from ..models import APNSDevice, GCMDevice, WebPushDevice, WNSDevice
 from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 
@@ -117,6 +117,15 @@ class WNSDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
 		model = WNSDevice
 
 
+class WebPushDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
+	class Meta(DeviceSerializerMixin.Meta):
+		model = WebPushDevice
+		fields = (
+			"id", "name", "registration_id", "active", "date_created",
+			"p256dh", "auth", "browser", "application_id",
+		)
+
+
 # Permissions
 class IsOwner(permissions.BasePermission):
 	def has_object_permission(self, request, view, obj):
@@ -151,12 +160,12 @@ class DeviceViewSetMixin(object):
 			return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 	def perform_create(self, serializer):
-		if self.request.user.is_authenticated():
+		if self.request.user.is_authenticated:
 			serializer.save(user=self.request.user)
 		return super(DeviceViewSetMixin, self).perform_create(serializer)
 
 	def perform_update(self, serializer):
-		if self.request.user.is_authenticated():
+		if self.request.user.is_authenticated:
 			serializer.save(user=self.request.user)
 		return super(DeviceViewSetMixin, self).perform_update(serializer)
 
@@ -194,4 +203,13 @@ class WNSDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
 
 
 class WNSDeviceAuthorizedViewSet(AuthorizedMixin, WNSDeviceViewSet):
+	pass
+
+
+class WebPushDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
+	queryset = WebPushDevice.objects.all()
+	serializer_class = WebPushDeviceSerializer
+
+
+class WebPushDeviceAuthorizedViewSet(AuthorizedMixin, WebPushDeviceViewSet):
 	pass

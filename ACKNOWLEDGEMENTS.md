@@ -13,4 +13,4 @@ Pablo Martín
 
 The full contributor list is available at the following URL:
 
-https://github.com/jleclanche/django-push-notifications/graphs/contributors
+https://github.com/jazzband/django-push-notifications/graphs/contributors

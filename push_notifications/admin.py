@@ -1,10 +1,14 @@
 from django.apps import apps
 from django.contrib import admin, messages
+from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
+
 from .apns import APNSServerError
 from .gcm import GCMError
-from .models import APNSDevice, GCMDevice, WNSDevice
+from .models import APNSDevice, GCMDevice, WebPushDevice, WNSDevice
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from .webpush import WebPushError
+
 
 User = apps.get_model(*SETTINGS["USER_MODEL"].split("."))
 
@@ -40,6 +44,8 @@ class DeviceAdmin(admin.ModelAdmin):
 				errors.append(str(e))
 			except APNSServerError as e:
 				errors.append(e.status)
+			except WebPushError as e:
+				errors.append(force_text(e))
 
 			if bulk:
 				break
@@ -56,6 +62,8 @@ class DeviceAdmin(admin.ModelAdmin):
 			except TypeError:
 				for entry in ret[0][0]:
 					errors = errors + [r["error"] for r in entry["results"] if "error" in r]
+			except IndexError:
+				pass
 		if errors:
 			self.message_user(
 				request, _("Some messages could not be processed: %r" % (", ".join(errors))),
@@ -112,3 +120,4 @@ class GCMDeviceAdmin(DeviceAdmin):
 admin.site.register(APNSDevice, DeviceAdmin)
 admin.site.register(GCMDevice, GCMDeviceAdmin)
 admin.site.register(WNSDevice, DeviceAdmin)
+admin.site.register(WebPushDevice, DeviceAdmin)

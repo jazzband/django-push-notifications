@@ -1,0 +1,3 @@
+
+class NotificationError(Exception):
+	pass

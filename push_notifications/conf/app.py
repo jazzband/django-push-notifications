@@ -1,17 +1,18 @@
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.six import string_types
-from .base import BaseConfig, check_apns_certificate
+
 from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from .base import BaseConfig, check_apns_certificate
+
 
 SETTING_MISMATCH = (
 	"Application '{application_id}' ({platform}) does not support the setting '{setting}'."
 )
 
-
 # code can be "missing" or "invalid"
 BAD_PLATFORM = (
-	"PUSH_NOTIFICATIONS_SETTINGS.APPLICATIONS['{application_id}']['PLATFORM']"
-	" is {code}. Must be one of: {platforms}."
+	'PUSH_NOTIFICATIONS_SETTINGS.APPLICATIONS["{application_id}"]["PLATFORM"] is {code}. '
+	"Must be one of: {platforms}."
 )
 
 UNKNOWN_PLATFORM = (
@@ -19,14 +20,15 @@ UNKNOWN_PLATFORM = (
 )
 
 MISSING_SETTING = (
-	"PUSH_NOTIFICATIONS_SETTINGS.APPLICATIONS['{application_id}']['{setting}'] is missing."
+	'PUSH_NOTIFICATIONS_SETTINGS.APPLICATIONS["{application_id}"]["{setting}"] is missing.'
 )
 
 PLATFORMS = [
 	"APNS",
 	"FCM",
 	"GCM",
-	"WNS"
+	"WNS",
+	"WP",
 ]
 
 # Settings that all applications must have
@@ -38,12 +40,10 @@ REQUIRED_SETTINGS = [
 # these settings are stubs for registry support and have no effect on the operation
 # of the application at this time.
 OPTIONAL_SETTINGS = [
-	"APPLICATION_GROUP",
-	"APPLICATION_SECRET",
+	"APPLICATION_GROUP", "APPLICATION_SECRET"
 ]
 
 APNS_REQUIRED_SETTINGS = ["CERTIFICATE"]
-
 APNS_OPTIONAL_SETTINGS = [
 	"USE_SANDBOX", "USE_ALTERNATIVE_PORT", "TOPIC"
 ]
@@ -54,12 +54,16 @@ FCM_OPTIONAL_SETTINGS = GCM_OPTIONAL_SETTINGS = [
 ]
 
 WNS_REQUIRED_SETTINGS = ["PACKAGE_SECURITY_ID", "SECRET_KEY"]
-
 WNS_OPTIONAL_SETTINGS = ["WNS_ACCESS_URL"]
+
+WP_REQUIRED_SETTINGS = ["PRIVATE_KEY", "CLAIMS"]
+WP_OPTIONAL_SETTINGS = ["ERROR_TIMEOUT", "POST_URL"]
 
 
 class AppConfig(BaseConfig):
-	"""Supports any number of push notification enabled applications."""
+	"""
+	Supports any number of push notification enabled applications.
+	"""
 
 	def __init__(self, settings=None):
 		# supports overriding the settings to be loaded. Will load from ..settings by default.
@@ -137,12 +141,14 @@ class AppConfig(BaseConfig):
 				content = f.read()
 				check_apns_certificate(content)
 		except Exception as e:
-			msg = "The APNS certificate file at %r is not readable: %s" % (certfile, e)
-			raise ImproperlyConfigured(msg)
+			raise ImproperlyConfigured(
+				"The APNS certificate file at %r is not readable: %s" % (certfile, e)
+			)
 
 	def _validate_fcm_config(self, application_id, application_config):
-		allowed = REQUIRED_SETTINGS + OPTIONAL_SETTINGS + FCM_REQUIRED_SETTINGS + \
-			FCM_OPTIONAL_SETTINGS
+		allowed = (
+			REQUIRED_SETTINGS + OPTIONAL_SETTINGS + FCM_REQUIRED_SETTINGS + FCM_OPTIONAL_SETTINGS
+		)
 
 		self._validate_allowed_settings(application_id, application_config, allowed)
 		self._validate_required_settings(
@@ -154,8 +160,9 @@ class AppConfig(BaseConfig):
 		application_config.setdefault("ERROR_TIMEOUT", None)
 
 	def _validate_gcm_config(self, application_id, application_config):
-		allowed = REQUIRED_SETTINGS + OPTIONAL_SETTINGS + GCM_REQUIRED_SETTINGS + \
-			GCM_OPTIONAL_SETTINGS
+		allowed = (
+			REQUIRED_SETTINGS + OPTIONAL_SETTINGS + GCM_REQUIRED_SETTINGS + GCM_OPTIONAL_SETTINGS
+		)
 
 		self._validate_allowed_settings(application_id, application_config, allowed)
 		self._validate_required_settings(
@@ -167,8 +174,9 @@ class AppConfig(BaseConfig):
 		application_config.setdefault("ERROR_TIMEOUT", None)
 
 	def _validate_wns_config(self, application_id, application_config):
-		allowed = REQUIRED_SETTINGS + OPTIONAL_SETTINGS + WNS_REQUIRED_SETTINGS + \
-			WNS_OPTIONAL_SETTINGS
+		allowed = (
+			REQUIRED_SETTINGS + OPTIONAL_SETTINGS + WNS_REQUIRED_SETTINGS + WNS_OPTIONAL_SETTINGS
+		)
 
 		self._validate_allowed_settings(application_id, application_config, allowed)
 		self._validate_required_settings(
@@ -176,6 +184,21 @@ class AppConfig(BaseConfig):
 		)
 
 		application_config.setdefault("WNS_ACCESS_URL", "https://login.live.com/accesstoken.srf")
+
+	def _validate_wp_config(self, application_id, application_config):
+		allowed = (
+			REQUIRED_SETTINGS + OPTIONAL_SETTINGS + WP_REQUIRED_SETTINGS + WP_OPTIONAL_SETTINGS
+		)
+
+		self._validate_allowed_settings(application_id, application_config, allowed)
+		self._validate_required_settings(
+			application_id, application_config, WP_REQUIRED_SETTINGS
+		)
+		application_config.setdefault("POST_URL", {
+			"CHROME": "https://fcm.googleapis.com/fcm/send",
+			"OPERA": "https://fcm.googleapis.com/fcm/send",
+			"FIREFOX": "https://updates.push.services.mozilla.com/wpush/v2",
+		})
 
 	def _validate_allowed_settings(self, application_id, application_config, allowed_settings):
 		"""Confirm only allowed settings are present."""
@@ -202,8 +225,10 @@ class AppConfig(BaseConfig):
 				)
 
 	def _get_application_settings(self, application_id, platform, settings_key):
-		"""Walks through PUSH_NOTIFICATIONS_SETTINGS to find the correct setting
-		value or dies trying"""
+		"""
+		Walks through PUSH_NOTIFICATIONS_SETTINGS to find the correct setting value
+		or raises ImproperlyConfigured.
+		"""
 
 		if not application_id:
 			conf_cls = "push_notifications.conf.AppConfig"
@@ -282,3 +307,12 @@ class AppConfig(BaseConfig):
 
 	def get_wns_secret_key(self, application_id=None):
 		return self._get_application_settings(application_id, "WNS", "SECRET_KEY")
+
+	def get_wp_post_url(self, application_id, browser):
+		return self._get_application_settings(application_id, "WP", "POST_URL")[browser]
+
+	def get_wp_private_key(self, application_id=None):
+		return self._get_application_settings(application_id, "WP", "PRIVATE_KEY")
+
+	def get_wp_claims(self, application_id=None):
+		return self._get_application_settings(application_id, "WP", "CLAIMS")

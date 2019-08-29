@@ -1,28 +1,36 @@
-# https://travis-ci.org/jleclanche/django-push-notifications
+# https://travis-ci.org/jazzband/django-push-notifications
 sudo: false
 language: python
-python: "3.6"
-
-env:
-  - TOXENV=py27-django110
-  - TOXENV=py27-django111
-  - TOXENV=py34-django110
-  - TOXENV=py34-django111
-  - TOXENV=py36-django111
-  - TOXENV=py36-djangomaster
-  - TOXENV=flake8
-
-cache:
-  directories:
-    - $HOME/.cache/pip
-    - $TRAVIS_BUILD_DIR/.tox
-
-install:
-  - pip install tox
-
-script:
-  - tox
-
+python:
+- 2.7
+- 3.6
+- 3.7
+cache: pip
+dist: xenial
+install: travis_retry pip install tox-travis
+script: tox
+stages:
+- test
+- name: deploy
+  if: repo = jazzband/django-push-notifications AND tag IS present
+jobs:
+  include:
+  - stage: test
+  - stage: deploy
+    install: skip
+    script: skip
+    python: 3.7
+    env: skip
+    deploy:
+      provider: pypi
+      user: jazzband
+      server: https://jazzband.co/projects/django-push-notifications/upload
+      distributions: sdist bdist_wheel
+      password:
+        secure: ICRZGeqLWsqEtg9Iz62SHGOktUQEN+8h4wp0RKJJhcPIj59aKJNV+ET1wM+Xsh6OgpX2Ddy2AF7vD7pDP8kbWyCVyQNeK2/Ejo9SC7tVaVUIf5VAFXmkMymlAwUc6lKYrLW2Ls4PEqvSKikHcHp20pna6jJvg0Msa11j/KYP9eM=
+      on:
+        tags: true
+        repo: jazzband/django-push-notifications
 notifications:
   email:
     on_failure: always
