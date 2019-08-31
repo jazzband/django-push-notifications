@@ -88,12 +88,12 @@ class WNSDictToXmlSchemaTestCase(TestCase):
 		xml_tree = dict_to_xml_schema(xml_data)
 		self.assertEqual(xml_tree.tag, "toast")
 		self.assertEqual(xml_tree.attrib, {"key": "value"})
-		visual = xml_tree.getchildren()[0]
+		visual = list(xml_tree)[0]
 		self.assertEqual(visual.tag, "visual")
-		binding = visual.getchildren()[0]
+		binding = list(visual)[0]
 		self.assertEqual(binding.tag, "binding")
 		self.assertEqual(binding.attrib, {"template": "ToastText01"})
-		text = binding.getchildren()[0]
+		text = list(binding)[0]
 		self.assertEqual(text.tag, "text")
 		self.assertEqual(text.attrib, {"id": "1"})
 		self.assertEqual(text.text, "toast notification")
@@ -125,13 +125,12 @@ class WNSDictToXmlSchemaTestCase(TestCase):
 		xml_tree = dict_to_xml_schema(xml_data)
 		self.assertEqual(xml_tree.tag, "toast")
 		self.assertEqual(xml_tree.attrib, {"key": "value"})
-		visual = xml_tree.getchildren()[0]
+		visual = list(xml_tree)[0]
 		self.assertEqual(visual.tag, "visual")
-		binding = visual.getchildren()[0]
+		binding = list(visual)[0]
 		self.assertEqual(binding.tag, "binding")
 		self.assertEqual(binding.attrib, {"template": "ToastText02"})
-		children = binding.getchildren()
-		self.assertEqual(len(children), 2)
+		self.assertEqual(len(list(binding)), 2)
 
 	def test_create_two_multi_sub_element_xml_from_dict(self):
 		xml_data = {
@@ -166,10 +165,9 @@ class WNSDictToXmlSchemaTestCase(TestCase):
 		xml_tree = dict_to_xml_schema(xml_data)
 		self.assertEqual(xml_tree.tag, "toast")
 		self.assertEqual(xml_tree.attrib, {"key": "value"})
-		visual = xml_tree.getchildren()[0]
+		visual = list(xml_tree)[0]
 		self.assertEqual(visual.tag, "visual")
-		binding = visual.getchildren()[0]
+		binding = list(visual)[0]
 		self.assertEqual(binding.tag, "binding")
 		self.assertEqual(binding.attrib, {"template": "ToastText02"})
-		children = binding.getchildren()
-		self.assertEqual(len(children), 4)
+		self.assertEqual(len(list(binding)), 4)
