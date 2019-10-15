@@ -55,8 +55,9 @@ def _apns_prepare(
 			badge = badge(token)
 
 		return apns2_payload.Payload(
-			apns2_alert, badge, sound, content_available, mutable_content, category,
-			url_args, custom=extra, thread_id=thread_id)
+			alert=apns2_alert, badge=badge, sound=sound, category=category,
+			url_args=url_args, custom=extra, thread_id=thread_id,
+			content_available=content_available, mutable_content=mutable_content)
 
 
 def _apns_send(
@@ -77,6 +78,8 @@ def _apns_send(
 			notification_kwargs["priority"] = apns2_client.NotificationPriority(str(priority))
 		except ValueError:
 			raise APNSUnsupportedPriority("Unsupported priority %d" % (priority))
+
+	notification_kwargs["collapse_id"] = kwargs.pop("collapse_id", None)
 
 	if batch:
 		data = [apns2_client.Notification(

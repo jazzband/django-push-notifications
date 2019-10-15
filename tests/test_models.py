@@ -95,7 +95,7 @@ class GCMModelTestCase(TestCase):
 				GCMDevice.objects.all().send_message(
 					None, extra={"title": "bar", "body": "foo"}, collapse_key="test_key"
 				)
-				self.assertEquals(p.call_count, 2)
+				self.assertEqual(p.call_count, 2)
 				p.assert_has_calls([
 					mock.call(
 						json.dumps({
