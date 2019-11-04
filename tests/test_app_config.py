@@ -128,7 +128,7 @@ class AppConfigTestCase(TestCase):
 			}
 		}
 
-		with self.assertRaises(ImproperlyConfigured):
+		with self.assertRaises(ImproperlyConfigured) as ic:
 			AppConfig(PUSH_SETTINGS)
 
 		self.assertEqual(
