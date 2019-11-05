@@ -15,6 +15,9 @@ class empty(object):
 
 
 class LegacyConfig(BaseConfig):
+
+	msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
+
 	def _get_application_settings(self, application_id, settings_key, error_message):
 		"""Legacy behaviour"""
 
@@ -69,6 +72,16 @@ class LegacyConfig(BaseConfig):
 		)
 		return self._get_application_settings(application_id, key, msg)
 
+	def has_auth_token_creds(self, application_id=None):
+		try:
+			self._get_apns_auth_key(application_id)
+			self._get_apns_auth_key_id(application_id)
+			self._get_apns_team_id(application_id)
+		except ImproperlyConfigured:
+			return False
+
+		return True
+
 	def get_apns_certificate(self, application_id=None):
 		r = self._get_application_settings(
 			application_id, "APNS_CERTIFICATE",
@@ -88,37 +101,45 @@ class LegacyConfig(BaseConfig):
 				raise ImproperlyConfigured(msg)
 		return r
 
+	def get_apns_auth_creds(self, application_id=None):
+		return (
+			self._get_apns_auth_key(application_id),
+			self._get_apns_auth_key_id(application_id),
+			self._get_apns_team_id(application_id))
+
+	def _get_apns_auth_key(self, application_id=None):
+		return self._get_application_settings(application_id, "APNS_AUTH_KEY_PATH", self.msg)
+
+	def _get_apns_team_id(self, application_id=None):
+		return self._get_application_settings(application_id, "APNS_TEAM_ID", self.msg)
+
+	def _get_apns_auth_key_id(self, application_id=None):
+		return self._get_application_settings(application_id, "APNS_AUTH_KEY_ID", self.msg)
+
 	def get_apns_use_sandbox(self, application_id=None):
-		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
-		return self._get_application_settings(application_id, "APNS_USE_SANDBOX", msg)
+		return self._get_application_settings(application_id, "APNS_USE_SANDBOX", self.msg)
 
 	def get_apns_use_alternative_port(self, application_id=None):
-		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
-		return self._get_application_settings(application_id, "APNS_USE_ALTERNATIVE_PORT", msg)
+		return
+		self._get_application_settings(application_id, "APNS_USE_ALTERNATIVE_PORT", self.msg)
 
 	def get_apns_topic(self, application_id=None):
-		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
-		return self._get_application_settings(application_id, "APNS_TOPIC", msg)
+		return self._get_application_settings(application_id, "APNS_TOPIC", self.msg)
 
 	def get_apns_host(self, application_id=None):
-		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
-		return self._get_application_settings(application_id, "APNS_HOST", msg)
+		return self._get_application_settings(application_id, "APNS_HOST", self.msg)
 
 	def get_apns_port(self, application_id=None):
-		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
-		return self._get_application_settings(application_id, "APNS_PORT", msg)
+		return self._get_application_settings(application_id, "APNS_PORT", self.msg)
 
 	def get_apns_feedback_host(self, application_id=None):
-		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
-		return self._get_application_settings(application_id, "APNS_FEEDBACK_HOST", msg)
+		return self._get_application_settings(application_id, "APNS_FEEDBACK_HOST", self.msg)
 
 	def get_apns_feedback_port(self, application_id=None):
-		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
-		return self._get_application_settings(application_id, "APNS_FEEDBACK_PORT", msg)
+		return self._get_application_settings(application_id, "APNS_FEEDBACK_PORT", self.msg)
 
 	def get_wns_package_security_id(self, application_id=None):
-		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
-		return self._get_application_settings(application_id, "WNS_PACKAGE_SECURITY_ID", msg)
+		return self._get_application_settings(application_id, "WNS_PACKAGE_SECURITY_ID", self.msg)
 
 	def get_wns_secret_key(self, application_id=None):
 		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"

@@ -128,15 +128,41 @@ class AppConfigTestCase(TestCase):
 			}
 		}
 
-		with self.assertRaises(ImproperlyConfigured):
+		with self.assertRaises(ImproperlyConfigured) as ic:
 			AppConfig(PUSH_SETTINGS)
 
-		# all optional settings have default values
+		self.assertEqual(
+			str(ic.exception),
+			("PUSH_NOTIFICATIONS_SETTINGS.APPLICATIONS[\"my_apns_app\"][\"('CERTIFICATE', ['AUTH_KEY_PATH', 'AUTH_KEY_ID', 'TEAM_ID'])\"] is missing.")
+		)
+
+		#
+		# certificate settings, with optional settings having default values
+		#
 		PUSH_SETTINGS = {
 			"APPLICATIONS": {
 				"my_apns_app": {
 					"PLATFORM": "APNS",
 					"CERTIFICATE": path,
+				}
+			}
+		}
+
+		manager = AppConfig(PUSH_SETTINGS)
+		app_config = manager._settings["APPLICATIONS"]["my_apns_app"]
+
+		assert app_config["USE_SANDBOX"] is False
+		assert app_config["USE_ALTERNATIVE_PORT"] is False
+
+		# certificate settings, with optional settings having default values
+		#
+		PUSH_SETTINGS = {
+			"APPLICATIONS": {
+				"my_apns_app": {
+					"PLATFORM": "APNS",
+					"AUTH_KEY_PATH": path,
+					"AUTH_KEY_ID": "123456",
+					"TEAM_ID": "123456",
 				}
 			}
 		}
