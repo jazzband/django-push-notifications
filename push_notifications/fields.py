@@ -1,10 +1,11 @@
 import re
 import struct
 
+import six
+
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import connection, models
-from django.utils import six
 from django.utils.translation import ugettext_lazy as _
 
 
