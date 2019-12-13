@@ -1,3 +1,2 @@
-
 class NotificationError(Exception):
 	pass

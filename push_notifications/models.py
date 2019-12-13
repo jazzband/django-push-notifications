@@ -45,7 +45,7 @@ class Device(models.Model):
 		return (
 			self.name or
 			str(self.device_id or "") or
-			"%s for %s" % (self.__class__.__name__, self.user or "unknown user")
+			"{} for {}".format(self.__class__.__name__, self.user or "unknown user")
 		)
 
 

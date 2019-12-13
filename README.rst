@@ -62,7 +62,7 @@ Edit your settings.py file:
 
 .. note::
     If you need to support multiple mobile applications from a single Django application, see `Multiple Application Support <https://github.com/jazzband/django-push-notifications/wiki/Multiple-Application-Support>`_ for details.
-	
+
 .. note::
 	If you are planning on running your project with ``APNS_USE_SANDBOX=True``, then make sure you have set the
 	*development* certificate as your ``APNS_CERTIFICATE``. Otherwise the app will not be able to connect to the correct host. See settings_ for details.
@@ -106,7 +106,7 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 **WNS settings**
 
 - ``WNS_PACKAGE_SECURITY_KEY``: TODO
-- ``WNS_SECRET_KEY``: TODO  
+- ``WNS_SECRET_KEY``: TODO
 
 **WP settings**
 
