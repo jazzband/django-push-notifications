@@ -1,5 +1,4 @@
 from django.core.exceptions import ImproperlyConfigured
-from django.utils.six import string_types
 
 from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 from .base import BaseConfig, check_apns_certificate
@@ -323,7 +322,7 @@ class AppConfig(BaseConfig):
 
 	def get_apns_certificate(self, application_id=None):
 		r = self._get_application_settings(application_id, "APNS", "CERTIFICATE")
-		if not isinstance(r, string_types):
+		if not isinstance(r, str):
 			# probably the (Django) file, and file path should be got
 			if hasattr(r, "path"):
 				return r.path
