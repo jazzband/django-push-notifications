@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 from rest_framework import permissions, status
 from rest_framework.fields import IntegerField
 from rest_framework.response import Response
