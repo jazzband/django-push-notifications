@@ -90,7 +90,7 @@ class GCMDevice(Device):
 		verbose_name=_("Device ID"), blank=True, null=True, db_index=True,
 		help_text=_("ANDROID_ID / TelephonyManager.getDeviceId() (always as hex)")
 	)
-	registration_id = models.TextField(verbose_name=_("Registration ID"))
+	registration_id = models.TextField(verbose_name=_("Registration ID"), unique=SETTINGS["UNIQUE_REG_ID"])
 	cloud_message_type = models.CharField(
 		verbose_name=_("Cloud Message Type"), max_length=3,
 		choices=CLOUD_MESSAGE_TYPES, default="GCM",
@@ -148,7 +148,7 @@ class APNSDevice(Device):
 		help_text="UDID / UIDevice.identifierForVendor()"
 	)
 	registration_id = models.CharField(
-		verbose_name=_("Registration ID"), max_length=200, unique=True
+		verbose_name=_("Registration ID"), max_length=200, unique=SETTINGS["UNIQUE_REG_ID"]
 	)
 
 	objects = APNSDeviceManager()
@@ -198,7 +198,7 @@ class WNSDevice(Device):
 		verbose_name=_("Device ID"), blank=True, null=True, db_index=True,
 		help_text=_("GUID()")
 	)
-	registration_id = models.TextField(verbose_name=_("Notification URI"))
+	registration_id = models.TextField(verbose_name=_("Notification URI"), unique=SETTINGS["UNIQUE_REG_ID"])
 
 	objects = WNSDeviceManager()
 
@@ -230,7 +230,7 @@ class WebPushDeviceQuerySet(models.query.QuerySet):
 
 
 class WebPushDevice(Device):
-	registration_id = models.TextField(verbose_name=_("Registration ID"))
+	registration_id = models.TextField(verbose_name=_("Registration ID"), unique=SETTINGS["UNIQUE_REG_ID"])
 	p256dh = models.CharField(
 		verbose_name=_("User public encryption key"),
 		max_length=88)

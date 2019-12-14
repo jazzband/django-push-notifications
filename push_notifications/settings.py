@@ -49,5 +49,8 @@ PUSH_NOTIFICATIONS_SETTINGS.setdefault("WP_ERROR_TIMEOUT", None)
 # User model
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("USER_MODEL", settings.AUTH_USER_MODEL)
 
+# Unique registration ID for all devices
+PUSH_NOTIFICATIONS_SETTINGS.setdefault("UNIQUE_REG_ID", False)
+
 # API endpoint settings
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("UPDATE_ON_DUPLICATE_REG_ID", False)
