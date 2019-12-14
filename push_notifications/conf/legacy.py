@@ -1,5 +1,4 @@
 from django.core.exceptions import ImproperlyConfigured
-from django.utils.six import string_types
 
 from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 from .base import BaseConfig
@@ -87,7 +86,7 @@ class LegacyConfig(BaseConfig):
 			application_id, "APNS_CERTIFICATE",
 			"You need to setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
 		)
-		if not isinstance(r, string_types):
+		if not isinstance(r, str):
 			# probably the (Django) file, and file path should be got
 			if hasattr(r, "path"):
 				return r.path
