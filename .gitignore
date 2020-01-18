@@ -15,3 +15,4 @@ build
 
 # tox
 .tox
+*.egg-info/
