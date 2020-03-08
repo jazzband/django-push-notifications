@@ -121,7 +121,7 @@ def _cm_send_request(
 
 	data = data.copy()
 
-	# If using FCM, optionnally autodiscovers notification related keys
+	# If using FCM, optionally autodiscovers notification related keys
 	# https://firebase.google.com/docs/cloud-messaging/concept-options#notifications_and_data_messages
 	if cloud_type == "FCM" and use_fcm_notifications:
 		notification_payload = {}
