@@ -28,19 +28,6 @@ class HexIntegerField(IntegerField):
 		return value
 
 
-# Serializers
-class DeviceSerializerMixin(ModelSerializer):
-	class Meta:
-		fields = (
-			"id", "name", "application_id", "registration_id", "device_id",
-			"active", "date_created"
-		)
-		read_only_fields = ("date_created",)
-
-		# See https://github.com/tomchristie/django-rest-framework/issues/1101
-		extra_kwargs = {"active": {"default": True}}
-
-
 class APNSDeviceSerializer(ModelSerializer):
 	class Meta(DeviceSerializerMixin.Meta):
 		model = APNSDevice
