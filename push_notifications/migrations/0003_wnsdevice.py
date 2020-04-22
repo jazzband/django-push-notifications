@@ -4,6 +4,7 @@ import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
 
+from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 class Migration(migrations.Migration):
 
@@ -22,7 +23,7 @@ class Migration(migrations.Migration):
                 ('date_created', models.DateTimeField(auto_now_add=True, null=True, verbose_name='Creation date')),
                 ('device_id', models.UUIDField(blank=True, db_index=True, help_text='GUID()', null=True, verbose_name='Device ID')),
                 ('registration_id', models.TextField(verbose_name='Notification URI')),
-                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=SETTINGS["USER_MODEL"])),
             ],
             options={
                 'verbose_name': 'WNS device',
