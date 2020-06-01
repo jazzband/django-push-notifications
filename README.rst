@@ -92,14 +92,13 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 
 **APNS settings**
 
-- ``APNS_CERTIFICATE``: Absolute path to your APNS certificate file. Certificates with passphrases are not supported. Read more about `Generation of an APNS PEM file <https://github.com/jazzband/django-push-notifications/blob/master/docs/APNS.rst>`_.
+- ``APNS_CERTIFICATE``: Absolute path to your APNS certificate file. Certificates with passphrases are not supported. If iOS application was build with "Release" flag, you need to use production certificate, otherwise debug. Read more about `Generation of an APNS PEM file <https://github.com/jazzband/django-push-notifications/blob/master/docs/APNS.rst>`_.
 - ``APNS_AUTH_KEY_PATH``: Absolute path to your APNS signing key file for `Token-Based Authentication <https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/establishing_a_token-based_connection_to_apns>`_ . Use this instead of ``APNS_CERTIFICATE`` if you are using ``.p8`` signing key certificate.
 - ``APNS_AUTH_KEY_ID``: The 10-character Key ID you obtained from your Apple developer account
 - ``APNS_TEAM_ID``: 10-character Team ID you use for developing your company’s apps for iOS.
 - ``APNS_TOPIC``: The topic of the remote notification, which is typically the bundle ID for your app. If you omit this header and your APNs certificate does not specify multiple topics, the APNs server uses the certificate’s Subject as the default topic.
 - ``APNS_USE_ALTERNATIVE_PORT``: Use port 2197 for APNS, instead of default port 443.
-- ``APNS_USE_SANDBOX``: Use 'api.development.push.apple.com', instead of default host 'api.push.apple.com'.
-- 
+- ``APNS_USE_SANDBOX``: Use 'api.development.push.apple.com', instead of default host 'api.push.apple.com'. Default value depends on ``DEBUG`` setting of your environment: if ``DEBUG`` is True and you use production certificate, you should explicitly set ``APNS_USE_SANDBOX`` to False.
 
 **FCM/GCM settings**
 
