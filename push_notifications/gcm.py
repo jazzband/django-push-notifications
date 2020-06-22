@@ -22,7 +22,7 @@ FCM_TARGETS_KEYS = [
 ]
 FCM_OPTIONS_KEYS = [
 	"collapse_key", "priority", "content_available", "delay_while_idle", "time_to_live",
-	"restricted_package_name", "dry_run"
+	"restricted_package_name", "dry_run", "mutable_content"
 ]
 FCM_NOTIFICATIONS_PAYLOAD_KEYS = [
 	"title", "body", "icon", "sound", "badge", "color", "tag", "click_action",
