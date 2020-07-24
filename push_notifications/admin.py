@@ -1,7 +1,7 @@
 from django.apps import apps
 from django.contrib import admin, messages
 from django.utils.encoding import force_text
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from .apns import APNSServerError
 from .gcm import GCMError
