@@ -56,7 +56,7 @@ class GCMDeviceManager(models.Manager):
 
 class GCMDeviceQuerySet(models.query.QuerySet):
 	def send_message(self, message, **kwargs):
-		if self:
+		if self.exists():
 			from .gcm import send_message as gcm_send_message
 
 			data = kwargs.pop("extra", {})
@@ -121,7 +121,7 @@ class APNSDeviceManager(models.Manager):
 
 class APNSDeviceQuerySet(models.query.QuerySet):
 	def send_message(self, message, creds=None, **kwargs):
-		if self:
+		if self.exists():
 			from .apns import apns_send_bulk_message
 
 			app_ids = self.filter(active=True).order_by("application_id")\
