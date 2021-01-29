@@ -1,7 +1,7 @@
 from django.core.exceptions import ImproperlyConfigured
 
 
-class BaseConfig(object):
+class BaseConfig:
 	def has_auth_token_creds(self, application_id=None):
 		raise NotImplementedError
 
