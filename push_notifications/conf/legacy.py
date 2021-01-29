@@ -9,7 +9,7 @@ __all__ = [
 ]
 
 
-class empty(object):
+class empty:
 	pass
 
 

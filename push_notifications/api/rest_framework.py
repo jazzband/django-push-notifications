@@ -132,7 +132,7 @@ class IsOwner(permissions.BasePermission):
 
 
 # Mixins
-class DeviceViewSetMixin(object):
+class DeviceViewSetMixin:
 	lookup_field = "registration_id"
 
 	def create(self, request, *args, **kwargs):
@@ -168,7 +168,7 @@ class DeviceViewSetMixin(object):
 		return super(DeviceViewSetMixin, self).perform_update(serializer)
 
 
-class AuthorizedMixin(object):
+class AuthorizedMixin:
 	permission_classes = (permissions.IsAuthenticated, IsOwner)
 
 	def get_queryset(self):
