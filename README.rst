@@ -237,6 +237,7 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 		});
 
 
+.. code-block:: javascript
 // subscribe User function Example after 'endpoint' added
 function subscribeUser() {
     if ('Notification' in window && 'serviceWorker' in navigator) {
@@ -292,6 +293,7 @@ function subscribeUser() {
     }
 }
 
+.. code-block:: javascript
 	// Example navigatorPush.service.js file
 
 	var getTitle = function (title) {
