@@ -120,7 +120,7 @@ class WebPushDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer
 		model = WebPushDevice
 		fields = (
 			"id", "name", "registration_id", "active", "date_created",
-			"p256dh", "auth", "browser", "application_id",
+			"p256dh", "auth", "browser", "application_id", "endpoint_url",
 		)
 
 
@@ -130,6 +130,21 @@ class IsOwner(permissions.BasePermission):
 		# must be the owner to view the object
 		return obj.user == request.user
 
+class WPIsOwner(permissions.BasePermission):
+    def has_permission(self, request, obj):
+
+        my_safe_methods = ['POST']
+        if request.method in my_safe_methods:
+            return True
+        return False
+
+    def has_object_permission(self, request, view, obj):
+
+        if request.method in SAFE_METHODS:
+            return True
+		
+        return obj.user == request.user
+	
 
 # Mixins
 class DeviceViewSetMixin:
@@ -209,5 +224,5 @@ class WebPushDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
 	serializer_class = WebPushDeviceSerializer
 
 
-class WebPushDeviceAuthorizedViewSet(AuthorizedMixin, WebPushDeviceViewSet):
-	pass
+class WebPushDeviceAuthorizedViewSet(WebPushDeviceViewSet):
+	permission_classes = [WPIsOwner]
