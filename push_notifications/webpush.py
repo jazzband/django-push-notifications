@@ -9,9 +9,9 @@ class WebPushError(NotificationError):
 
 
 def get_subscription_info(application_id, uri, browser, auth, p256dh, endpoint_url=None):
-	url = str(endpoint_url) if endpoint_url else get_manager().get_wp_post_url(application_id, browser)
+	url = get_manager().get_wp_post_url(application_id, browser)
 	return {
-		"endpoint": "{}/{}".format(url, uri),
+		"endpoint": str(endpoint_url) if endpoint_url else "{}/{}".format(url, uri),
 		"keys": {
 			"auth": auth,
 			"p256dh": p256dh,
