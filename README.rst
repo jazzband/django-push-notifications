@@ -237,7 +237,60 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 		});
 
 
+// subscribe User function Example after 'endpoint' added
+function subscribeUser() {
+    if ('Notification' in window && 'serviceWorker' in navigator) {
+        var browser = loadVersionBrowser()
+        navigator.serviceWorker.ready.then(function (reg) {
+            reg.pushManager
+                .subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array(
+                        applicationServerKey
+                    ),
+                })
+                .then(function (sub) {
+                    //const endpoint_url = new URL(sub.endpoint)
 
+                    var endpointParts = sub.endpoint.split('/')
+
+                    var registration_id =
+                        endpointParts[endpointParts.length - 1]
+                    //var registration_id = endpoint_url.search
+                    //var endpoint = "https://" + endpoint_url.hostname + endpoint_url.pathname
+
+                    var data = {
+                        browser: browser.name.toUpperCase(),
+                        p256dh: btoa(
+                            String.fromCharCode.apply(
+                                null,
+                                new Uint8Array(sub.getKey('p256dh'))
+                            )
+                        ),
+                        auth: btoa(
+                            String.fromCharCode.apply(
+                                null,
+                                new Uint8Array(sub.getKey('auth'))
+                            )
+                        ),
+                        name: get_device(),
+                        registration_id: registration_id,
+                        endpoint: sub.endpoint,
+                    }
+                    console.log('data: ', data)
+
+                    requestPOSTToServer(data)
+                })
+                .catch(function (e) {
+                    if (Notification.permission === 'denied') {
+                        console.warn('Permission for notifications was denied')
+                    } else {
+                        console.error('Unable to subscribe to push', e)
+                    }
+                })
+        })
+    }
+}
 
 	// Example navigatorPush.service.js file
 
