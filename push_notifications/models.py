@@ -243,7 +243,7 @@ class WebPushDevice(Device):
 		help_text=_("Currently only support to Chrome, Firefox and Opera browsers")
 	)
 	
-	endpoint_url = models.CharField(verbose_name=_('endpoint'), max_length=300, blank=False)
+	endpoint_url = models.CharField(verbose_name=_('endpoint'), max_length=1000, blank=False)
 	
 	objects = WebPushDeviceManager()
 
