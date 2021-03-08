@@ -242,6 +242,9 @@ class WebPushDevice(Device):
 		choices=BROWSER_TYPES, default=BROWSER_TYPES[0][0],
 		help_text=_("Currently only support to Chrome, Firefox and Opera browsers")
 	)
+	
+	endpoint_url = models.CharField(verbose_name=_('endpoint'), max_length=300, blank=False)
+	
 	objects = WebPushDeviceManager()
 
 	class Meta:
@@ -256,4 +259,4 @@ class WebPushDevice(Device):
 
 		return webpush_send_message(
 			uri=self.registration_id, message=message, browser=self.browser,
-			auth=self.auth, p256dh=self.p256dh, application_id=self.application_id, **kwargs)
+			auth=self.auth, p256dh=self.p256dh, application_id=self.application_id, endpoint_url=self.endpoint, **kwargs)
