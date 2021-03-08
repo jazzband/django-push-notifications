@@ -259,4 +259,4 @@ class WebPushDevice(Device):
 
 		return webpush_send_message(
 			uri=self.registration_id, message=message, browser=self.browser,
-			auth=self.auth, p256dh=self.p256dh, application_id=self.application_id, endpoint_url=self.endpoint, **kwargs)
+			auth=self.auth, p256dh=self.p256dh, application_id=self.application_id, endpoint_url=self.endpoint_url, **kwargs)
