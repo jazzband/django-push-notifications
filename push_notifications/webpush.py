@@ -8,8 +8,8 @@ class WebPushError(NotificationError):
 	pass
 
 
-def get_subscription_info(application_id, uri, browser, auth, p256dh):
-	url = get_manager().get_wp_post_url(application_id, browser)
+def get_subscription_info(application_id, uri, browser, auth, p256dh, endpoint_url=None):
+	url = str(endpoint_url) if endpoint_url else get_manager().get_wp_post_url(application_id, browser)
 	return {
 		"endpoint": "{}/{}".format(url, uri),
 		"keys": {
@@ -20,9 +20,9 @@ def get_subscription_info(application_id, uri, browser, auth, p256dh):
 
 
 def webpush_send_message(
-	uri, message, browser, auth, p256dh, application_id=None, **kwargs
+	uri, message, browser, auth, p256dh, application_id=None, endpoint_url=None, **kwargs
 ):
-	subscription_info = get_subscription_info(application_id, uri, browser, auth, p256dh)
+	subscription_info = get_subscription_info(application_id, uri, browser, auth, p256dh, endpoint_url)
 
 	try:
 		response = webpush(
