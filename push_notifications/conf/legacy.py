@@ -155,3 +155,7 @@ class LegacyConfig(BaseConfig):
 	def get_wp_claims(self, application_id=None):
 		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
 		return self._get_application_settings(application_id, "WP_CLAIMS", msg)
+	
+	def get_wp_ttl(self, application_id=None):
+        msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
+        return self._get_application_settings(application_id, "WP_TTL", msg)
