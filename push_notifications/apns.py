@@ -13,21 +13,7 @@ from apns2 import payload as apns2_payload
 
 from . import models
 from .conf import get_manager
-from .exceptions import NotificationError
-
-
-class APNSError(NotificationError):
-	pass
-
-
-class APNSUnsupportedPriority(APNSError):
-	pass
-
-
-class APNSServerError(APNSError):
-	def __init__(self, status):
-		super(APNSServerError, self).__init__(status)
-		self.status = status
+from .exceptions import APNSError, APNSUnsupportedPriority, APNSServerError
 
 
 def _apns_create_socket(creds=None, application_id=None):

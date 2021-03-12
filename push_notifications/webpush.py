@@ -1,11 +1,7 @@
 from pywebpush import WebPushException, webpush
 
 from .conf import get_manager
-from .exceptions import NotificationError
-
-
-class WebPushError(NotificationError):
-	pass
+from .exceptions import WebPushError
 
 
 def get_subscription_info(application_id, uri, browser, auth, p256dh):
