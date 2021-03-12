@@ -23,13 +23,14 @@ def webpush_send_message(
 	uri, message, browser, auth, p256dh, application_id=None, **kwargs
 ):
 	subscription_info = get_subscription_info(application_id, uri, browser, auth, p256dh)
-
+	ttl = kwargs['ttl'] if 'ttl' in kwargs else get_manager().get_wp_ttl(application_id)
 	try:
 		response = webpush(
 			subscription_info=subscription_info,
 			data=message,
 			vapid_private_key=get_manager().get_wp_private_key(application_id),
 			vapid_claims=get_manager().get_wp_claims(application_id).copy(),
+			ttl=ttl,
 			**kwargs
 		)
 		results = {"results": [{}]}
