@@ -1,11 +1,17 @@
 django-push-notifications
 =========================
-.. image:: https://travis-ci.org/jazzband/django-push-notifications.svg?branch=master
-	:target: https://travis-ci.org/jazzband/django-push-notifications
 
 .. image:: https://jazzband.co/static/img/badge.svg
-	:target: https://jazzband.co/
-	:alt: Jazzband
+   :target: https://jazzband.co/
+   :alt: Jazzband
+
+.. image:: https://github.com/jazzband/django-push-notifications/workflows/Test/badge.svg
+   :target: https://github.com/jazzband/django-push-notifications/actions
+   :alt: GitHub Actions
+
+.. image:: https://codecov.io/gh/jazzband/django-push-notifications/branch/main/graph/badge.svg?token=PcC594rhI4
+   :target: https://codecov.io/gh/jazzband/django-push-notifications
+   :alt: Code coverage
 
 A minimal Django app that implements Device models that can send messages through APNS, FCM/GCM and WNS.
 
