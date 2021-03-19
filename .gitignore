@@ -16,3 +16,8 @@ build
 # tox
 .tox
 *.egg-info/
+.eggs
+
+# coverage
+.coverage
+coverage.xml
