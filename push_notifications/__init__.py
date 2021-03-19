@@ -1,7 +1,8 @@
-from pkg_resources import get_distribution, DistributionNotFound
-
 try:
-    __version__ = get_distribution("django-push-notifications").version
-except DistributionNotFound:
-    # package is not installed
-    __version__ = None
+    # Python 3.8+
+    import importlib.metadata as importlib_metadata
+except ImportError:
+    # <Python 3.7 and lower
+    import importlib_metadata
+
+__version__ = importlib_metadata.version("django-push-notifications")
