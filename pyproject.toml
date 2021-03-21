@@ -1,0 +1,6 @@
+[build-system]
+requires = ["setuptools>=30.3.0", "wheel", "setuptools_scm"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--cov push_notifications --cov-append --cov-branch --cov-report term-missing --cov-report=xml"

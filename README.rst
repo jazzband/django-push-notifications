@@ -1,11 +1,17 @@
 django-push-notifications
 =========================
-.. image:: https://travis-ci.org/jazzband/django-push-notifications.svg?branch=master
-	:target: https://travis-ci.org/jazzband/django-push-notifications
 
 .. image:: https://jazzband.co/static/img/badge.svg
-	:target: https://jazzband.co/
-	:alt: Jazzband
+   :target: https://jazzband.co/
+   :alt: Jazzband
+
+.. image:: https://github.com/jazzband/django-push-notifications/workflows/Test/badge.svg
+   :target: https://github.com/jazzband/django-push-notifications/actions
+   :alt: GitHub Actions
+
+.. image:: https://codecov.io/gh/jazzband/django-push-notifications/branch/main/graph/badge.svg?token=PcC594rhI4
+   :target: https://codecov.io/gh/jazzband/django-push-notifications
+   :alt: Code coverage
 
 A minimal Django app that implements Device models that can send messages through APNS, FCM/GCM and WNS.
 
@@ -25,8 +31,8 @@ UPDATE_ON_DUPLICATE_REG_ID: Transform create of an existing Device (based on reg
 
 Dependencies
 ------------
-- Python 3.5+
-- Django 1.11+
+- Python 3.6+
+- Django 2.2+
 - For the API module, Django REST Framework 3.7+ is required.
 - For WebPush (WP), pywebpush 1.3.0+ is required. py-vapid 1.3.0+ is required for generating the WebPush private key; however this
   step does not need to occur on the application server.
@@ -66,7 +72,7 @@ Edit your settings.py file:
 .. note::
 	If you are planning on running your project with ``APNS_USE_SANDBOX=True``, then make sure you have set the
 	*development* certificate as your ``APNS_CERTIFICATE``. Otherwise the app will not be able to connect to the correct host. See settings_ for details.
-	
+
 
 For more information about how to generate certificates, see `docs/APNS <https://github.com/jazzband/django-push-notifications/blob/master/docs/APNS.rst>`_.
 

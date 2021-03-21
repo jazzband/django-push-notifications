@@ -1,4 +1,8 @@
-import pkg_resources
+try:
+    # Python 3.8+
+    import importlib.metadata as importlib_metadata
+except ImportError:
+    # <Python 3.7 and lower
+    import importlib_metadata
 
-
-__version__ = pkg_resources.require("django-push-notifications")[0].version
+__version__ = importlib_metadata.version("django-push-notifications")
