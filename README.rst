@@ -13,9 +13,9 @@ django-push-notifications
    :target: https://codecov.io/gh/jazzband/django-push-notifications
    :alt: Code coverage
 
-A minimal Django app that implements Device models that can send messages through APNS, FCM/GCM and WNS.
+A minimal Django app that implements Device models that can send messages through APNS, FCM/GCM, WNS and WebPush.
 
-The app implements three models: ``GCMDevice``, ``APNSDevice`` and ``WNSDevice``. Those models share the same attributes:
+The app implements four models: ``GCMDevice``, ``APNSDevice``, ``WNSDevice`` and ``WebPushDevice``. Those models share the same attributes:
  - ``name`` (optional): A name for the device.
  - ``active`` (default True): A boolean that determines whether the device will be sent notifications.
  - ``user`` (optional): A foreign key to auth.User, if you wish to link the device to a specific user.
@@ -24,7 +24,7 @@ The app implements three models: ``GCMDevice``, ``APNSDevice`` and ``WNSDevice``
 
 
 The app also implements an admin panel, through which you can test single and bulk notifications. Select one or more
-FCM/GCM, APNS or WNS devices and in the action dropdown, select "Send test message" or "Send test message in bulk", accordingly.
+FCM/GCM, APNS, WNS or WebPush devices and in the action dropdown, select "Send test message" or "Send test message in bulk", accordingly.
 Note that sending a non-bulk test message to more than one device will just iterate over the devices and send multiple
 single messages.
 UPDATE_ON_DUPLICATE_REG_ID: Transform create of an existing Device (based on registration id) into a update. See below Update of device with duplicate registration ID for more details.
