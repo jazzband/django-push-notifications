@@ -5,10 +5,9 @@ from django.utils.translation import gettext_lazy as _
 
 from .apns import APNSServerError
 from .gcm import GCMError
-from .models import APNSDevice, GCMDevice, WebPushDevice, WNSDevice
+from .models import APNSDevice, GCMDevice, WebPushDevice, WNSDevice, FCMDevice
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 from .webpush import WebPushError
-
 
 User = apps.get_model(*SETTINGS["USER_MODEL"].split("."))
 
@@ -135,7 +134,13 @@ class GCMDeviceAdmin(DeviceAdmin):
 	list_filter = ("active", "cloud_message_type")
 
 
+class FCMDeviceAdmin(GCMDeviceAdmin):
+	list_display = GCMDeviceAdmin.list_display + ('platform',)
+	list_filter = GCMDeviceAdmin.list_filter + ('platform',)
+
+
 admin.site.register(APNSDevice, DeviceAdmin)
 admin.site.register(GCMDevice, GCMDeviceAdmin)
+admin.site.register(FCMDevice, FCMDeviceAdmin)
 admin.site.register(WNSDevice, DeviceAdmin)
 admin.site.register(WebPushDevice, DeviceAdmin)
