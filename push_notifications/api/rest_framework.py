@@ -5,7 +5,7 @@ from rest_framework.serializers import ModelSerializer, Serializer, ValidationEr
 from rest_framework.viewsets import ModelViewSet
 
 from ..fields import UNSIGNED_64BIT_INT_MAX_VALUE, hex_re
-from ..models import APNSDevice, GCMDevice, WebPushDevice, WNSDevice
+from ..models import APNSDevice, GCMDevice, WebPushDevice, WNSDevice, FCMDevice
 from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 
@@ -110,6 +110,12 @@ class GCMDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
 		return value
 
 
+class FCMDeviceSerializer(GCMDeviceSerializer, ModelSerializer):
+	class Meta(GCMDeviceSerializer.Meta):
+		model = FCMDevice
+		fields = GCMDeviceSerializer.Meta.fields + ('platform',)
+
+
 class WNSDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
 	class Meta(DeviceSerializerMixin.Meta):
 		model = WNSDevice
@@ -210,4 +216,13 @@ class WebPushDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
 
 
 class WebPushDeviceAuthorizedViewSet(AuthorizedMixin, WebPushDeviceViewSet):
+	pass
+
+
+class FCMDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
+	queryset = FCMDevice.objects.all()
+	serializer_class = FCMDeviceSerializer
+
+
+class FCMDeviceAuthorizedViewSet(AuthorizedMixin, FCMDeviceViewSet):
 	pass

@@ -4,7 +4,6 @@ from django.utils.translation import gettext_lazy as _
 from .fields import HexIntegerField
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
-
 CLOUD_MESSAGE_TYPES = (
 	("FCM", "Firebase Cloud Message"),
 	("GCM", "Google Cloud Message"),
@@ -124,7 +123,7 @@ class APNSDeviceQuerySet(models.query.QuerySet):
 		if self.exists():
 			from .apns import apns_send_bulk_message
 
-			app_ids = self.filter(active=True).order_by("application_id")\
+			app_ids = self.filter(active=True).order_by("application_id") \
 				.values_list("application_id", flat=True).distinct()
 			res = []
 			for app_id in app_ids:
@@ -257,3 +256,29 @@ class WebPushDevice(Device):
 		return webpush_send_message(
 			uri=self.registration_id, message=message, browser=self.browser,
 			auth=self.auth, p256dh=self.p256dh, application_id=self.application_id, **kwargs)
+
+
+class FCMDevice(GCMDevice):
+	PLATFORM_IOS = 'i'
+	PLATFORM_ANDROID = 'a'
+	PLATFORM_WEB = 'w'
+
+	PLATFORM_CHOICES = (
+		(PLATFORM_IOS, 'ios'),
+		(PLATFORM_ANDROID, 'android'),
+		(PLATFORM_WEB, 'web'),
+	)
+	platform = models.CharField(
+		max_length=1,
+		help_text=_("Optional device platform: i - ios, a - android, w - web"),
+		choices=PLATFORM_CHOICES,
+		null=True,
+		blank=True
+	)
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.cloud_message_type = "FCM"
+
+	class Meta:
+		verbose_name = _("FCM device")
