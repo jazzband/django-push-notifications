@@ -2,7 +2,8 @@ from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase
 
 from push_notifications.conf import LegacyConfig, get_manager
-from push_notifications.webpush import WebPushError, webpush_send_message
+from push_notifications.exceptions import WebPushError
+from push_notifications.webpush import webpush_send_message
 
 
 class LegacyConfigTestCase(TestCase):

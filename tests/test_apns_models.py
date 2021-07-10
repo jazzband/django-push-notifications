@@ -1,12 +1,12 @@
+from unittest import mock
+
 from apns2.client import NotificationPriority
 from apns2.errors import BadTopic, PayloadTooLarge, Unregistered
 from django.conf import settings
 from django.test import TestCase, override_settings
 
-from push_notifications.apns import APNSError
+from push_notifications.exceptions import APNSError
 from push_notifications.models import APNSDevice
-
-from ._mock import mock
 
 
 class APNSModelTestCase(TestCase):

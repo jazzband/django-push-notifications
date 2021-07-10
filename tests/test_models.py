@@ -1,4 +1,5 @@
 import json
+from unittest import mock
 
 from django.test import TestCase
 from django.utils import timezone
@@ -8,7 +9,6 @@ from push_notifications.gcm import GCMError, send_bulk_message
 from push_notifications.models import APNSDevice, GCMDevice
 
 from . import responses
-from ._mock import mock
 
 
 class GCMModelTestCase(TestCase):

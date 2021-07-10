@@ -34,8 +34,9 @@ Dependencies
 - Python 3.6+
 - Django 2.2+
 - For the API module, Django REST Framework 3.7+ is required.
-- For WebPush (WP), pywebpush 1.3.0+ is required. py-vapid 1.3.0+ is required for generating the WebPush private key; however this
+- For WebPush (WP), pywebpush 1.3.0+ is required (optional). py-vapid 1.3.0+ is required for generating the WebPush private key; however this
   step does not need to occur on the application server.
+- For Apple Push (APNS), apns2 0.3+ is required (optional).
 
 Setup
 -----
@@ -43,7 +44,7 @@ You can install the library directly from pypi using pip:
 
 .. code-block:: shell
 
-	$ pip install django-push-notifications
+	$ pip install django-push-notifications[WP,APNS]
 
 
 Edit your settings.py file:
