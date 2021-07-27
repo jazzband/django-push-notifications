@@ -26,7 +26,7 @@ FCM_OPTIONS_KEYS = [
 ]
 FCM_NOTIFICATIONS_PAYLOAD_KEYS = [
 	"title", "body", "icon", "sound", "badge", "color", "tag", "click_action",
-	"body_loc_key", "body_loc_args", "title_loc_key", "title_loc_args", "android_channel_id"
+	"body_loc_key", "body_loc_args", "title_loc_key", "title_loc_args", "android_channel_id","image"
 ]
 
 def _chunks(l, n):
