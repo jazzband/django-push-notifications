@@ -25,7 +25,7 @@ FCM_OPTIONS_KEYS = [
 	"restricted_package_name", "dry_run", "mutable_content"
 ]
 FCM_NOTIFICATIONS_PAYLOAD_KEYS = [
-	"title", "body", "icon", "sound", "badge", "color", "tag", "click_action",
+	"title", "body", "icon", "image", "sound", "badge", "color", "tag", "click_action",
 	"body_loc_key", "body_loc_args", "title_loc_key", "title_loc_args", "android_channel_id"
 ]
 
