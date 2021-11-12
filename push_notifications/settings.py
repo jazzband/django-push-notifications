@@ -41,6 +41,7 @@ PUSH_NOTIFICATIONS_SETTINGS.setdefault("WP_POST_URL", {
 	"CHROME": PUSH_NOTIFICATIONS_SETTINGS["FCM_POST_URL"],
 	"OPERA": PUSH_NOTIFICATIONS_SETTINGS["FCM_POST_URL"],
 	"FIREFOX": "https://updates.push.services.mozilla.com/wpush/v2",
+	"EDGE": "https://cloud.notify.windows.com",
 })
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("WP_PRIVATE_KEY", None)
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("WP_CLAIMS", None)
