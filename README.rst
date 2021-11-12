@@ -211,8 +211,8 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 			const browserversion = browser.version;
 
 			return {
-			    name: browsername,
-			    version: browserversion
+				name: browsername,
+				version: browserversion
 			}
 		}
 		// Otherwise fallback to the old method via userAgent
