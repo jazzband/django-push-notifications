@@ -231,6 +231,7 @@ class AppConfig(BaseConfig):
 		application_config.setdefault("POST_URL", {
 			"CHROME": "https://fcm.googleapis.com/fcm/send",
 			"OPERA": "https://fcm.googleapis.com/fcm/send",
+			"EDGE": "https://cloud.notify.windows.com",
 			"FIREFOX": "https://updates.push.services.mozilla.com/wpush/v2",
 		})
 
