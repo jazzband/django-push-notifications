@@ -195,6 +195,27 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 		return outputArray;
 	}
 	function loadVersionBrowser (userAgent) {
+		// If userAgentData is available, use this for browser detection
+		if ("userAgentData" in navigator) {
+			// navigator.userAgentData is not available in
+			// Firefox and Safari
+			const uaData = navigator.userAgentData;
+			// Outputs of navigator.userAgentData.brands[0].brand are
+			// Chrome: 'Google Chrome'
+			// Edge: 'Microsoft Edge'
+			// Opera: 'Opera'
+			const browser = uaData.brands[0];
+			const brandname = browser.brand;
+			// If there is a space within brandname, we only care about the right part
+			const browsername = brandname.substr(brandname.indexOf(' ')+1);
+			const browserversion = browser.version;
+
+			return {
+			name: browsername,
+			version: browserversion
+			}
+		}
+		// Otherwise fallback to the old method via userAgent
 		var ua = userAgent, tem, M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
 		if (/trident/i.test(M[1])) {
 			tem = /\brv[ :]+(\d+)/g.exec(ua) || [];
