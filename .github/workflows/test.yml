@@ -10,16 +10,6 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ['3.6', '3.7', '3.8', '3.9']
-        django-version: ['2.2', '3.2']
-        include:
-          - django-version: '4.0'
-            python-version: '3.8'
-          - django-version: '4.0'
-            python-version: '3.9'
-          - django-version: 'main'
-            python-version: '3.8'
-          - django-version: 'main'
-            python-version: '3.9'
 
     steps:
     - uses: actions/checkout@v2
@@ -51,8 +41,6 @@ jobs:
     - name: Tox tests
       run: |
         tox -v
-      env:
-        DJANGO: ${{ matrix.django-version }}
 
     - name: Upload coverage
       uses: codecov/codecov-action@v1

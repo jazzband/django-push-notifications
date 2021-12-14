@@ -29,5 +29,3 @@ PUSH_NOTIFICATIONS_SETTINGS = {
 	"WP_CLAIMS": {"sub": "mailto: jazzband@example.com"},
 	"UNIQUE_REG_ID": True
 }
-
-USE_DEPRECATED_PYTZ = True
