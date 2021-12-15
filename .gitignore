@@ -21,3 +21,6 @@ build
 # coverage
 .coverage
 coverage.xml
+
+# vscode files
+.vscode/*

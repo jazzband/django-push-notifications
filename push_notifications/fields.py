@@ -14,16 +14,14 @@ UNSIGNED_64BIT_INT_MAX_VALUE = 2 ** 64 - 1
 
 
 hex_re = re.compile(r"^(([0-9A-f])|(0x[0-9A-f]))+$")
-signed_integer_engines = [
-	"django.db.backends.postgresql",
-	"django.db.backends.postgresql_psycopg2",
-	"django.contrib.gis.db.backends.postgis",
-	"django.db.backends.sqlite3"
+signed_integer_vendors = [
+	"postgresql",
+	"sqlite",
 ]
 
 
 def _using_signed_storage():
-	return connection.settings_dict["ENGINE"] in signed_integer_engines
+	return connection.vendor in signed_integer_vendors
 
 
 def _signed_to_unsigned_integer(value):
@@ -79,10 +77,9 @@ class HexIntegerField(models.BigIntegerField):
 	]
 
 	def db_type(self, connection):
-		engine = connection.settings_dict["ENGINE"]
-		if "mysql" in engine:
+		if "mysql" == connection.vendor:
 			return "bigint unsigned"
-		elif "sqlite" in engine:
+		elif "sqlite" == connection.vendor:
 			return "UNSIGNED BIG INT"
 		else:
 			return super(HexIntegerField, self).db_type(connection=connection)
