@@ -133,7 +133,17 @@ class GCMDeviceAdmin(DeviceAdmin):
 	list_filter = ("active", "cloud_message_type")
 
 
+class WebPushDeviceAdmin(DeviceAdmin):
+	list_display = ("__str__", "browser", "user", "active", "date_created")
+	list_filter = ("active", "browser")
+
+	if hasattr(User, "USERNAME_FIELD"):
+		search_fields = ("name", "registration_id", "user__%s" % (User.USERNAME_FIELD))
+	else:
+		search_fields = ("name", "registration_id")
+
+
 admin.site.register(APNSDevice, DeviceAdmin)
 admin.site.register(GCMDevice, GCMDeviceAdmin)
 admin.site.register(WNSDevice, DeviceAdmin)
-admin.site.register(WebPushDevice, DeviceAdmin)
+admin.site.register(WebPushDevice, WebPushDeviceAdmin)
