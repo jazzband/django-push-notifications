@@ -9,7 +9,7 @@ django-push-notifications
    :target: https://github.com/jazzband/django-push-notifications/actions
    :alt: GitHub Actions
 
-.. image:: https://codecov.io/gh/jazzband/django-push-notifications/branch/main/graph/badge.svg?token=PcC594rhI4
+.. image:: https://codecov.io/gh/jazzband/django-push-notifications/branch/master/graph/badge.svg?token=PcC594rhI4
    :target: https://codecov.io/gh/jazzband/django-push-notifications
    :alt: Code coverage
 
