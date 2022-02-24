@@ -42,23 +42,23 @@ def _apns_prepare(
 	token, alert, application_id=None, badge=None, sound=None, category=None,
 	content_available=False, action_loc_key=None, loc_key=None, loc_args=[],
 	extra={}, mutable_content=False, thread_id=None, url_args=None):
-	if callable(alert):
-		alert = alert(token)
+	    if callable(alert):
+		    alert = alert(token)
 
-	if action_loc_key or loc_key or loc_args:
-		apns2_alert = apns2_payload.PayloadAlert(
-			body=alert if alert else {}, body_localized_key=loc_key,
-			body_localized_args=loc_args, action_localized_key=action_loc_key)
-	else:
-		apns2_alert = alert
+	    if action_loc_key or loc_key or loc_args:
+		    apns2_alert = apns2_payload.PayloadAlert(
+			    body=alert if alert else {}, body_localized_key=loc_key,
+			    body_localized_args=loc_args, action_localized_key=action_loc_key)
+	    else:
+		    apns2_alert = alert
 
-	if callable(badge):
-		badge = badge(token)
+	    if callable(badge):
+		    badge = badge(token)
 
-	return apns2_payload.Payload(
-		alert=apns2_alert, badge=badge, sound=sound, category=category,
-		url_args=url_args, custom=extra, thread_id=thread_id,
-		content_available=content_available, mutable_content=mutable_content)
+	    return apns2_payload.Payload(
+		    alert=apns2_alert, badge=badge, sound=sound, category=category,
+		    url_args=url_args, custom=extra, thread_id=thread_id,
+		    content_available=content_available, mutable_content=mutable_content)
 
 
 def _apns_send(
