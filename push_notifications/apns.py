@@ -42,6 +42,9 @@ def _apns_prepare(
 	token, alert, application_id=None, badge=None, sound=None, category=None,
 	content_available=False, action_loc_key=None, loc_key=None, loc_args=[],
 	extra={}, mutable_content=False, thread_id=None, url_args=None):
+		if callable(alert):
+			alert = alert(token)
+
 		if action_loc_key or loc_key or loc_args:
 			apns2_alert = apns2_payload.PayloadAlert(
 				body=alert if alert else {}, body_localized_key=loc_key,
