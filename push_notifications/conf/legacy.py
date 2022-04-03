@@ -119,8 +119,7 @@ class LegacyConfig(BaseConfig):
 		return self._get_application_settings(application_id, "APNS_USE_SANDBOX", self.msg)
 
 	def get_apns_use_alternative_port(self, application_id=None):
-		return
-		self._get_application_settings(application_id, "APNS_USE_ALTERNATIVE_PORT", self.msg)
+		return self._get_application_settings(application_id, "APNS_USE_ALTERNATIVE_PORT", self.msg)
 
 	def get_apns_topic(self, application_id=None):
 		return self._get_application_settings(application_id, "APNS_TOPIC", self.msg)
