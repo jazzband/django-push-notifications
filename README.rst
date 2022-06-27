@@ -463,7 +463,7 @@ Note: gcm_send_bulk_message must be used when sending messages to topic subscrib
 	from push_notifications.gcm import send_message
 
         # First param is "None" because no Registration_id is needed, the message will be sent to all devices subscribed to the topic.
-        send_message(None, {"body": "Hello members of my_topic!"}, to="/topics/my_topic")
+        send_message(None, {"body": "Hello members of my_topic!"}, cloud_type="FCM", to="/topics/my_topic")
 
 Reference: `FCM Documentation <https://firebase.google.com/docs/cloud-messaging/android/topic-messaging>`_
 
