@@ -25,6 +25,7 @@ MISSING_SETTING = (
 PLATFORMS = [
 	"APNS",
 	"FCM",
+	"GCM",
 	"WNS",
 	"WP",
 ]
@@ -170,7 +171,7 @@ class AppConfig(BaseConfig):
 		"""Validate the APNS certificate at startup."""
 
 		try:
-			with open(certfile) as f:
+			with open(certfile, "r") as f:
 				content = f.read()
 				check_apns_certificate(content)
 		except Exception as e:
