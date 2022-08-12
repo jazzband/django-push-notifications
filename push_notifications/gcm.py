@@ -16,7 +16,6 @@ from .conf import get_manager
 
 # Valid keys for FCM messages. Reference:
 # https://firebase.google.com/docs/cloud-messaging/http-server-ref
-
 FCM_NOTIFICATIONS_PAYLOAD_KEYS = [
 	"title", "body", "icon", "image", "sound", "badge", "color", "tag", "click_action",
 	"body_loc_key", "body_loc_args", "title_loc_key", "title_loc_args", "android_channel_id"
