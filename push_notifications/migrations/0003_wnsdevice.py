@@ -8,9 +8,11 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        migrations.swappable_dependency(settings.PUSH_NOTIFICATION_SETTINGS),
         ('push_notifications', '0002_auto_20160106_0850'),
     ]
+
+    USER_MODEL = settings.PUSH_NOTIFICATION_SETTINGS["USER_MODEL"]
 
     operations = [
         migrations.CreateModel(
@@ -22,7 +24,7 @@ class Migration(migrations.Migration):
                 ('date_created', models.DateTimeField(auto_now_add=True, null=True, verbose_name='Creation date')),
                 ('device_id', models.UUIDField(blank=True, db_index=True, help_text='GUID()', null=True, verbose_name='Device ID')),
                 ('registration_id', models.TextField(verbose_name='Notification URI')),
-                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=USER_MODEL)),
             ],
             options={
                 'verbose_name': 'WNS device',

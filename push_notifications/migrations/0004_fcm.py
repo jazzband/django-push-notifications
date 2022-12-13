@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
 	dependencies = [
-		migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+		migrations.swappable_dependency(settings.PUSH_NOTIFICATION_SETTINGS),
 		('push_notifications', '0003_wnsdevice'),
 	]
 
