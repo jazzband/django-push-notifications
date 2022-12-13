@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
-from django.conf import settings
 from django.db import migrations, models
 
 import push_notifications.fields
 
+from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        migrations.swappable_dependency(settings.PUSH_NOTIFICATION_SETTINGS),
-    ]
-
-    USER_MODEL = settings.PUSH_NOTIFICATION_SETTINGS["USER_MODEL"]
+    USER_MODEL = SETTINGS["USER_MODEL"]
 
     operations = [
         migrations.CreateModel(
