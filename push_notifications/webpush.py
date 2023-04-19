@@ -31,6 +31,7 @@ def webpush_send_message(device, message, **kwargs):
 		device.application_id, device.registration_id,
 		device.browser, device.auth, device.p256dh)
 	try:
+		results = {"results": [{"original_registration_id": device.registration_id}]}
 		response = webpush(
 			subscription_info=subscription_info,
 			data=message,
@@ -38,7 +39,6 @@ def webpush_send_message(device, message, **kwargs):
 			vapid_claims=get_manager().get_wp_claims(device.application_id).copy(),
 			**kwargs
 		)
-		results = {"results": [{"original_registration_id": device.registration_id}]}
 		if response.ok:
 			results["success"] = 1
 		else:
