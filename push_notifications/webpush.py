@@ -13,7 +13,7 @@ def get_subscription_info(application_id, uri, browser, auth, p256dh):
 		url = get_manager().get_wp_post_url(application_id, browser)
 		endpoint = "{}/{}".format(url, uri)
 		warnings.warn(
-			"registratipn_id should be the full endpoint returned from pushManager.subscribe",
+			"registration_id should be the full endpoint returned from pushManager.subscribe",
 			DeprecationWarning,
 			stacklevel=2,
 		)
