@@ -24,7 +24,8 @@ DELETE_ERROR_CODES = [
 ]
 
 
-def _apns_send(registration_id, alert, application_id, badge=None, title=None, extra=None):
+def _apns_send(registration_id, alert, application_id, category=None, content_available=None, badge=None, title=None,
+               extra=None, **kwargs):
     notification_type = (extra.get('type') if extra else None) or None
     inner_data = {'json': json.dumps(extra or {})}
     if notification_type:
@@ -39,6 +40,10 @@ def _apns_send(registration_id, alert, application_id, badge=None, title=None, e
     }
     if badge is not None:
         payload['badge'] = badge
+    if category is not None:
+        payload['category'] = category
+    if content_available is not None:
+        payload['content-available'] = content_available
 
     base_url = get_manager().get_post_url('APNS', application_id)
     mode = 'dev' if get_manager().get_apns_use_sandbox(application_id) else 'prod'
