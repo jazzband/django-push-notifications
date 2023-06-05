@@ -33,7 +33,7 @@ def _apns_send(registration_id, alert, application_id, category=None, content_av
 
     payload = {
         'token': registration_id,
-        'topic': application_id,
+        'topic': get_manager().get_apns_topic(),
         'title': title,
         'body': alert,
         'data': inner_data
