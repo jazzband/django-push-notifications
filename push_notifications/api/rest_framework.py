@@ -1,3 +1,9 @@
+import logging
+
+from django.db import IntegrityError
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
 from rest_framework import permissions, status
 from rest_framework.fields import IntegerField
 from rest_framework.response import Response
@@ -153,7 +159,13 @@ class DeviceViewSetMixin:
 			self.perform_update(serializer)
 			return Response(serializer.data)
 		else:
-			self.perform_create(serializer)
+			try:
+				self.perform_create(serializer)
+			except IntegrityError:
+				instance = self.queryset.model.objects.filter(
+					registration_id=request.data[self.lookup_field]
+				).first()
+				logger.error(f"Object That already exisit {instance} created time for that {instance.date_created}", exc_info=True)
 			headers = self.get_success_headers(serializer.data)
 			return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
