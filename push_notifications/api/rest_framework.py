@@ -165,7 +165,10 @@ class DeviceViewSetMixin:
 				instance = self.queryset.model.objects.filter(
 					registration_id=request.data[self.lookup_field]
 				).first()
-				logger.error(f"Object That already exisit {instance} created time for that {instance.date_created}", exc_info=True)
+				if instance:
+					logger.error(f"registration_id already exist {instance.registration_id} user: {instance.user} created time for that {instance.date_created}", exc_info=True)
+				else:
+					logger.error(f"registration_id that already exist {instance}", exc_info=True)
 			headers = self.get_success_headers(serializer.data)
 			return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
