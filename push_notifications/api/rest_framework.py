@@ -183,6 +183,61 @@ class DeviceViewSetMixin:
 		return super(DeviceViewSetMixin, self).perform_update(serializer)
 
 
+class CustomDeviceViewSetMixin:
+	lookup_field = "registration_id"
+
+	def create(self, request, *args, **kwargs):
+		serializer = None
+		is_update = False
+		log_error = False
+
+		if SETTINGS.get("UPDATE_ON_DUPLICATE_REG_ID") and self.lookup_field in request.data:
+			old_registration_id = request.data.get("old_registration_id", None)
+			new_registration_id = request.data.get("registration_id", None)
+			if new_registration_id and not old_registration_id:
+				instance = self.queryset.model.objects.filter(
+					registration_id=new_registration_id
+				).first()
+				if instance:
+					serializer = self.get_serializer(instance, data=request.data)
+					is_update = True
+				if not serializer:
+					serializer = self.get_serializer(data=request.data)
+			elif new_registration_id and old_registration_id:
+				instance = self.queryset.model.objects.filter(
+					registration_id=old_registration_id
+				).first()
+				if instance:
+					serializer = self.get_serializer(instance, data=request.data)
+					is_update = True
+				if not serializer:
+					serializer = self.get_serializer(data=request.data)
+					log_error = True
+
+		serializer.is_valid(raise_exception=True)
+		if is_update:
+			self.perform_update(serializer)
+			return Response(serializer.data)
+		else:
+			self.perform_create(serializer, log_error=log_error)
+			headers = self.get_success_headers(serializer.data)
+			return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+	def perform_create(self, serializer, log_error=False):
+		if self.request.user.is_authenticated:
+			serializer.save(user=self.request.user)
+			if log_error:
+				logger.error(
+					f"No device found against old_registration_id created with new registration_id. User:{self.request.user.id}",
+					exc_info=True)
+		return super(CustomDeviceViewSetMixin, self).perform_create(serializer)
+
+	def perform_update(self, serializer):
+		if self.request.user.is_authenticated:
+			serializer.save(user=self.request.user)
+		return super(CustomDeviceViewSetMixin, self).perform_update(serializer)
+
+
 class AuthorizedMixin:
 	permission_classes = (permissions.IsAuthenticated, IsOwner)
 
@@ -206,7 +261,16 @@ class GCMDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
 	serializer_class = GCMDeviceSerializer
 
 
+class CustomGCMDeviceViewSet(CustomDeviceViewSetMixin, ModelViewSet):
+	queryset = GCMDevice.objects.all()
+	serializer_class = GCMDeviceSerializer
+
+
 class GCMDeviceAuthorizedViewSet(AuthorizedMixin, GCMDeviceViewSet):
+	pass
+
+
+class CustomGCMDeviceAuthorizedViewSet(AuthorizedMixin, CustomGCMDeviceViewSet):
 	pass
 
 
