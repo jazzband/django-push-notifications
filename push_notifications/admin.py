@@ -131,7 +131,7 @@ class GCMDeviceAdmin(DeviceAdmin):
 		"__str__", "user", "active", "date_created", "cloud_message_type"
 	)
 	list_filter = ("active", "cloud_message_type")
-	search_fields = ("registration_id",)
+	search_fields = ("registration_id", "user__username", "user__email")
 
 
 class WebPushDeviceAdmin(DeviceAdmin):
