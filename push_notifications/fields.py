@@ -48,7 +48,7 @@ class HexadecimalField(forms.CharField):
 		self.default_validators = [
 			RegexValidator(hex_re, _("Enter a valid hexadecimal number"), "invalid")
 		]
-		super(HexadecimalField, self).__init__(*args, **kwargs)
+		super().__init__(*args, **kwargs)
 
 	def prepare_value(self, value):
 		# converts bigint from db to hex before it is displayed in admin
@@ -82,7 +82,7 @@ class HexIntegerField(models.BigIntegerField):
 		elif "sqlite" == connection.vendor:
 			return "UNSIGNED BIG INT"
 		else:
-			return super(HexIntegerField, self).db_type(connection=connection)
+			return super().db_type(connection=connection)
 
 	def get_prep_value(self, value):
 		""" Return the integer value to be stored from the hex string """
