@@ -12,7 +12,8 @@ CLOUD_MESSAGE_TYPES = (
 
 BROWSER_TYPES = (
 	("CHROME", "Chrome"),
-	("FIREFOX", "Firefox"),
+	("FIREFOXV2", "FirefoxV2"),
+	("FIREFOXV1", "FirefoxV1"),
 	("OPERA", "Opera"),
 	("EDGE", "Edge"),
 	("SAFARI", "Safari")
