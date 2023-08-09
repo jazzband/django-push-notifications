@@ -14,7 +14,8 @@ BROWSER_TYPES = (
 	("CHROME", "Chrome"),
 	("FIREFOX", "Firefox"),
 	("OPERA", "Opera"),
-	("EDGE", "Edge")
+	("EDGE", "Edge"),
+	("SAFARI", "Safari")
 )
 
 
