@@ -264,7 +264,7 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 	if ('serviceWorker' in navigator) {
 		// The service worker has to store in the root of the app
 		// http://stackoverflow.com/questions/29874068/navigator-serviceworker-is-never-ready
-		var browser = loadVersionBrowser();
+		var browser = loadVersionBrowser(navigator.userAgent);
 		navigator.serviceWorker.register('navigatorPush.service.js?version=1.0.0').then(function (reg) {
 			reg.pushManager.subscribe({
 				userVisibleOnly: true,
@@ -354,6 +354,46 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 		);
 	});
 
+The above code makes a call to ``requestPOSTToServer()``, which is not implemented. This is where you should make a call to your Django app to register the Web Push device. Your implementation will vary depending on the design of your web app, here's an example using a Django view and an Ajax call:
+
+Example Django view to handle registration:
+
+.. code-block:: python
+
+	from django.http import JsonResponse
+	from push_notifications.models import WebPushDevice
+
+	def register_wp_notifications(request):
+		WebPushDevice.objects.create(
+			registration_id=request.GET.get('registration_id'),
+			p256dh=request.GET.get('p256dh'),
+			auth=request.GET.get('auth'),
+			browser=request.GET.get('browser'),
+			user=request.user,
+		)
+		data = {
+			'result': True
+		}
+		return JsonResponse(data)
+		
+Example JavaScript to send registration (requires jQuery):
+
+.. code-block:: javascript
+
+	function requestPOSTToServer ( data ) {
+		$.ajax({
+			url: '/PATH/DEFINED/IN/URLS.PY/',
+			data: {
+				'browser': data.browser,
+				'p256dh': data.p256dh,
+				'auth': data.auth,
+				'registration_id': data.registration_id
+			},
+			dataType: 'json',
+			success: function (data) {
+			}
+		  });
+	}
 
 
 Sending messages
@@ -388,6 +428,37 @@ FCM/GCM and APNS services have slightly different semantics. The app tries to of
 	The message is only one part of the payload, if
 	once constructed the payload exceeds the maximum size, an ``APNSDataOverflow`` exception will be raised before anything is sent.
 	Reference: `Apple Payload Documentation <https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/CreatingtheNotificationPayload.html#//apple_ref/doc/uid/TP40008194-CH10-SW1>`_
+	
+Web Push accepts only one variable (``message``), which is passed directly to pywebpush. This message can be a simple string, which will be used as your notification's body, or it can be contain `any data supported by pywebpush<https://github.com/web-push-libs/pywebpush>`.
+
+Simple example:
+
+.. code-block:: python
+
+	from push_notifications.models import WebPushDevice
+
+	device = WebPushDevice.objects.get(registration_id=wp_reg_id)
+	
+	device.send_message("You've got mail")
+	
+.. note::
+	To customize the notification title using this method, edit the ``"TITLE DEFAULT"`` string in your ``navigatorPush.service.js`` file.
+
+JSON example:
+
+.. code-block:: python
+
+	import json
+	from push_notifications.models import WebPushDevice
+
+	device = WebPushDevice.objects.get(registration_id=wp_reg_id)
+	
+	title = "Message Received"
+	message = "You've got mail"
+	data = json.dumps({"title": title, "message": message})
+	
+	device.send_message(data)
+	
 
 Sending messages in bulk
 ------------------------
