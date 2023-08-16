@@ -13,7 +13,7 @@ UNSIGNED_64BIT_INT_MIN_VALUE = 0
 UNSIGNED_64BIT_INT_MAX_VALUE = 2 ** 64 - 1
 
 
-hex_re = re.compile(r"^(([0-9A-f])|(0x[0-9A-f]))+$")
+hex_re = re.compile(r"^(0x)?([0-9a-f])+$", re.I)
 signed_integer_vendors = [
 	"postgresql",
 	"sqlite",
