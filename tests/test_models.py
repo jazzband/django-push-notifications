@@ -276,7 +276,7 @@ class GCMModelTestCase(TestCase):
 			reg_ids = [obj.registration_id for obj in GCMDevice.objects.all()]
 			send_bulk_message(reg_ids, {"message": "Hello World"}, "GCM")
 			p.assert_called_once_with(
-				[u"abc", u"abc1"], {"message": "Hello World"}, cloud_type="GCM", application_id=None
+				["abc", "abc1"], {"message": "Hello World"}, cloud_type="GCM", application_id=None
 			)
 
 	def test_fcm_send_message(self):
@@ -506,7 +506,7 @@ class GCMModelTestCase(TestCase):
 			reg_ids = [obj.registration_id for obj in GCMDevice.objects.all()]
 			send_bulk_message(reg_ids, {"message": "Hello World"}, "FCM")
 			p.assert_called_once_with(
-				[u"abc", u"abc1"], {"message": "Hello World"}, cloud_type="FCM",
+				["abc", "abc1"], {"message": "Hello World"}, cloud_type="FCM",
 				application_id=None
 			)
 

@@ -5,8 +5,8 @@ from push_notifications.api.rest_framework import (
 )
 
 
-GCM_DRF_INVALID_HEX_ERROR = {"device_id": [u"Device ID is not a valid hex number"]}
-GCM_DRF_OUT_OF_RANGE_ERROR = {"device_id": [u"Device ID is out of range"]}
+GCM_DRF_INVALID_HEX_ERROR = {"device_id": ["Device ID is not a valid hex number"]}
+GCM_DRF_OUT_OF_RANGE_ERROR = {"device_id": ["Device ID is out of range"]}
 
 
 class APNSDeviceSerializerTestCase(TestCase):
