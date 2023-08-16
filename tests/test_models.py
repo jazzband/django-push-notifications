@@ -459,9 +459,17 @@ class GCMModelTestCase(TestCase):
 			return_value=responses.FCM_SUCCESS_MULTIPLE
 		) as p:
 			reg_ids = [obj.registration_id for obj in GCMDevice.objects.all()]
+<<<<<<< HEAD
 			message = dict_to_fcm_message({"message": "Hello World"})
 			send_bulk_message(reg_ids, message)
 			p.assert_called_once()
+=======
+			send_bulk_message(reg_ids, {"message": "Hello World"}, "FCM")
+			p.assert_called_once_with(
+				["abc", "abc1"], {"message": "Hello World"}, cloud_type="FCM",
+				application_id=None
+			)
+>>>>>>> 34d6c54 ([pre-commit.ci] pre-commit autoupdate (#669))
 
 	def test_can_save_wsn_device(self):
 		device = GCMDevice.objects.create(registration_id="a valid registration id")
