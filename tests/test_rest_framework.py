@@ -53,6 +53,14 @@ class APNSDeviceSerializerTestCase(TestCase):
 		})
 		self.assertTrue(serializer.is_valid())
 
+		# valid data - 200 bytes mixed case
+		serializer = APNSDeviceSerializer(data={
+			"registration_id": "aE" * 200,
+			"name": "Apple iPhone 6+",
+			"device_id": "ffffffffffffffffffffffffffffffff",
+		})
+		self.assertTrue(serializer.is_valid())
+
 		# invalid data - device_id, registration_id
 		serializer = APNSDeviceSerializer(data={
 			"registration_id": "invalid device token contains no hex",
