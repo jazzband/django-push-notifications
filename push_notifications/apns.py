@@ -50,7 +50,7 @@ def _apns_send(registration_id, alert, application_id, category=None, content_av
     url = f'{base_url}/{mode}/push'
     response = requests.post(url, json=payload)
     if response.status_code != 204:
-        text = response.text()
+        text = response.text
         if any(e for e in DELETE_ERROR_CODES if e in text):
             return False
         raise APNSServerError(status=text)
