@@ -64,7 +64,7 @@ Edit your settings.py file:
 		"WNS_PACKAGE_SECURITY_ID": "[your package security id, e.g: 'ms-app://e-3-4-6234...']",
 		"WNS_SECRET_KEY": "[your app secret key, e.g.: 'KDiejnLKDUWodsjmewuSZkk']",
 		"WP_PRIVATE_KEY": "/path/to/your/private.pem",
-		"WP_CLAIMS": {'sub': "mailto: development@example.com"}
+		"WP_CLAIMS": {'sub': "mailto:development@example.com"}
 	}
 
 .. note::
