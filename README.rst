@@ -123,7 +123,7 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 **WP settings**
 
 - ``WP_PRIVATE_KEY``: Absolute path to your private certificate file: os.path.join(BASE_DIR, "private_key.pem")
-- ``WP_CLAIMS``: Dictionary with the same sub info like claims file: {'sub': "mailto: development@example.com"}
+- ``WP_CLAIMS``: Dictionary with default value for the sub, (subject), sent to the webpush service, This would be used by the service if they needed to reach out to you (the sender). Could be a url or mailto e.g. {'sub': "mailto:development@example.com"}.
 - ``WP_ERROR_TIMEOUT``: The timeout on WebPush POSTs. (Optional)
 
 For more information about how to configure WebPush, see `docs/WebPush <https://github.com/jazzband/django-push-notifications/blob/master/docs/WebPush.rst>`_.
