@@ -375,7 +375,7 @@ Example Django view to handle registration:
 			'result': True
 		}
 		return JsonResponse(data)
-		
+
 Example JavaScript to send registration (requires jQuery):
 
 .. code-block:: javascript
@@ -428,7 +428,7 @@ FCM/GCM and APNS services have slightly different semantics. The app tries to of
 	The message is only one part of the payload, if
 	once constructed the payload exceeds the maximum size, an ``APNSDataOverflow`` exception will be raised before anything is sent.
 	Reference: `Apple Payload Documentation <https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/CreatingtheNotificationPayload.html#//apple_ref/doc/uid/TP40008194-CH10-SW1>`_
-	
+
 Web Push accepts only one variable (``message``), which is passed directly to pywebpush. This message can be a simple string, which will be used as your notification's body, or it can be contain `any data supported by pywebpush<https://github.com/web-push-libs/pywebpush>`.
 
 Simple example:
@@ -438,9 +438,9 @@ Simple example:
 	from push_notifications.models import WebPushDevice
 
 	device = WebPushDevice.objects.get(registration_id=wp_reg_id)
-	
+
 	device.send_message("You've got mail")
-	
+
 .. note::
 	To customize the notification title using this method, edit the ``"TITLE DEFAULT"`` string in your ``navigatorPush.service.js`` file.
 
@@ -452,13 +452,13 @@ JSON example:
 	from push_notifications.models import WebPushDevice
 
 	device = WebPushDevice.objects.get(registration_id=wp_reg_id)
-	
+
 	title = "Message Received"
 	message = "You've got mail"
 	data = json.dumps({"title": title, "message": message})
-	
+
 	device.send_message(data)
-	
+
 
 Sending messages in bulk
 ------------------------
