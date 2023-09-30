@@ -11,7 +11,7 @@ GCM_DRF_OUT_OF_RANGE_ERROR = {"device_id": ["Device ID is out of range"]}
 
 class APNSDeviceSerializerTestCase(TestCase):
 	def test_validation(self):
-		# valid data - 32 bytes upper case
+		# valid data - 64 bytes upper case
 		serializer = APNSDeviceSerializer(data={
 			"registration_id": "AEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAEAE",
 			"name": "Apple iPhone 6+",
@@ -20,7 +20,7 @@ class APNSDeviceSerializerTestCase(TestCase):
 		})
 		self.assertTrue(serializer.is_valid())
 
-		# valid data - 32 bytes lower case
+		# valid data - 64 bytes lower case
 		serializer = APNSDeviceSerializer(data={
 			"registration_id": "aeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeae",
 			"name": "Apple iPhone 6+",
@@ -31,7 +31,7 @@ class APNSDeviceSerializerTestCase(TestCase):
 
 		# valid data - 100 bytes upper case
 		serializer = APNSDeviceSerializer(data={
-			"registration_id": "AE" * 100,
+			"registration_id": "AE" * 50,
 			"name": "Apple iPhone 6+",
 			"device_id": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
 		})
@@ -39,7 +39,7 @@ class APNSDeviceSerializerTestCase(TestCase):
 
 		# valid data - 100 bytes lower case
 		serializer = APNSDeviceSerializer(data={
-			"registration_id": "ae" * 100,
+			"registration_id": "ae" * 50,
 			"name": "Apple iPhone 6+",
 			"device_id": "ffffffffffffffffffffffffffffffff",
 		})
@@ -47,7 +47,7 @@ class APNSDeviceSerializerTestCase(TestCase):
 
 		# valid data - 200 bytes mixed case
 		serializer = APNSDeviceSerializer(data={
-			"registration_id": "aE" * 200,
+			"registration_id": "aE" * 100,
 			"name": "Apple iPhone 6+",
 			"device_id": "ffffffffffffffffffffffffffffffff",
 		})

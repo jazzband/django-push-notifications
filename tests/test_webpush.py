@@ -3,6 +3,7 @@ from unittest import mock
 from django.test import TestCase
 from pywebpush import WebPushException
 
+from push_notifications.exceptions import WebPushError
 from push_notifications.webpush import (
 	get_subscription_info, webpush_send_message
 )
@@ -88,5 +89,5 @@ class WebPushSendMessageTestCase(TestCase):
         "push_notifications.webpush.webpush",
         side_effect=WebPushException("Error"))
 	def test_webpush_send_message_exception(self, webpush_mock):
-		with self.assertRaises(WebPushException):
+		with self.assertRaises(WebPushError):
 			webpush_send_message(self.mock_device, "message")
