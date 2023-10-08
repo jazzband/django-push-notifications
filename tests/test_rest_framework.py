@@ -55,7 +55,7 @@ class APNSDeviceSerializerTestCase(TestCase):
 
 		# valid data - 200 bytes mixed case
 		serializer = APNSDeviceSerializer(data={
-			"registration_id": "aE" * 200,
+			"registration_id": "aE" * 100,
 			"name": "Apple iPhone 6+",
 			"device_id": "ffffffffffffffffffffffffffffffff",
 		})
