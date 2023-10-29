@@ -339,6 +339,7 @@ When creating an ``APNSDevice``, the ``registration_id`` is validated to be a 64
 Routes can be added one of two ways:
 
 - Routers_ (include all views)
+
 .. _Routers: http://www.django-rest-framework.org/tutorial/6-viewsets-and-routers#using-routers
 
 ::
@@ -357,6 +358,7 @@ Routes can be added one of two ways:
 	)
 
 - Using as_view_ (specify which views to include)
+
 .. _as_view: http://www.django-rest-framework.org/tutorial/6-viewsets-and-routers#binding-viewsets-to-urls-explicitly
 
 ::
