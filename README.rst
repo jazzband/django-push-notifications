@@ -215,6 +215,16 @@ value per user. Assuming User model has a method get_badge returning badge count
 		badge=lambda token: APNSDevice.objects.get(registration_id=token).user.get_badge()
 	)
 
+Similar to the above, It's also possible to pass message parameter as a function which accepts token parameter in order
+to set different message value per user. Assuming User model has a method get_message returning message for a user:
+
+.. code-block:: python
+
+	devices.send_message(
+		message=lambda token: APNSDevice.objects.get(registration_id=token).user.get_message()
+		badge=5
+	)
+
 Firebase vs Google Cloud Messaging
 ----------------------------------
 
