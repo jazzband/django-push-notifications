@@ -123,7 +123,10 @@ class APNSDeviceManager(models.Manager):
 class APNSDeviceQuerySet(models.query.QuerySet):
 	def send_message(self, message, creds=None, **kwargs):
 		if self.exists():
-			from .apns import apns_send_bulk_message
+			try:
+				from .apns_async import apns_send_bulk_message
+			except ImportError:
+				from .apns import apns_send_bulk_message
 
 			app_ids = self.filter(active=True).order_by("application_id")\
 				.values_list("application_id", flat=True).distinct()
@@ -158,7 +161,10 @@ class APNSDevice(Device):
 		verbose_name = _("APNS device")
 
 	def send_message(self, message, creds=None, **kwargs):
-		from .apns import apns_send_message
+		try:
+			from .apns_async import apns_send_message
+		except ImportError:
+			from .apns import apns_send_message
 
 		return apns_send_message(
 			registration_id=self.registration_id,

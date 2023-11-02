@@ -1,16 +1,27 @@
+import sys
 from unittest import mock
 
-from apns2.client import NotificationPriority
-from apns2.errors import BadTopic, PayloadTooLarge, Unregistered
-from django.conf import settings
-from django.test import TestCase, override_settings
+import pytest
 
-from push_notifications.exceptions import APNSError
-from push_notifications.models import APNSDevice
 
+try:
+	from apns2.client import NotificationPriority
+	from apns2.errors import BadTopic, PayloadTooLarge, Unregistered
+	from django.conf import settings
+	from django.test import TestCase, override_settings
+
+	from push_notifications.exceptions import APNSError
+	from push_notifications.models import APNSDevice
+except AttributeError:
+	# skipping because apns2 is not supported on python 3.10
+	# it uses hyper that imports from collections which were changed in 3.10
+	# and we would get  "AttributeError: module 'collections' has no attribute 'MutableMapping'"
+	if sys.version_info >= (3, 10):
+		pytest.skip(allow_module_level=True)
+	else:
+		raise
 
 class APNSModelTestCase(TestCase):
-
 	def _create_devices(self, devices):
 		for device in devices:
 			APNSDevice.objects.create(registration_id=device)
@@ -20,9 +31,9 @@ class APNSModelTestCase(TestCase):
 		self._create_devices(["abc", "def"])
 
 		# legacy conf manager requires a value
-		settings.PUSH_NOTIFICATIONS_SETTINGS.update({
-			"APNS_CERTIFICATE": "/path/to/apns/certificate.pem"
-		})
+		settings.PUSH_NOTIFICATIONS_SETTINGS.update(
+			{"APNS_CERTIFICATE": "/path/to/apns/certificate.pem"}
+		)
 
 		with mock.patch("apns2.credentials.init_context"):
 			with mock.patch("apns2.client.APNsClient.connect"):
@@ -42,7 +53,8 @@ class APNSModelTestCase(TestCase):
 			with mock.patch("apns2.client.APNsClient.connect"):
 				with mock.patch("apns2.client.APNsClient.send_notification") as s:
 					APNSDevice.objects.get().send_message(
-						"Hello world", expiration=2, priority=5, extra={"foo": "bar"})
+						"Hello world", expiration=2, priority=5, extra={"foo": "bar"}
+					)
 					args, kargs = s.call_args
 					self.assertEqual(args[0], "abc")
 					self.assertEqual(args[1].alert, "Hello world")
@@ -91,9 +103,13 @@ class APNSModelTestCase(TestCase):
 				self.assertEqual(ae.exception.status, expected_exceptions_statuses[idx])
 
 				if idx == 2:
-					self.assertFalse(APNSDevice.objects.get(registration_id=token).active)
+					self.assertFalse(
+						APNSDevice.objects.get(registration_id=token).active
+					)
 				else:
-					self.assertTrue(APNSDevice.objects.get(registration_id=token).active)
+					self.assertTrue(
+						APNSDevice.objects.get(registration_id=token).active
+					)
 
 	def test_apns_send_message_to_bulk_devices_with_error(self):
 		# these errors are device specific, device.active will be set false
@@ -108,6 +124,10 @@ class APNSModelTestCase(TestCase):
 
 			for idx, token in enumerate(devices):
 				if idx == 2:
-					self.assertFalse(APNSDevice.objects.get(registration_id=token).active)
+					self.assertFalse(
+						APNSDevice.objects.get(registration_id=token).active
+					)
 				else:
-					self.assertTrue(APNSDevice.objects.get(registration_id=token).active)
+					self.assertTrue(
+						APNSDevice.objects.get(registration_id=token).active
+					)
