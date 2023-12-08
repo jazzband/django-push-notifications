@@ -127,8 +127,6 @@ class APNsService:
 		self,
 		request: NotificationRequest,
 	):
-		print("Sending {} to {}".format(request, request.device_token))
-
 		loop = asyncio.get_event_loop()
 		res1 = self.client.send_notification(request)
 		res = loop.run_until_complete(res1)
@@ -196,7 +194,6 @@ class APNsService:
 		if creds is None:
 			creds = self._get_credentials(application_id)
 
-		print(creds)
 		client = APNs(
 			**asdict(creds),
 			topic=topic,  # Bundle ID
@@ -260,7 +257,7 @@ def apns_send_message(
 		apns_service = APNsService(
 			application_id=application_id, creds=creds, topic=topic
 		)
-		print(badge)
+
 		request = apns_service._create_notification_request_from_args(
 			registration_id,
 			alert,
@@ -280,7 +277,6 @@ def apns_send_message(
 					registration_id=registration_id
 				).update(active=False)
 			raise APNSServerError(status=res.description)
-		print(res)
 	except ConnectionError as e:
 		raise APNSServerError(status=e.__class__.__name__)
 
