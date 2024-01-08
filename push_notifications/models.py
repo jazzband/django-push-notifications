@@ -84,7 +84,7 @@ class GCMDeviceQuerySet(models.query.QuerySet):
 
 
 def get_default_cloud_message_type() -> str:
-	return SETTINGS.get("DEFAULT_CLOUD_MESSAGE_TYPE", "GCM")
+	return SETTINGS.get("DEFAULT_CLOUD_MESSAGE_TYPE", "FCM")
 
 
 class GCMDevice(Device):
@@ -99,7 +99,7 @@ class GCMDevice(Device):
 	cloud_message_type = models.CharField(
 		verbose_name=_("Cloud Message Type"), max_length=3,
 		choices=CLOUD_MESSAGE_TYPES, default=get_default_cloud_message_type(),
-		help_text=_("You should choose FCM or GCM")
+		help_text=_("You should choose FCM, GCM is deprecated")
 	)
 	objects = GCMDeviceManager()
 
