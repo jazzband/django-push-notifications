@@ -1,7 +1,9 @@
+import importlib
 import json
 from unittest import mock
 
-from django.test import TestCase
+from django.conf import settings
+from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from push_notifications.conf import AppConfig
@@ -515,3 +517,29 @@ class GCMModelTestCase(TestCase):
 		self.assertIsNotNone(device.pk)
 		self.assertIsNotNone(device.date_created)
 		self.assertEqual(device.date_created.date(), timezone.now().date())
+
+	def test_gcm_is_default_cloud_message_type_when_not_specified_in_settings(self) -> None:
+		self._validate_device_cloud_message_type(expected_cloud_message_type="GCM")
+
+	@override_settings()
+	def test_cloud_message_type_is_set_to_gcm(self) -> None:
+		settings.PUSH_NOTIFICATIONS_SETTINGS.update({
+			"DEFAULT_CLOUD_MESSAGE_TYPE": "GCM",
+		})
+		self._validate_device_cloud_message_type(expected_cloud_message_type="GCM")
+
+	@override_settings()
+	def test_cloud_message_type_is_set_to_fcm(self) -> None:
+		settings.PUSH_NOTIFICATIONS_SETTINGS.update({
+			"DEFAULT_CLOUD_MESSAGE_TYPE": "FCM",
+		})
+		self._validate_device_cloud_message_type(expected_cloud_message_type="FCM")
+
+	def _validate_device_cloud_message_type(self, expected_cloud_message_type: str) -> None:
+		# Reload the models so that cached model is evicted and
+		# field default value is re-read from settings
+		import push_notifications.models
+		importlib.reload(push_notifications.models)
+		from push_notifications.models import GCMDevice
+		field_object = GCMDevice._meta.get_field("cloud_message_type")
+		self.assertEqual(field_object.default, expected_cloud_message_type)
