@@ -109,4 +109,3 @@ Added setting:
 			},
 		}
 	}
-
