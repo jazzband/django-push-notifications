@@ -132,6 +132,37 @@ class GCMDeviceAdmin(DeviceAdmin):
 	)
 	list_filter = ("active", "cloud_message_type")
 
+	def send_messages(self, request, queryset, bulk=False):
+		"""
+		Provides error handling for DeviceAdmin send_message and send_bulk_message methods.
+		"""
+		results = []
+		errors = []
+
+		if bulk:
+			results.append(queryset.send_message("Test bulk notification"))
+		else:
+			for device in queryset:
+				result = device.send_message("Test single notification")
+				if result:
+					results.append(result)
+
+		for batch in results:
+			for response in batch.responses:
+				if response.exception:
+					errors.append(repr(response.exception))
+
+		if errors:
+			self.message_user(
+				request, _("Some messages could not be processed: %s") % (", ".join(errors)),
+				level=messages.ERROR
+			)
+		else:
+			self.message_user(
+				request, _("All messages were sent."),
+				level=messages.SUCCESS
+			)
+
 
 class WebPushDeviceAdmin(DeviceAdmin):
 	list_display = ("__str__", "browser", "user", "active", "date_created")
