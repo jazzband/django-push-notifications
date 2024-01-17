@@ -44,23 +44,57 @@ class GCMModelTestCase(TestCase):
 
 			# one call
 			self.assertEqual(len(p.mock_calls), 1)
-			call = p.mock_calls[0]
 
-			# only messages is args, dry_run and app are in kwargs
-			self.assertEqual(len(call.args), 1)
+			call = p.call_args
+			kwargs = call[1]
 
-			self.assertTrue("dry_run" in call.kwargs)
-			self.assertFalse(call.kwargs["dry_run"])
-			self.assertTrue("app" in call.kwargs)
-			self.assertIsNone(call.kwargs["app"])
+			self.assertTrue("dry_run" in kwargs)
+			self.assertFalse(kwargs["dry_run"])
+			self.assertTrue("app" in kwargs)
+			self.assertIsNone(kwargs["app"])
 
 			# only one message
-			self.assertEqual(len(call.args[0]), 1)
+			messages = call[0][0]
+			self.assertEqual(len(messages), 1)
 
-			message = call.args[0][0]
+			message = messages[0]
 			self.assertIsInstance(message, Message)
 			self.assertEqual(message.token, "abc")
 			self.assertEqual(message.android.notification.body, "Hello world")
+
+	def test_fcm_send_message_with_fcm_message(self):
+		device = GCMDevice.objects.create(registration_id="abc", cloud_message_type="FCM")
+		with mock.patch(
+			"firebase_admin.messaging.send_all", return_value=responses.FCM_SUCCESS
+		) as p:
+			message_to_send = messaging.Message(
+				notification=messaging.Notification(
+					title='Hello world',
+					body='What a beautiful day.'
+				),
+			)
+			device.send_message(message_to_send)
+
+			# one call
+			self.assertEqual(len(p.mock_calls), 1)
+
+			call = p.call_args
+			kwargs = call[1]
+
+			self.assertTrue("dry_run" in kwargs)
+			self.assertFalse(kwargs["dry_run"])
+			self.assertTrue("app" in kwargs)
+			self.assertIsNone(kwargs["app"])
+
+			# only one message
+			messages = call[0][0]
+			self.assertEqual(len(messages), 1)
+
+			message = messages[0]
+			self.assertIsInstance(message, Message)
+			self.assertEqual(message.token, "abc")
+			self.assertEqual(message.notification.body, "What a beautiful day.")
+			self.assertEqual(message.notification.title, "Hello world")
 
 	def test_fcm_send_message_extra_data(self):
 		device = GCMDevice.objects.create(registration_id="abc", cloud_message_type="FCM")
@@ -70,20 +104,19 @@ class GCMModelTestCase(TestCase):
 			device.send_message("Hello world", extra={"foo": "bar"})
 
 			self.assertEqual(len(p.mock_calls), 1)
-			call = p.mock_calls[0]
+			call = p.call_args
+			kwargs = call[1]
 
-			# only messages is args, dry_run and app are in kwargs
-			self.assertEqual(len(call.args), 1)
-
-			self.assertTrue("dry_run" in call.kwargs)
-			self.assertFalse(call.kwargs["dry_run"])
-			self.assertTrue("app" in call.kwargs)
-			self.assertIsNone(call.kwargs["app"])
+			self.assertTrue("dry_run" in kwargs)
+			self.assertFalse(kwargs["dry_run"])
+			self.assertTrue("app" in kwargs)
+			self.assertIsNone(kwargs["app"])
 
 			# only one message
-			self.assertEqual(len(call.args[0]), 1)
+			messages = call[0][0]
+			self.assertEqual(len(messages), 1)
 
-			message = call.args[0][0]
+			message = messages[0]
 			self.assertIsInstance(message, Message)
 			self.assertEqual(message.token, "abc")
 			self.assertEqual(message.android.notification.body, "Hello world")
@@ -97,20 +130,19 @@ class GCMModelTestCase(TestCase):
 			device.send_message("Hello world", collapse_key="test_key", foo="bar")
 
 			self.assertEqual(len(p.mock_calls), 1)
-			call = p.mock_calls[0]
+			call = p.call_args
+			kwargs = call[1]
 
-			# only messages is args, dry_run and app are in kwargs
-			self.assertEqual(len(call.args), 1)
-
-			self.assertTrue("dry_run" in call.kwargs)
-			self.assertFalse(call.kwargs["dry_run"])
-			self.assertTrue("app" in call.kwargs)
-			self.assertIsNone(call.kwargs["app"])
+			self.assertTrue("dry_run" in kwargs)
+			self.assertFalse(kwargs["dry_run"])
+			self.assertTrue("app" in kwargs)
+			self.assertIsNone(kwargs["app"])
 
 			# only one message
-			self.assertEqual(len(call.args[0]), 1)
+			messages = call[0][0]
+			self.assertEqual(len(messages), 1)
 
-			message = call.args[0][0]
+			message = messages[0]
 			self.assertIsInstance(message, Message)
 			self.assertEqual(message.token, "abc")
 			self.assertEqual(message.android.notification.body, "Hello world")
@@ -124,21 +156,20 @@ class GCMModelTestCase(TestCase):
 		) as p:
 			device.send_message("Hello world", extra={"icon": "test_icon"}, title="test")
 
-			self.assertEqual(len(p.mock_calls), 1)
-			call = p.mock_calls[0]
+			self.assertEqual(p.call_count, 1)
+			call = p.call_args
+			kwargs = call[1]
 
-			# only messages is args, dry_run and app are in kwargs
-			self.assertEqual(len(call.args), 1)
-
-			self.assertTrue("dry_run" in call.kwargs)
-			self.assertFalse(call.kwargs["dry_run"])
-			self.assertTrue("app" in call.kwargs)
-			self.assertIsNone(call.kwargs["app"])
+			self.assertTrue("dry_run" in kwargs)
+			self.assertFalse(kwargs["dry_run"])
+			self.assertTrue("app" in kwargs)
+			self.assertIsNone(kwargs["app"])
 
 			# only one message
-			self.assertEqual(len(call.args[0]), 1)
+			messages = call[0][0]
+			self.assertEqual(len(messages), 1)
 
-			message = call.args[0][0]
+			message = messages[0]
 			self.assertIsInstance(message, Message)
 			self.assertEqual(message.token, "abc")
 			self.assertEqual(message.android.notification.body, "Hello world")
@@ -158,21 +189,20 @@ class GCMModelTestCase(TestCase):
 				collapse_key="test_key"
 			)
 
-			self.assertEqual(len(p.mock_calls), 1)
-			call = p.mock_calls[0]
+			self.assertEqual(p.call_count, 1)
+			call = p.call_args
+			kwargs = call[1]
 
-			# only messages is args, dry_run and app are in kwargs
-			self.assertEqual(len(call.args), 1)
-
-			self.assertTrue("dry_run" in call.kwargs)
-			self.assertFalse(call.kwargs["dry_run"])
-			self.assertTrue("app" in call.kwargs)
-			self.assertIsNone(call.kwargs["app"])
+			self.assertTrue("dry_run" in kwargs)
+			self.assertFalse(kwargs["dry_run"])
+			self.assertTrue("app" in kwargs)
+			self.assertIsNone(kwargs["app"])
 
 			# only one message
-			self.assertEqual(len(call.args[0]), 1)
+			messages = call[0][0]
+			self.assertEqual(len(messages), 1)
 
-			message = call.args[0][0]
+			message = messages[0]
 			self.assertIsInstance(message, Message)
 			self.assertEqual(message.token, "abc")
 			self.assertEqual(message.android.collapse_key, "test_key")
@@ -189,28 +219,99 @@ class GCMModelTestCase(TestCase):
 		) as p:
 			GCMDevice.objects.all().send_message("Hello world")
 
-			self.assertEqual(len(p.mock_calls), 1)
-			call = p.mock_calls[0]
+			self.assertEqual(p.call_count, 1)
+			call = p.call_args
+			kwargs = call[1]
 
-			# only messages is args, dry_run and app are in kwargs
-			self.assertEqual(len(call.args), 1)
-
-			self.assertTrue("dry_run" in call.kwargs)
-			self.assertFalse(call.kwargs["dry_run"])
-			self.assertTrue("app" in call.kwargs)
-			self.assertIsNone(call.kwargs["app"])
+			self.assertTrue("dry_run" in kwargs)
+			self.assertFalse(kwargs["dry_run"])
+			self.assertTrue("app" in kwargs)
+			self.assertIsNone(kwargs["app"])
 
 			# two messages
-			self.assertEqual(len(call.args[0]), 2)
+			messages = call[0][0]
+			self.assertEqual(len(messages), 2)
 
-			message_one = call.args[0][0]
-			message_two = call.args[0][1]
+			message_one = messages[0]
+			message_two = messages[1]
 			self.assertIsInstance(message_one, Message)
 			self.assertIsInstance(message_two, Message)
 			self.assertEqual(message_one.token, "abc")
 			self.assertEqual(message_two.token, "abc1")
 			self.assertEqual(message_one.android.notification.body, "Hello world")
 			self.assertEqual(message_two.android.notification.body, "Hello world")
+
+	def test_fcm_send_message_to_multiple_devices_fcm_message(self):
+		self._create_fcm_devices(["abc", "abc1"])
+
+		with mock.patch(
+			"firebase_admin.messaging.send_all", return_value=responses.FCM_SUCCESS_MULTIPLE
+		) as p:
+			message_to_send = messaging.Message(
+				notification=messaging.Notification(
+					title='Hello world',
+					body='What a beautiful day.'
+				),
+			)
+			GCMDevice.objects.all().send_message(message_to_send)
+
+			self.assertEqual(p.call_count, 1)
+			call = p.call_args
+			kwargs = call[1]
+
+			self.assertTrue("dry_run" in kwargs)
+			self.assertFalse(kwargs["dry_run"])
+			self.assertTrue("app" in kwargs)
+			self.assertIsNone(kwargs["app"])
+
+			# two messages
+			messages = call[0][0]
+			self.assertEqual(len(messages), 2)
+
+			message_one = messages[0]
+			message_two = messages[1]
+			self.assertIsInstance(message_one, Message)
+			self.assertIsInstance(message_two, Message)
+			self.assertEqual(message_one.token, "abc")
+			self.assertEqual(message_two.token, "abc1")
+			self.assertEqual(message_one.notification.title, "Hello world")
+			self.assertEqual(message_one.notification.body, "What a beautiful day.")
+			self.assertEqual(message_two.notification.title, "Hello world")
+			self.assertEqual(message_two.notification.body, "What a beautiful day.")
+
+	def test_gcm_send_message_does_not_send(self):
+		device = GCMDevice.objects.create(registration_id="abc", cloud_message_type="GCM")
+
+		with mock.patch(
+			"firebase_admin.messaging.send_all", return_value=responses.FCM_SUCCESS_MULTIPLE
+		) as p:
+			message_to_send = messaging.Message(
+				notification=messaging.Notification(
+					title='Hello world',
+					body='What a beautiful day.'
+				),
+			)
+			response = device.send_message(message_to_send)
+			self.assertIsNone(response)
+			self.assertEqual(p.call_count, 0)
+
+	def test_gcm_send_multiple_message_does_not_send(self):
+		self._create_devices(["abc", "abc1"])
+
+		with mock.patch(
+			"firebase_admin.messaging.send_all", return_value=responses.FCM_SUCCESS_MULTIPLE
+		) as p:
+			message_to_send = messaging.Message(
+				notification=messaging.Notification(
+					title='Hello world',
+					body='What a beautiful day.'
+				),
+			)
+			response = GCMDevice.objects.all().send_message(message_to_send).responses
+
+			self.assertEqual(p.call_count, 0)
+			self.assertEqual(len(response), 0)
+
 
 	def test_fcm_send_message_active_devices(self):
 		GCMDevice.objects.create(registration_id="abc", active=True, cloud_message_type="FCM")
@@ -221,20 +322,19 @@ class GCMModelTestCase(TestCase):
 		) as p:
 			GCMDevice.objects.all().send_message("Hello world")
 
-			self.assertEqual(len(p.mock_calls), 1)
-			call = p.mock_calls[0]
+			self.assertEqual(p.call_count, 1)
+			call = p.call_args
+			kwargs = call[1]
 
-			# only messages is args, dry_run and app are in kwargs
-			self.assertEqual(len(call.args), 1)
-
-			self.assertTrue("dry_run" in call.kwargs)
-			self.assertFalse(call.kwargs["dry_run"])
-			self.assertTrue("app" in call.kwargs)
-			self.assertIsNone(call.kwargs["app"])
+			self.assertTrue("dry_run" in kwargs)
+			self.assertFalse(kwargs["dry_run"])
+			self.assertTrue("app" in kwargs)
+			self.assertIsNone(kwargs["app"])
 
 			# only one message (one is inactive)
-			self.assertEqual(len(call.args[0]), 1)
-			message_one = call.args[0][0]
+			messages = call[0][0]
+			self.assertEqual(len(messages), 1)
+			message_one = messages[0]
 
 			self.assertIsInstance(message_one, Message)
 			self.assertEqual(message_one.token, "abc")
@@ -248,22 +348,21 @@ class GCMModelTestCase(TestCase):
 		) as p:
 			GCMDevice.objects.all().send_message("Hello world", collapse_key="test_key")
 
-			self.assertEqual(len(p.mock_calls), 1)
-			call = p.mock_calls[0]
+			self.assertEqual(p.call_count, 1)
+			call = p.call_args
+			kwargs = call[1]
 
-			# only messages is args, dry_run and app are in kwargs
-			self.assertEqual(len(call.args), 1)
-
-			self.assertTrue("dry_run" in call.kwargs)
-			self.assertFalse(call.kwargs["dry_run"])
-			self.assertTrue("app" in call.kwargs)
-			self.assertIsNone(call.kwargs["app"])
+			self.assertTrue("dry_run" in kwargs)
+			self.assertFalse(kwargs["dry_run"])
+			self.assertTrue("app" in kwargs)
+			self.assertIsNone(kwargs["app"])
 
 			# two messages
-			self.assertEqual(len(call.args[0]), 2)
+			messages = call[0][0]
+			self.assertEqual(len(messages), 2)
 
-			message_one = call.args[0][0]
-			message_two = call.args[0][1]
+			message_one = messages[0]
+			message_two = messages[1]
 			self.assertIsInstance(message_one, Message)
 			self.assertIsInstance(message_two, Message)
 			self.assertEqual(message_one.token, "abc")

@@ -17,22 +17,21 @@ class GCMPushPayloadTest(TestCase):
 
 			send_message("abc", message)
 
-			# one call
-			self.assertEqual(len(p.mock_calls), 1)
-			call = p.mock_calls[0]
+			self.assertEqual(p.call_count, 1)
 
-			# only messages is args, dry_run and app are in kwargs
-			self.assertEqual(len(call.args), 1)
+			call = p.call_args
+			kwargs = call[1]
 
-			self.assertTrue("dry_run" in call.kwargs)
-			self.assertFalse(call.kwargs["dry_run"])
-			self.assertTrue("app" in call.kwargs)
-			self.assertIsNone(call.kwargs["app"])
+			self.assertTrue("dry_run" in kwargs)
+			self.assertFalse(kwargs["dry_run"])
+			self.assertTrue("app" in kwargs)
+			self.assertIsNone(kwargs["app"])
 
 			# only one message
-			self.assertEqual(len(call.args[0]), 1)
+			messages = call[0][0]
+			self.assertEqual(len(messages), 1)
 
-			message = call.args[0][0]
+			message = messages[0]
 			self.assertIsInstance(message, Message)
 			self.assertEqual(message.token, "abc")
 			self.assertEqual(message.android.notification.body, "Hello world")
@@ -44,27 +43,25 @@ class GCMPushPayloadTest(TestCase):
 			send_message(["abc", "123"], message)
 
 			# one call
-			self.assertEqual(len(p.mock_calls), 1)
-			call = p.mock_calls[0]
+			self.assertEqual(p.call_count, 1)
+			call = p.call_args
+			kwargs = call[1]
 
-			# only messages is args, dry_run and app are in kwargs
-			self.assertEqual(len(call.args), 1)
-			messages_arg = call.args[0]
-
-			self.assertTrue("dry_run" in call.kwargs)
-			self.assertFalse(call.kwargs["dry_run"])
-			self.assertTrue("app" in call.kwargs)
-			self.assertIsNone(call.kwargs["app"])
+			self.assertTrue("dry_run" in kwargs)
+			self.assertFalse(kwargs["dry_run"])
+			self.assertTrue("app" in kwargs)
+			self.assertIsNone(kwargs["app"])
 
 			# two message
-			self.assertEqual(len(messages_arg), 2)
+			messages = call[0][0]
+			self.assertEqual(len(messages), 2)
 
-			message_one = messages_arg[0]
+			message_one = messages[0]
 			self.assertIsInstance(message_one, Message)
 			self.assertEqual(message_one.token, "abc")
 			self.assertEqual(message_one.android.notification.body, "Hello world")
 
-			message_two = messages_arg[1]
+			message_two = messages[1]
 			self.assertIsInstance(message_two, Message)
 			self.assertEqual( message_two.token,"123")
 			self.assertEqual( message_two.android.notification.body, "Hello world")
