@@ -83,6 +83,10 @@ class GCMDeviceQuerySet(models.query.QuerySet):
 			return response
 
 
+def get_default_cloud_message_type() -> str:
+	return SETTINGS.get("DEFAULT_CLOUD_MESSAGE_TYPE", "GCM")
+
+
 class GCMDevice(Device):
 	# device_id cannot be a reliable primary key as fragmentation between different devices
 	# can make it turn out to be null and such:
@@ -94,7 +98,7 @@ class GCMDevice(Device):
 	registration_id = models.TextField(verbose_name=_("Registration ID"), unique=SETTINGS["UNIQUE_REG_ID"])
 	cloud_message_type = models.CharField(
 		verbose_name=_("Cloud Message Type"), max_length=3,
-		choices=CLOUD_MESSAGE_TYPES, default=SETTINGS.get("DEFAULT_CLOUD_MESSAGE_TYPE", "GCM"),
+		choices=CLOUD_MESSAGE_TYPES, default=get_default_cloud_message_type(),
 		help_text=_("You should choose FCM or GCM")
 	)
 	objects = GCMDeviceManager()
