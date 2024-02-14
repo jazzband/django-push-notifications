@@ -1,7 +1,9 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from firebase_admin import messaging
 
 from .fields import HexIntegerField
+from .gcm import dict_to_fcm_message
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 
@@ -58,7 +60,6 @@ class GCMDeviceManager(models.Manager):
 class GCMDeviceQuerySet(models.query.QuerySet):
 	def send_message(self, message, **kwargs):
 		if self.exists():
-			from .gcm import dict_to_fcm_message, messaging
 			from .gcm import send_message as fcm_send_message
 
 			if not isinstance(message, messaging.Message):
@@ -107,7 +108,6 @@ class GCMDevice(Device):
 		verbose_name = _("FCM device")
 
 	def send_message(self, message, **kwargs):
-		from .gcm import dict_to_fcm_message, messaging
 		from .gcm import send_message as fcm_send_message
 
 		# GCM is not supported.

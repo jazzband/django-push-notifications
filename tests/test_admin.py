@@ -24,7 +24,7 @@ class GCMDeviceAdminTestCase(TestCase):
 		admin.message_user = mock.Mock()
 
 		with mock.patch(
-			"firebase_admin.messaging.send_each", return_value=responses.FCM_SUCCESS
+			"firebase_admin.messaging.send_all", return_value=responses.FCM_SUCCESS
 		) as p:
 			admin.send_messages(request, queryset, bulk=True)
 
@@ -61,7 +61,7 @@ class GCMDeviceAdminTestCase(TestCase):
 		admin.message_user = mock.Mock()
 
 		with mock.patch(
-			"firebase_admin.messaging.send_each", return_value=responses.FCM_SUCCESS
+			"firebase_admin.messaging.send_all", return_value=responses.FCM_SUCCESS
 		) as p:
 			admin.send_messages(request, queryset, bulk=False)
 
@@ -102,7 +102,7 @@ class GCMDeviceAdminTestCase(TestCase):
 		)
 
 		with mock.patch(
-			"firebase_admin.messaging.send_each", return_value=response
+			"firebase_admin.messaging.send_all", return_value=response
 		) as p:
 			admin.send_messages(request, queryset, bulk=True)
 
