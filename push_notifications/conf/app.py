@@ -25,7 +25,6 @@ MISSING_SETTING = (
 PLATFORMS = [
 	"APNS",
 	"FCM",
-	"GCM",
 	"WNS",
 	"WP",
 ]

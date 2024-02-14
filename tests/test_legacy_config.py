@@ -3,7 +3,6 @@ from unittest import mock
 from django.test import TestCase
 
 from push_notifications.conf import get_manager
-from push_notifications.conf.legacy import LegacyConfig
 from push_notifications.exceptions import WebPushError
 from push_notifications.webpush import webpush_send_message
 
