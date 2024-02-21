@@ -70,7 +70,6 @@ class AppConfigTestCase(TestCase):
 			"APPLICATIONS": {
 				application_id: {
 					"PLATFORM": "FCM",
-					"API_KEY": "[my_api_key]"
 				}
 			}
 		}
@@ -79,23 +78,6 @@ class AppConfigTestCase(TestCase):
 
 		with self.assertRaises(ImproperlyConfigured):
 			manager._get_application_settings(application_id, "APNS", "CERTIFICATE")
-
-	def test_missing_setting(self):
-		"""
-		Missing application settings raises ImproperlyConfigured.
-		"""
-
-		application_id = "my_fcm_app"
-		PUSH_SETTINGS = {
-			"APPLICATIONS": {
-				application_id: {
-					"PLATFORM": "FCM"
-				}
-			}
-		}
-
-		with self.assertRaises(ImproperlyConfigured):
-			AppConfig(PUSH_SETTINGS)
 
 	def test_validate_apns_config(self):
 		"""
@@ -183,20 +165,19 @@ class AppConfigTestCase(TestCase):
 			"APPLICATIONS": {
 				"my_fcm_app": {
 					"PLATFORM": "FCM",
-					"API_KEY": "...",
-					"POST_URL": "...",
 					"MAX_RECIPIENTS": "...",
-					"ERROR_TIMEOUT": "...",
+					"FIREBASE_APP": "...",
 				}
 			}
 		}
 		AppConfig(PUSH_SETTINGS)
 
-		# missing required settings
+		# old API_KEY does not work anymore
 		PUSH_SETTINGS = {
 			"APPLICATIONS": {
 				"my_fcm_app": {
 					"PLATFORM": "FCM",
+					"API_KEY": "...",
 				}
 			}
 		}
@@ -209,7 +190,6 @@ class AppConfigTestCase(TestCase):
 			"APPLICATIONS": {
 				"my_fcm_app": {
 					"PLATFORM": "FCM",
-					"API_KEY": "...",
 				}
 			}
 		}
@@ -217,59 +197,8 @@ class AppConfigTestCase(TestCase):
 		manager = AppConfig(PUSH_SETTINGS)
 		app_config = manager._settings["APPLICATIONS"]["my_fcm_app"]
 
-		assert app_config["POST_URL"] == "https://fcm.googleapis.com/fcm/send"
 		assert app_config["MAX_RECIPIENTS"] == 1000
-		assert app_config["ERROR_TIMEOUT"] is None
-
-	def test_get_allowed_settings_gcm(self):
-		"""Verify the settings allowed for GCM platform."""
-
-		#
-		# all settings specified, required and optional, does not raise an error.
-		#
-		PUSH_SETTINGS = {
-			"APPLICATIONS": {
-				"my_gcm_app": {
-					"PLATFORM": "GCM",
-					"API_KEY": "...",
-					"POST_URL": "...",
-					"MAX_RECIPIENTS": "...",
-					"ERROR_TIMEOUT": "...",
-				}
-			}
-		}
-		AppConfig(PUSH_SETTINGS)
-
-		#
-		# missing required settings
-		#
-		PUSH_SETTINGS = {
-			"APPLICATIONS": {
-				"my_gcm_app": {
-					"PLATFORM": "GCM",
-				}
-			}
-		}
-
-		with self.assertRaises(ImproperlyConfigured):
-			AppConfig(PUSH_SETTINGS)
-
-		# all optional settings have default values
-		PUSH_SETTINGS = {
-			"APPLICATIONS": {
-				"my_gcm_app": {
-					"PLATFORM": "GCM",
-					"API_KEY": "...",
-				}
-			}
-		}
-
-		manager = AppConfig(PUSH_SETTINGS)
-		app_config = manager._settings["APPLICATIONS"]["my_gcm_app"]
-
-		assert app_config["POST_URL"] == "https://android.googleapis.com/gcm/send"
-		assert app_config["MAX_RECIPIENTS"] == 1000
-		assert app_config["ERROR_TIMEOUT"] is None
+		assert app_config["FIREBASE_APP"] is None
 
 	def test_get_allowed_settings_wns(self):
 		"""
