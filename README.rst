@@ -151,7 +151,9 @@ FCM/GCM and APNS services have slightly different semantics. The app tries to of
 	# but for more complex nested collections the extras dict will be sent via
 	# the bulk message api.
 	device.send_message(None, extra={"foo": "bar"})
-	# You may also pass a Firebase message object.
+	device.send_message(None, extra={"foo": "bar"}, use_fcm_notifications=False) # Silent message with custom data.
+
+  # You may also pass a Firebase message object.
 	device.send_message(messaging.Message(
 		notification=messaging.Notification(
 			title='Hello World',
@@ -159,7 +161,6 @@ FCM/GCM and APNS services have slightly different semantics. The app tries to of
 		),
 	))
 	# If you want to use gcm.send_message directly, you will have to use messaging.Message.
-
 
 	device = APNSDevice.objects.get(registration_id=apns_token)
 	device.send_message("You've got mail") # Alert message may only be sent as text.
