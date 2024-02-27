@@ -18,7 +18,7 @@ Initialize the firebase admin in your ``settings.py`` file.
 .. code-block:: python
 
 	# Import the firebase service
-	from firebase_admin import auth
+	import firebase_admin
 
 	# Initialize the default app
 	default_app = firebase_admin.initialize_app()
