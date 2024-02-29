@@ -139,6 +139,11 @@ def apns_send_bulk_message(
 		registration_ids, alert, batch=True, application_id=application_id,
 		creds=creds, **kwargs
 	)
-	inactive_tokens = [token for token, result in results.items() if result == "Unregistered"]
+
+	inactive_tokens = []
+	for token, result in results.items():
+		if isinstance(result, list) and result[0] == "Unregistered":
+			inactive_tokens.append(token)
+	# inactive_tokens = [token for token, result in results.items() if result == "Unregistered"]
 	models.APNSDevice.objects.filter(registration_id__in=inactive_tokens).update(active=False)
 	return results
