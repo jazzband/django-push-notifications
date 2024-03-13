@@ -58,29 +58,33 @@ class GCMDeviceManager(models.Manager):
 class GCMDeviceQuerySet(models.query.QuerySet):
 	def send_message(self, message, **kwargs):
 		if self.exists():
-			from .gcm import send_message as gcm_send_message
+			from .gcm import dict_to_fcm_message, messaging
+			from .gcm import send_message as fcm_send_message
 
-			data = kwargs.pop("extra", {})
-			if message is not None:
-				data["message"] = message
+			if not isinstance(message, messaging.Message):
+				data = kwargs.pop("extra", {})
+				if message is not None:
+					data["message"] = message
+				# transform legacy data to new message object
+				message = dict_to_fcm_message(data, **kwargs)
 
 			app_ids = self.filter(active=True).order_by(
 				"application_id"
 			).values_list("application_id", flat=True).distinct()
-			response = []
-			for cloud_type in ("FCM", "GCM"):
-				for app_id in app_ids:
-					reg_ids = list(
-						self.filter(
-							active=True, cloud_message_type=cloud_type, application_id=app_id).values_list(
-							"registration_id", flat=True
-						)
-					)
-					if reg_ids:
-						r = gcm_send_message(reg_ids, data, cloud_type, application_id=app_id, **kwargs)
-						response.append(r)
 
-			return response
+			responses = []
+			for app_id in app_ids:
+				reg_ids = list(
+					self.filter(
+						active=True, cloud_message_type="FCM", application_id=app_id).values_list(
+						"registration_id", flat=True
+					)
+				)
+				if reg_ids:
+					r = fcm_send_message(reg_ids, message, application_id=app_id, **kwargs)
+					responses.extend(r.responses)
+
+			return messaging.BatchResponse(responses)
 
 
 class GCMDevice(Device):
@@ -94,23 +98,31 @@ class GCMDevice(Device):
 	registration_id = models.TextField(verbose_name=_("Registration ID"), unique=SETTINGS["UNIQUE_REG_ID"])
 	cloud_message_type = models.CharField(
 		verbose_name=_("Cloud Message Type"), max_length=3,
-		choices=CLOUD_MESSAGE_TYPES, default="GCM",
-		help_text=_("You should choose FCM or GCM")
+		choices=CLOUD_MESSAGE_TYPES, default="FCM",
+		help_text=_("You should choose FCM, GCM is deprecated")
 	)
 	objects = GCMDeviceManager()
 
 	class Meta:
-		verbose_name = _("GCM device")
+		verbose_name = _("FCM device")
 
 	def send_message(self, message, **kwargs):
-		from .gcm import send_message as gcm_send_message
+		from .gcm import dict_to_fcm_message, messaging
+		from .gcm import send_message as fcm_send_message
 
-		data = kwargs.pop("extra", {})
-		if message is not None:
-			data["message"] = message
+		# GCM is not supported.
+		if self.cloud_message_type == "GCM":
+			return
 
-		return gcm_send_message(
-			self.registration_id, data, self.cloud_message_type,
+		if not isinstance(message, messaging.Message):
+			data = kwargs.pop("extra", {})
+			if message is not None:
+				data["message"] = message
+			# transform legacy data to new message object
+			message = dict_to_fcm_message(data, **kwargs)
+
+		return fcm_send_message(
+			self.registration_id, message,
 			application_id=self.application_id, **kwargs
 		)
 
@@ -125,7 +137,7 @@ class APNSDeviceQuerySet(models.query.QuerySet):
 		if self.exists():
 			from .apns import apns_send_bulk_message
 
-			app_ids = self.filter(active=True).order_by("application_id")\
+			app_ids = self.filter(active=True).order_by("application_id") \
 				.values_list("application_id", flat=True).distinct()
 			res = []
 			for app_id in app_ids:
@@ -255,6 +267,4 @@ class WebPushDevice(Device):
 	def send_message(self, message, **kwargs):
 		from .webpush import webpush_send_message
 
-		return webpush_send_message(
-			uri=self.registration_id, message=message, browser=self.browser,
-			auth=self.auth, p256dh=self.p256dh, application_id=self.application_id, **kwargs)
+		return webpush_send_message(self, message, **kwargs)

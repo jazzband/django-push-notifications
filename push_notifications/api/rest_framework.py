@@ -22,7 +22,7 @@ class HexIntegerField(IntegerField):
 			data = int(data, 16) if type(data) != int else data
 		except ValueError:
 			raise ValidationError("Device ID is not a valid hex number")
-		return super(HexIntegerField, self).to_internal_value(data)
+		return super().to_internal_value(data)
 
 	def to_representation(self, value):
 		return value
@@ -46,10 +46,10 @@ class APNSDeviceSerializer(ModelSerializer):
 		model = APNSDevice
 
 	def validate_registration_id(self, value):
-		# iOS device tokens are 256-bit hexadecimal (64 characters). In 2016 Apple is increasing
-		# iOS device tokens to 100 bytes hexadecimal (200 characters).
 
-		if hex_re.match(value) is None or len(value) not in (64, 200):
+		# https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1622958-application
+		# As of 02/2023 APNS tokens (registration_id) "are of variable length. Do not hard-code their size."
+		if hex_re.match(value) is None:
 			raise ValidationError("Registration ID (device token) is invalid")
 
 		return value
@@ -160,12 +160,12 @@ class DeviceViewSetMixin:
 	def perform_create(self, serializer):
 		if self.request.user.is_authenticated:
 			serializer.save(user=self.request.user)
-		return super(DeviceViewSetMixin, self).perform_create(serializer)
+		return super().perform_create(serializer)
 
 	def perform_update(self, serializer):
 		if self.request.user.is_authenticated:
 			serializer.save(user=self.request.user)
-		return super(DeviceViewSetMixin, self).perform_update(serializer)
+		return super().perform_update(serializer)
 
 
 class AuthorizedMixin:
