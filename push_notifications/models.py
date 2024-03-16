@@ -91,10 +91,6 @@ def get_default_cloud_message_type() -> str:
 	return SETTINGS.get("DEFAULT_CLOUD_MESSAGE_TYPE", "FCM")
 
 
-def get_default_cloud_message_type() -> str:
-	return SETTINGS.get("DEFAULT_CLOUD_MESSAGE_TYPE", "FCM")
-
-
 class GCMDevice(Device):
 	# device_id cannot be a reliable primary key as fragmentation between different devices
 	# can make it turn out to be null and such:
