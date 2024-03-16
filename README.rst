@@ -37,6 +37,7 @@ Dependencies
 - For WebPush (WP), pywebpush 1.3.0+ is required (optional). py-vapid 1.3.0+ is required for generating the WebPush private key; however this
   step does not need to occur on the application server.
 - For Apple Push (APNS), apns2 0.3+ is required (optional).
+- For FCM, firebase-admin 5+ is required (optional).
 
 Setup
 -----
@@ -44,7 +45,7 @@ You can install the library directly from pypi using pip:
 
 .. code-block:: shell
 
-	$ pip install django-push-notifications[WP,APNS]
+	$ pip install django-push-notifications[WP,APNS,FCM]
 
 
 Edit your settings.py file:
@@ -56,9 +57,13 @@ Edit your settings.py file:
 		"push_notifications"
 	)
 
+	# Import the firebase service
+	from firebase_admin import auth
+
+	# Initialize the default app (either use `GOOGLE_APPLICATION_CREDENTIALS` environment variable, or pass a firebase_admin.credentials.Certificate instance)
+	default_app = firebase_admin.initialize_app()
+
 	PUSH_NOTIFICATIONS_SETTINGS = {
-		"FCM_API_KEY": "[your api key]",
-		"GCM_API_KEY": "[your api key]",
 		"APNS_CERTIFICATE": "/path/to/your/certificate.pem",
 		"APNS_TOPIC": "com.example.push_test",
 		"WNS_PACKAGE_SECURITY_ID": "[your package security id, e.g: 'ms-app://e-3-4-6234...']",
@@ -68,7 +73,10 @@ Edit your settings.py file:
 	}
 
 .. note::
-    If you need to support multiple mobile applications from a single Django application, see `Multiple Application Support <https://github.com/jazzband/django-push-notifications/wiki/Multiple-Application-Support>`_ for details.
+	To migrate from legacy FCM APIs to HTTP v1, see `docs/FCM <https://github.com/jazzband/django-push-notifications/blob/master/docs/FCM.rst>`_.
+
+.. note::
+	If you need to support multiple mobile applications from a single Django application, see `Multiple Application Support <https://github.com/jazzband/django-push-notifications/wiki/Multiple-Application-Support>`_ for details.
 
 .. note::
 	If you are planning on running your project with ``APNS_USE_SANDBOX=True``, then make sure you have set the
@@ -87,7 +95,6 @@ Settings list
 -------------
 All settings are contained in a ``PUSH_NOTIFICATIONS_SETTINGS`` dict.
 
-In order to use FCM/GCM, you are required to include ``FCM_API_KEY`` or ``GCM_API_KEY``.
 For APNS, you are required to include ``APNS_CERTIFICATE``.
 For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY``.
 
@@ -110,11 +117,8 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 
 **FCM/GCM settings**
 
-- ``FCM_API_KEY``: Your API key for Firebase Cloud Messaging.
-- ``FCM_POST_URL``: The full url that FCM notifications will be POSTed to. Defaults to https://fcm.googleapis.com/fcm/send.
+- ``FIREBASE_APP``: Firebase app instance that is used to send the push notification. If not provided, the app will be using the default app instance that you've instantiated with ``firebase_admin.initialize_app()``.
 - ``FCM_MAX_RECIPIENTS``: The maximum amount of recipients that can be contained per bulk message. If the ``registration_ids`` list is larger than that number, multiple bulk messages will be sent. Defaults to 1000 (the maximum amount supported by FCM).
-- ``FCM_ERROR_TIMEOUT``: The timeout on FCM POSTs.
-- ``GCM_API_KEY``, ``GCM_POST_URL``, ``GCM_MAX_RECIPIENTS``, ``GCM_ERROR_TIMEOUT``: Same parameters for GCM
 
 **WNS settings**
 
@@ -148,6 +152,16 @@ FCM/GCM and APNS services have slightly different semantics. The app tries to of
 	# but for more complex nested collections the extras dict will be sent via
 	# the bulk message api.
 	device.send_message(None, extra={"foo": "bar"})
+	device.send_message(None, extra={"foo": "bar"}, use_fcm_notifications=False) # Silent message with custom data.
+
+  # You may also pass a Firebase message object.
+	device.send_message(messaging.Message(
+		notification=messaging.Notification(
+			title='Hello World',
+			body='What a beautiful day.'
+		),
+	))
+	# If you want to use gcm.send_message directly, you will have to use messaging.Message.
 
 	device = APNSDevice.objects.get(registration_id=apns_token)
 	device.send_message("You've got mail") # Alert message may only be sent as text.
@@ -216,19 +230,17 @@ value per user. Assuming User model has a method get_badge returning badge count
 		badge=lambda token: APNSDevice.objects.get(registration_id=token).user.get_badge()
 	)
 
-Firebase vs Google Cloud Messaging
+Firebase
 ----------------------------------
 
-``django-push-notifications`` supports both Google Cloud Messaging and Firebase Cloud Messaging (which is now the officially supported messaging platform from Google). When registering a device, you must pass the ``cloud_message_type`` parameter to set the cloud type that matches the device needs.
-This is currently defaulting to ``'GCM'``, but may change to ``'FCM'`` at some point. You are encouraged to use the `officially supported library <https://developers.google.com/cloud-messaging/faq>`_.
+``django-push-notifications`` supports Firebase Cloud Messaging v1.
 
 When using FCM, ``django-push-notifications`` will automatically use the `notification and data messages format <https://firebase.google.com/docs/cloud-messaging/concept-options#notifications_and_data_messages>`_ to be conveniently handled by Firebase devices. You may want to check the payload to see if it matches your needs, and review your notification statuses in `FCM Diagnostic console <https://support.google.com/googleplay/android-developer/answer/2663268?hl=en>`_.
-
 
 .. code-block:: python
 
 	# Create a FCM device
-	fcm_device = GCMDevice.objects.create(registration_id="token", cloud_message_type="FCM", user=the_user)
+	fcm_device = GCMDevice.objects.create(registration_id="token", user=the_user)
 
 	# Send a notification message
 	fcm_device.send_message("This is a message")
@@ -248,14 +260,10 @@ When using FCM, ``django-push-notifications`` will automatically use the `notifi
 	# Send a data message only
 	fcm_device.send_message(None, extra={"other": "content", "misc": "data"})
 
-You can disable this default behaviour by setting ``use_fcm_notifications`` to ``False``.
 
-.. code-block:: python
 
-	fcm_device = GCMDevice.objects.create(registration_id="token", cloud_message_type="FCM", user=the_user)
-
-	# Send a data message with classic format
-	fcm_device.send_message("This is a message", use_fcm_notifications=False)
+Behind the scenes, a `Firebase Message <https://firebase.google.com/docs/reference/admin/dotnet/class/firebase-admin/messaging/message>`_ will be created.
+You can also create this yourself and pass it to the ``send_message`` method instead.
 
 
 Sending FCM/GCM messages to topic members
@@ -265,10 +273,12 @@ Note: gcm_send_bulk_message must be used when sending messages to topic subscrib
 
 .. code-block:: python
 
-	from push_notifications.gcm import send_message
+	from push_notifications.gcm import send_message, dict_to_fcm_message
 
-        # First param is "None" because no Registration_id is needed, the message will be sent to all devices subscribed to the topic.
-        send_message(None, {"body": "Hello members of my_topic!"}, cloud_type="FCM", to="/topics/my_topic")
+	# Create message object from dictonary. You can also directly create a messaging.Message object.
+	message = dict_to_fcm_message({"body": "Hello members of my_topic!"})
+	# First param is "None" because no Registration_id is needed, the message will be sent to all devices subscribed to the topic.
+	send_message(None, message, to="/topics/my_topic")
 
 Reference: `FCM Documentation <https://firebase.google.com/docs/cloud-messaging/android/topic-messaging>`_
 
@@ -276,7 +286,6 @@ Exceptions
 ----------
 
 - ``NotificationError(Exception)``: Base exception for all notification-related errors.
-- ``gcm.GCMError(NotificationError)``: An error was returned by GCM. This is never raised when using bulk notifications.
 - ``apns.APNSError(NotificationError)``: Something went wrong upon sending APNS notifications.
 - ``apns.APNSDataOverflow(APNSError)``: The APNS payload exceeds its maximum size and cannot be sent.
 

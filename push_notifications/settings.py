@@ -7,19 +7,9 @@ PUSH_NOTIFICATIONS_SETTINGS.setdefault(
 	"CONFIG", "push_notifications.conf.LegacyConfig"
 )
 
-# GCM
-PUSH_NOTIFICATIONS_SETTINGS.setdefault(
-	"GCM_POST_URL", "https://android.googleapis.com/gcm/send"
-)
-PUSH_NOTIFICATIONS_SETTINGS.setdefault("GCM_MAX_RECIPIENTS", 1000)
-PUSH_NOTIFICATIONS_SETTINGS.setdefault("GCM_ERROR_TIMEOUT", None)
-
 # FCM
-PUSH_NOTIFICATIONS_SETTINGS.setdefault(
-	"FCM_POST_URL", "https://fcm.googleapis.com/fcm/send"
-)
+PUSH_NOTIFICATIONS_SETTINGS.setdefault("FIREBASE_APP", None)
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("FCM_MAX_RECIPIENTS", 1000)
-PUSH_NOTIFICATIONS_SETTINGS.setdefault("FCM_ERROR_TIMEOUT", None)
 
 # APNS
 if settings.DEBUG:
@@ -37,6 +27,11 @@ PUSH_NOTIFICATIONS_SETTINGS.setdefault(
 )
 
 # WP (WebPush)
+
+PUSH_NOTIFICATIONS_SETTINGS.setdefault(
+	"FCM_POST_URL", "https://fcm.googleapis.com/fcm/send"
+)
+
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("WP_POST_URL", {
 	"CHROME": PUSH_NOTIFICATIONS_SETTINGS["FCM_POST_URL"],
 	"OPERA": PUSH_NOTIFICATIONS_SETTINGS["FCM_POST_URL"],

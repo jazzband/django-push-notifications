@@ -25,7 +25,6 @@ MISSING_SETTING = (
 PLATFORMS = [
 	"APNS",
 	"FCM",
-	"GCM",
 	"WNS",
 	"WP",
 ]
@@ -55,9 +54,9 @@ APNS_OPTIONAL_SETTINGS = [
 	"USE_SANDBOX", "USE_ALTERNATIVE_PORT", "TOPIC"
 ]
 
-FCM_REQUIRED_SETTINGS = GCM_REQUIRED_SETTINGS = ["API_KEY"]
-FCM_OPTIONAL_SETTINGS = GCM_OPTIONAL_SETTINGS = [
-	"POST_URL", "MAX_RECIPIENTS", "ERROR_TIMEOUT"
+FCM_REQUIRED_SETTINGS = []
+FCM_OPTIONAL_SETTINGS = [
+	"MAX_RECIPIENTS", "FIREBASE_APP"
 ]
 
 WNS_REQUIRED_SETTINGS = ["PACKAGE_SECURITY_ID", "SECRET_KEY"]
@@ -189,23 +188,8 @@ class AppConfig(BaseConfig):
 			application_id, application_config, FCM_REQUIRED_SETTINGS
 		)
 
-		application_config.setdefault("POST_URL", "https://fcm.googleapis.com/fcm/send")
+		application_config.setdefault("FIREBASE_APP", None)
 		application_config.setdefault("MAX_RECIPIENTS", 1000)
-		application_config.setdefault("ERROR_TIMEOUT", None)
-
-	def _validate_gcm_config(self, application_id, application_config):
-		allowed = (
-			REQUIRED_SETTINGS + OPTIONAL_SETTINGS + GCM_REQUIRED_SETTINGS + GCM_OPTIONAL_SETTINGS
-		)
-
-		self._validate_allowed_settings(application_id, application_config, allowed)
-		self._validate_required_settings(
-			application_id, application_config, GCM_REQUIRED_SETTINGS
-		)
-
-		application_config.setdefault("POST_URL", "https://android.googleapis.com/gcm/send")
-		application_config.setdefault("MAX_RECIPIENTS", 1000)
-		application_config.setdefault("ERROR_TIMEOUT", None)
 
 	def _validate_wns_config(self, application_id, application_config):
 		allowed = (
@@ -303,23 +287,14 @@ class AppConfig(BaseConfig):
 
 		return app_config.get(settings_key)
 
+	def get_firebase_app(self, application_id=None):
+		return self._get_application_settings(application_id, "FCM", "FIREBASE_APP")
+
 	def has_auth_token_creds(self, application_id=None):
 		return self.has_token_creds
 
-	def get_gcm_api_key(self, application_id=None):
-		return self._get_application_settings(application_id, "GCM", "API_KEY")
-
-	def get_fcm_api_key(self, application_id=None):
-		return self._get_application_settings(application_id, "FCM", "API_KEY")
-
-	def get_post_url(self, cloud_type, application_id=None):
-		return self._get_application_settings(application_id, cloud_type, "POST_URL")
-
-	def get_error_timeout(self, cloud_type, application_id=None):
-		return self._get_application_settings(application_id, cloud_type, "ERROR_TIMEOUT")
-
-	def get_max_recipients(self, cloud_type, application_id=None):
-		return self._get_application_settings(application_id, cloud_type, "MAX_RECIPIENTS")
+	def get_max_recipients(self, application_id=None):
+		return self._get_application_settings(application_id, "FCM", "MAX_RECIPIENTS")
 
 	def get_apns_certificate(self, application_id=None):
 		r = self._get_application_settings(application_id, "APNS", "CERTIFICATE")
