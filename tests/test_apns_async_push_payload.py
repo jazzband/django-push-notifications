@@ -5,12 +5,9 @@ from unittest import mock
 import pytest
 from django.test import TestCase
 
-try:
 
-	from push_notifications.apns_async import (
-		TokenCredentials,
-		apns_send_message,
-	)
+try:
+	from push_notifications.apns_async import TokenCredentials, apns_send_message
 except ModuleNotFoundError:
 	# skipping because apns2 is not supported on python 3.10
 	# it uses hyper that imports from collections which were changed in 3.10
@@ -21,11 +18,10 @@ except ModuleNotFoundError:
 		raise
 
 
-
 class APNSAsyncPushPayloadTest(TestCase):
 	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
 	def test_push_payload(self, mock_apns):
-		_res = apns_send_message(
+		apns_send_message(
 			"123",
 			"Hello world",
 			creds=TokenCredentials(
@@ -50,7 +46,7 @@ class APNSAsyncPushPayloadTest(TestCase):
 
 	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
 	def test_push_payload_with_thread_id(self, mock_apns):
-		_res = apns_send_message(
+		apns_send_message(
 			"123",
 			"Hello world",
 			thread_id="565",
@@ -75,7 +71,7 @@ class APNSAsyncPushPayloadTest(TestCase):
 
 	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
 	def test_push_payload_with_alert_dict(self, mock_apns):
-		_res = apns_send_message(
+		apns_send_message(
 			"123",
 			alert={"title": "t1", "body": "b1"},
 			sound="chime",
@@ -100,7 +96,7 @@ class APNSAsyncPushPayloadTest(TestCase):
 
 	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
 	def test_localised_push_with_empty_body(self, mock_apns):
-		_res = apns_send_message(
+		apns_send_message(
 			"123",
 			None,
 			loc_key="TEST_LOC_KEY",
@@ -145,7 +141,7 @@ class APNSAsyncPushPayloadTest(TestCase):
 
 	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
 	def test_collapse_id(self, mock_apns):
-		_res = apns_send_message(
+		apns_send_message(
 			"123",
 			"sample",
 			collapse_id="456789",
@@ -167,5 +163,6 @@ class APNSAsyncPushPayloadTest(TestCase):
 	# 	with mock.patch("apns2.credentials.init_context"):
 	# 		with mock.patch("apns2.client.APNsClient.connect"):
 	# 			with mock.patch("apns2.client.APNsClient.send_notification") as s:
-	# 				self.assertRaises(APNSUnsupportedPriority, _apns_send, "123", "_" * 2049, priority=24)
+	# 				self.assertRaises(APNSUnsupportedPriority, _apns_send, "123",
+	# 				 "_" * 2049, priority=24)
 	# 			s.assert_has_calls([])
