@@ -159,13 +159,15 @@ class APNsService:
 		if isinstance(alert, Alert):
 			alert = alert.asDict()
 
+		notification_request_kwargs_out = notification_request_kwargs.copy()
+
 		if expiration is not None:
-			notification_request_kwargs["time_to_live"] = expiration - int(time.time())
+			notification_request_kwargs_out["time_to_live"] = expiration - int(time.time())
 		if priority is not None:
-			notification_request_kwargs["priority"] = priority
+			notification_request_kwargs_out["priority"] = priority
 
 		if collapse_id is not None:
-			notification_request_kwargs["collapse_key"] = collapse_id
+			notification_request_kwargs_out["collapse_key"] = collapse_id
 
 		request = NotificationRequest(
 			device_token=registration_id,
@@ -180,7 +182,7 @@ class APNsService:
 				**extra,
 				**message_kwargs,
 			},
-			**notification_request_kwargs,
+			**notification_request_kwargs_out,
 		)
 
 		return request
@@ -219,7 +221,7 @@ class APNsService:
 			return TokenCredentials(key=keyPath, key_id=keyId, team_id=teamId)
 
 
-## Public interface
+# Public interface
 
 
 def apns_send_message(
