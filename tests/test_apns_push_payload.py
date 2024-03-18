@@ -17,6 +17,7 @@ except AttributeError:
 	else:
 		raise
 
+
 class APNSPushPayloadTest(TestCase):
 
 	def test_push_payload(self):
