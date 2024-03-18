@@ -2,15 +2,16 @@ import sys
 import time
 from unittest import mock
 
+import pytest
 from django.conf import settings
 from django.test import TestCase, override_settings
-import pytest
+
 
 try:
+	from aioapns.common import NotificationResult
+
 	from push_notifications.exceptions import APNSError
 	from push_notifications.models import APNSDevice
-
-	from aioapns.common import NotificationResult
 except ModuleNotFoundError:
 	# skipping because apns2 is not supported on python 3.10
 	# it uses hyper that imports from collections which were changed in 3.10
@@ -164,3 +165,35 @@ class APNSModelTestCase(TestCase):
 				self.assertFalse(APNSDevice.objects.get(registration_id=token).active)
 			else:
 				self.assertTrue(APNSDevice.objects.get(registration_id=token).active)
+
+	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
+	def test_apns_send_messages_different_priority(self, mock_apns):
+		self._create_devices(["abc", "def"])
+		device_1 = APNSDevice.objects.get(registration_id="abc")
+		device_2 = APNSDevice.objects.get(registration_id="def")
+
+		device_1.send_message(
+			"Hello world 1",
+			expiration=time.time() + 1,
+			priority=5,
+			collapse_id="1",
+		)
+		args_1, _ = mock_apns.return_value.send_notification.call_args
+
+		device_2.send_message("Hello world 2")
+		args_2, _ = mock_apns.return_value.send_notification.call_args
+
+		req = args_1[0]
+		self.assertEqual(req.device_token, "abc")
+		self.assertEqual(req.message["aps"]["alert"], "Hello world 1")
+		self.assertAlmostEqual(req.time_to_live, 1, places=-1)
+		self.assertEqual(req.priority, 5)
+		self.assertEqual(req.collapse_key, "1")
+
+		reg_2 = args_2[0]
+		self.assertEqual(reg_2.device_token, "def")
+		self.assertEqual(reg_2.message["aps"]["alert"], "Hello world 2")
+		self.assertIsNone(reg_2.time_to_live, "No time to live should be specified")
+		self.assertIsNone(reg_2.priority, "No priority should be specified")
+		self.assertIsNone(reg_2.collapse_key, "No collapse key should be specified")
+
