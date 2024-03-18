@@ -196,4 +196,3 @@ class APNSModelTestCase(TestCase):
 		self.assertIsNone(reg_2.time_to_live, "No time to live should be specified")
 		self.assertIsNone(reg_2.priority, "No priority should be specified")
 		self.assertIsNone(reg_2.collapse_key, "No collapse key should be specified")
-
