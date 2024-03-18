@@ -38,6 +38,7 @@ Dependencies
   step does not need to occur on the application server.
 - For Apple Push (APNS), apns2 0.3+ is required (optional).
 - For FCM, firebase-admin 6.2+ is required (optional).
+- For Apple Push (APNS_ASYNC) using async, aioapns 3.1+ is required (optional), installed aioapns overrides apns2.
 
 Setup
 -----
@@ -45,7 +46,7 @@ You can install the library directly from pypi using pip:
 
 .. code-block:: shell
 
-	$ pip install django-push-notifications[WP,APNS,FCM]
+	$ pip install django-push-notifications[WP,APNS_ASYNC]
 
 
 Edit your settings.py file:
