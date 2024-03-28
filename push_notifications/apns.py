@@ -13,7 +13,8 @@ from apns2 import payload as apns2_payload
 
 from . import models
 from .conf import get_manager
-from .exceptions import APNSError, APNSUnsupportedPriority, APNSServerError
+from .enums import InterruptionLevel
+from .exceptions import APNSError, APNSServerError, APNSUnsupportedPriority
 
 
 def _apns_create_socket(creds=None, application_id=None):
@@ -142,3 +143,89 @@ def apns_send_bulk_message(
 	inactive_tokens = [token for token, result in results.items() if result == "Unregistered"]
 	models.APNSDevice.objects.filter(registration_id__in=inactive_tokens).update(active=False)
 	return results
+
+
+def apns_send_with_with_interruption_level(
+	registration_id,
+	alert=None,
+	creds=None,
+	batch=False,
+	interruption_level=InterruptionLevel.ACTIVE,
+    **kwargs
+):
+    """
+    Extends `_apns_send()` to include the `InterruptionLevel` of a specified notification message.
+
+	:param interruption_level: The interruption level of the notification message.
+	:param alert: The alert message to be sent.
+	:param application_id: The application ID of the application.
+	:param creds: The credentials to be used for the APNS connection.
+	:param batch: A boolean value to determine if the message is to be sent in batch.
+	:param kwargs: Additional keyword arguments to be passed to the `_apns_send()` function.
+	:return: The result of the `_apns_send()` function.
+    """
+    notification_kwargs = {}
+
+    for key in ["expiration", "priority", "collapse_id"]:
+        if key in kwargs:
+            notification_kwargs[key] = kwargs.pop(key, None)
+
+    notification_kwargs["interruption_level"] = interruption_level
+
+
+    return _apns_send(
+		registration_id,
+		alert,
+		batch=batch,
+		creds=creds,
+		**notification_kwargs
+    )
+
+def _apns_prepare_with_interruption_level(
+	token,
+	alert,
+	application_id,
+	interruption_level=InterruptionLevel.ACTIVE,
+	**kwargs
+	):
+
+	notification_kwargs = {}
+
+	for key in ["badge", "sound", "category", "content_available", "action_loc_key", "loc_key", "loc_args", "extra", "mutable_content", "thread_id", "url_args"]:
+		if key in kwargs:
+			notification_kwargs[key] = kwargs.pop(key, None)
+
+
+	match interruption_level:
+		case InterruptionLevel.CRITICAL_ALERT:
+			notification_kwargs["content_available"] = True
+			notification_kwargs["priority"] = apns2_client.NotificationPriority.Immediate
+			notification_kwargs["notification_type"] = apns2_client.NotificationType.Alert
+			notification_kwargs["thread_id"] = "critical_alert"
+			notification_kwargs["mutable_content"] = False
+		case InterruptionLevel.TIME_SENSITIVE:
+			notification_kwargs["content_available"] = True
+			notification_kwargs["priority"] = apns2_client.NotificationPriority.Immediate
+			notification_kwargs["notification_type"] = apns2_client.NotificationType.Alert
+			notification_kwargs["thread_id"] = "time_sensitive"
+			notification_kwargs["mutable_content"] = False
+		case InterruptionLevel.ACTIVE:
+			notification_kwargs["content_available"] = False
+			notification_kwargs["priority"] = apns2_client.NotificationPriority.Immediate
+			notification_kwargs["thread_id"] = "active"
+			notification_kwargs["mutable_content"] = False
+		case  InterruptionLevel.PASSIVE:
+			notification_kwargs["content_available"] = True
+			notification_kwargs["priority"] = apns2_client.NotificationPriority.Delayed
+			notification_kwargs["notification_type"] = apns2_client.NotificationType.Background
+			notification_kwargs["thread_id"] = "passive"
+
+		case _:
+			notification_kwargs["interruption_level"] = InterruptionLevel.ACTIVE
+
+	return _apns_prepare(
+		token,
+		alert,
+		application_id=application_id,
+		**notification_kwargs
+	)
