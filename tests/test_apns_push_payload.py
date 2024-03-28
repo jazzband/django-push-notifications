@@ -3,7 +3,7 @@ from unittest import mock
 from apns2.client import NotificationPriority
 from django.test import TestCase
 
-from push_notifications.apns import _apns_send
+from push_notifications.apns import _apns_send, apns_send_message
 from push_notifications.exceptions import APNSUnsupportedPriority
 
 
@@ -101,4 +101,25 @@ class APNSPushPayloadTest(TestCase):
 			with mock.patch("apns2.client.APNsClient.connect"):
 				with mock.patch("apns2.client.APNsClient.send_notification") as s:
 					self.assertRaises(APNSUnsupportedPriority, _apns_send, "123", "_" * 2049, priority=24)
+				s.assert_has_calls([])
+
+	def test_send_notification_with_interupttion_level_returns_immediate_priority(self):
+		with mock.patch("apns2.credentials.init_context")0:
+			with mock.patch("apns2.client.APNsClient.connect"):
+				with mock.patch("apns2.client.APNsClient.send_notification") as s:
+					apns_send_message(
+						"123", "sample", interruption_level='active'
+					)
+					args, kargs = s.call_args
+					self.assertEqual(args[0], "123")
+					self.assertEqual(args[1].alert, "sample")
+					self.assertEqual(kargs["priority"], NotificationPriority.Immediate)
+					self.assertEqual(kargs["expiration"], 0)
+					self.assertEqual(kargs["interruption_level"], 'active')
+
+	def test_send_notifcation_with_wrong_interruption_level_raises_exception(self):
+		with mock.patch("apns2.credentials.init_context"):
+			with mock.patch("apns2.client.APNsClient.connect"):
+				with mock.patch("apns2.client.APNsClient.send_notification") as s:
+					self.assertRaises(APNSUnsupportedPriority, apns_send_message, "123", "sample", interruption_level='wrong')
 				s.assert_has_calls([])

@@ -20,18 +20,18 @@ class InterruptionLevel(Enum):
     """
 
     # The notification is displayed as an alert.
-    ACTIVE = 0
+    ACTIVE = 'active'
 
     # The notification is displayed as a time-sensitive alert.
     #
     # Time-sensitive alerts are displayed immediately,
     # even when the device is in Do Not Disturb mode or the notification is set to be delivered silently.
-    TIME_SENSITIVE = 1
+    TIME_SENSITIVE = 'time_sensitive'
 
     # The notification is displayed as a critical alert.
     # Bypasses the Do Not Disturb mode and the silent mode to deliver the notification.
-    CRITICAL_ALERT = 2
+    CRITICAL_ALERT = 'critical'
 
     # The notification is displayed as a passive notification.
     # Pushes the notification to the Notification Center (or list), essentially making it a silent notification.
-    PASSIVE = 3
+    PASSIVE = 'passive'
