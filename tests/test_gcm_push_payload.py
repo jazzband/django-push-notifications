@@ -12,7 +12,7 @@ from .responses import FCM_SUCCESS
 class GCMPushPayloadTest(TestCase):
 
 	def test_fcm_push_payload(self):
-		with mock.patch("firebase_admin.messaging.send_all", return_value=FCM_SUCCESS) as p:
+		with mock.patch("firebase_admin.messaging.send_each", return_value=FCM_SUCCESS) as p:
 			message = dict_to_fcm_message({"message": "Hello world"})
 
 			send_message("abc", message)
@@ -37,7 +37,7 @@ class GCMPushPayloadTest(TestCase):
 			self.assertEqual(message.android.notification.body, "Hello world")
 
 	def test_fcm_push_payload_many(self):
-		with mock.patch("firebase_admin.messaging.send_all", return_value=FCM_SUCCESS) as p:
+		with mock.patch("firebase_admin.messaging.send_each", return_value=FCM_SUCCESS) as p:
 			message = dict_to_fcm_message({"message": "Hello world"})
 
 			send_message(["abc", "123"], message)

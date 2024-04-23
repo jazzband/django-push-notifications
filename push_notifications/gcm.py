@@ -182,7 +182,7 @@ def send_message(
 			messages = [
 				_prepare_message(message, token) for token in chunk
 			]
-			responses = messaging.send_all(messages, dry_run=dry_run, app=app).responses
+			responses = messaging.send_each(messages, dry_run=dry_run, app=app).responses
 			ret.extend(responses)
 		_deactivate_devices_with_error_results(registration_ids, ret)
 		return messaging.BatchResponse(ret)

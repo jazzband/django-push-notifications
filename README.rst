@@ -37,7 +37,7 @@ Dependencies
 - For WebPush (WP), pywebpush 1.3.0+ is required (optional). py-vapid 1.3.0+ is required for generating the WebPush private key; however this
   step does not need to occur on the application server.
 - For Apple Push (APNS), apns2 0.3+ is required (optional).
-- For FCM, firebase-admin 5+ is required (optional).
+- For FCM, firebase-admin 6.2+ is required (optional).
 
 Setup
 -----

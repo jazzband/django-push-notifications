@@ -38,7 +38,7 @@ class GCMModelTestCase(TestCase):
 	def test_fcm_send_message(self):
 		device = GCMDevice.objects.create(registration_id="abc", cloud_message_type="FCM")
 		with mock.patch(
-			"firebase_admin.messaging.send_all", return_value=responses.FCM_SUCCESS
+			"firebase_admin.messaging.send_each", return_value=responses.FCM_SUCCESS
 		) as p:
 			device.send_message("Hello world")
 
@@ -65,7 +65,7 @@ class GCMModelTestCase(TestCase):
 	def test_fcm_send_message_with_fcm_message(self):
 		device = GCMDevice.objects.create(registration_id="abc", cloud_message_type="FCM")
 		with mock.patch(
-			"firebase_admin.messaging.send_all", return_value=responses.FCM_SUCCESS
+			"firebase_admin.messaging.send_each", return_value=responses.FCM_SUCCESS
 		) as p:
 			message_to_send = messaging.Message(
 				notification=messaging.Notification(
@@ -99,7 +99,7 @@ class GCMModelTestCase(TestCase):
 	def test_fcm_send_message_extra_data(self):
 		device = GCMDevice.objects.create(registration_id="abc", cloud_message_type="FCM")
 		with mock.patch(
-			"firebase_admin.messaging.send_all", return_value=responses.FCM_SUCCESS
+			"firebase_admin.messaging.send_each", return_value=responses.FCM_SUCCESS
 		) as p:
 			device.send_message("Hello world", extra={"foo": "bar"})
 
@@ -125,7 +125,7 @@ class GCMModelTestCase(TestCase):
 	def test_fcm_send_message_extra_options(self):
 		device = GCMDevice.objects.create(registration_id="abc", cloud_message_type="FCM")
 		with mock.patch(
-			"firebase_admin.messaging.send_all", return_value=responses.FCM_SUCCESS
+			"firebase_admin.messaging.send_each", return_value=responses.FCM_SUCCESS
 		) as p:
 			device.send_message("Hello world", collapse_key="test_key", foo="bar")
 
@@ -152,7 +152,7 @@ class GCMModelTestCase(TestCase):
 	def test_fcm_send_message_extra_notification(self):
 		device = GCMDevice.objects.create(registration_id="abc", cloud_message_type="FCM")
 		with mock.patch(
-			"firebase_admin.messaging.send_all", return_value=responses.FCM_SUCCESS
+			"firebase_admin.messaging.send_each", return_value=responses.FCM_SUCCESS
 		) as p:
 			device.send_message("Hello world", extra={"icon": "test_icon"}, title="test")
 
@@ -180,7 +180,7 @@ class GCMModelTestCase(TestCase):
 	def test_fcm_send_message_extra_options_and_notification_and_data(self):
 		device = GCMDevice.objects.create(registration_id="abc", cloud_message_type="FCM")
 		with mock.patch(
-			"firebase_admin.messaging.send_all", return_value=responses.FCM_SUCCESS
+			"firebase_admin.messaging.send_each", return_value=responses.FCM_SUCCESS
 		) as p:
 			device.send_message(
 				"Hello world",
@@ -215,7 +215,7 @@ class GCMModelTestCase(TestCase):
 		self._create_fcm_devices(["abc", "abc1"])
 
 		with mock.patch(
-			"firebase_admin.messaging.send_all", return_value=responses.FCM_SUCCESS_MULTIPLE
+			"firebase_admin.messaging.send_each", return_value=responses.FCM_SUCCESS_MULTIPLE
 		) as p:
 			GCMDevice.objects.all().send_message("Hello world")
 
@@ -245,7 +245,7 @@ class GCMModelTestCase(TestCase):
 		self._create_fcm_devices(["abc", "abc1"])
 
 		with mock.patch(
-			"firebase_admin.messaging.send_all", return_value=responses.FCM_SUCCESS_MULTIPLE
+			"firebase_admin.messaging.send_each", return_value=responses.FCM_SUCCESS_MULTIPLE
 		) as p:
 			message_to_send = messaging.Message(
 				notification=messaging.Notification(
@@ -283,7 +283,7 @@ class GCMModelTestCase(TestCase):
 		device = GCMDevice.objects.create(registration_id="abc", cloud_message_type="GCM")
 
 		with mock.patch(
-			"firebase_admin.messaging.send_all", return_value=responses.FCM_SUCCESS_MULTIPLE
+			"firebase_admin.messaging.send_each", return_value=responses.FCM_SUCCESS_MULTIPLE
 		) as p:
 			message_to_send = messaging.Message(
 				notification=messaging.Notification(
@@ -299,7 +299,7 @@ class GCMModelTestCase(TestCase):
 		self._create_devices(["abc", "abc1"])
 
 		with mock.patch(
-			"firebase_admin.messaging.send_all", return_value=responses.FCM_SUCCESS_MULTIPLE
+			"firebase_admin.messaging.send_each", return_value=responses.FCM_SUCCESS_MULTIPLE
 		) as p:
 			message_to_send = messaging.Message(
 				notification=messaging.Notification(
@@ -318,7 +318,7 @@ class GCMModelTestCase(TestCase):
 		GCMDevice.objects.create(registration_id="xyz", active=False, cloud_message_type="FCM")
 
 		with mock.patch(
-			"firebase_admin.messaging.send_all", return_value=responses.FCM_SUCCESS_MULTIPLE
+			"firebase_admin.messaging.send_each", return_value=responses.FCM_SUCCESS_MULTIPLE
 		) as p:
 			GCMDevice.objects.all().send_message("Hello world")
 
@@ -344,7 +344,7 @@ class GCMModelTestCase(TestCase):
 		self._create_fcm_devices(["abc", "abc1"])
 
 		with mock.patch(
-			"firebase_admin.messaging.send_all", return_value=responses.FCM_SUCCESS_MULTIPLE
+			"firebase_admin.messaging.send_each", return_value=responses.FCM_SUCCESS_MULTIPLE
 		) as p:
 			GCMDevice.objects.all().send_message("Hello world", collapse_key="test_key")
 
@@ -386,7 +386,7 @@ class GCMModelTestCase(TestCase):
 				[SendResponse(resp={"name": "..."}, exception=error)]
 			)
 			with mock.patch(
-				"firebase_admin.messaging.send_all", return_value=return_value
+				"firebase_admin.messaging.send_each", return_value=return_value
 			):
 				device = GCMDevice.objects.get(registration_id=devices[index])
 				device.send_message("Hello World!")
@@ -399,7 +399,7 @@ class GCMModelTestCase(TestCase):
 			[SendResponse(resp={"name": "..."}, exception=OSError())]
 		)
 		with mock.patch(
-			"firebase_admin.messaging.send_all",
+			"firebase_admin.messaging.send_each",
 			return_value=return_value
 		):
 			# these errors are not device specific, device is not deactivated
@@ -417,7 +417,7 @@ class GCMModelTestCase(TestCase):
 			SendResponse(resp={"name": "..."}, exception=InvalidArgumentError("Invalid registration")),
 		])
 		with mock.patch(
-			"firebase_admin.messaging.send_all", return_value=return_value
+			"firebase_admin.messaging.send_each", return_value=return_value
 		):
 			GCMDevice.objects.all().send_message("Hello World")
 			self.assertFalse(GCMDevice.objects.get(registration_id="abc").active)
@@ -436,7 +436,7 @@ class GCMModelTestCase(TestCase):
 		])
 
 		with mock.patch(
-			"firebase_admin.messaging.send_all", return_value=return_value
+			"firebase_admin.messaging.send_each", return_value=return_value
 		):
 			GCMDevice.objects.all().send_message("Hello World")
 			self.assertTrue(GCMDevice.objects.get(registration_id="abc").active)
@@ -448,14 +448,14 @@ class GCMModelTestCase(TestCase):
 		self._create_fcm_devices(["abc", "abc1"])
 
 		with mock.patch(
-			"firebase_admin.messaging.send_all",
+			"firebase_admin.messaging.send_each",
 			return_value=responses.FCM_SUCCESS_MULTIPLE
 		) as p:
 			GCMDevice.objects.filter(registration_id="xyz").send_message("Hello World")
 			p.assert_not_called()
 
 		with mock.patch(
-			"firebase_admin.messaging.send_all",
+			"firebase_admin.messaging.send_each",
 			return_value=responses.FCM_SUCCESS_MULTIPLE
 		) as p:
 			reg_ids = [obj.registration_id for obj in GCMDevice.objects.all()]
