@@ -31,7 +31,7 @@ UPDATE_ON_DUPLICATE_REG_ID: Transform create of an existing Device (based on reg
 
 Dependencies
 ------------
-- Python 3.6+
+- Python 3.7+
 - Django 2.2+
 - For the API module, Django REST Framework 3.7+ is required.
 - For WebPush (WP), pywebpush 1.3.0+ is required (optional). py-vapid 1.3.0+ is required for generating the WebPush private key; however this
