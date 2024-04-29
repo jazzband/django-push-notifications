@@ -102,7 +102,7 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 
 - ``USER_MODEL``: Your user model of choice. Eg. ``myapp.User``. Defaults to ``settings.AUTH_USER_MODEL``.
 - ``UPDATE_ON_DUPLICATE_REG_ID``: Transform create of an existing Device (based on registration id) into a update. See below `Update of device with duplicate registration ID`_ for more details.
-- ``UNIQUE_REG_ID``: Forces the ``registration_id`` field on all device models to be unique.
+- ``UNIQUE_REG_ID``: Forces the ``registration_id`` field on all device models to be unique. NOTE: There is a current MYSQL bug that prevents the use of this setting. See: https://code.djangoproject.com/ticket/2495 and https://docs.djangoproject.com/en/2.2/ref/databases/#textfield-limitations
 
 **APNS settings**
 
