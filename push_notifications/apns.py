@@ -4,6 +4,7 @@ Documentation is available on the iOS Developer Library:
 https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/APNSOverview.html
 """
 
+import contextlib
 import time
 
 from apns2 import client as apns2_client
@@ -16,6 +17,7 @@ from .conf import get_manager
 from .exceptions import APNSError, APNSUnsupportedPriority, APNSServerError
 
 
+@contextlib.contextmanager
 def _apns_create_socket(application_id=None):
 	if not get_manager().has_auth_token_creds(application_id):
 		cert = get_manager().get_apns_certificate(application_id)
@@ -34,7 +36,7 @@ def _apns_create_socket(application_id=None):
 		use_alternative_port=get_manager().get_apns_use_alternative_port(application_id)
 	)
 	client.connect()
-	return client
+	yield client
 
 
 def _apns_prepare(
@@ -60,8 +62,6 @@ def _apns_prepare(
 def _apns_send(
 	registration_id, alert, batch=False, application_id=None, **kwargs
 ):
-	client = _apns_create_socket(application_id=application_id)
-
 	notification_kwargs = {}
 
 	# if expiration isn"t specified use 1 month from now
@@ -78,22 +78,23 @@ def _apns_send(
 
 	notification_kwargs["collapse_id"] = kwargs.pop("collapse_id", None)
 
-	if batch:
-		data = [apns2_client.Notification(
-			token=rid, payload=_apns_prepare(rid, alert, **kwargs)) for rid in registration_id]
-		# returns a dictionary mapping each token to its result. That
-		# result is either "Success" or the reason for the failure.
-		return client.send_notification_batch(
-			data, get_manager().get_apns_topic(application_id=application_id),
+	with _apns_create_socket(application_id=application_id) as client:
+		if batch:
+			data = [apns2_client.Notification(
+				token=rid, payload=_apns_prepare(rid, alert, **kwargs)) for rid in registration_id]
+			# returns a dictionary mapping each token to its result. That
+			# result is either "Success" or the reason for the failure.
+			return client.send_notification_batch(
+				data, get_manager().get_apns_topic(application_id=application_id),
+				**notification_kwargs
+			)
+
+		data = _apns_prepare(registration_id, alert, **kwargs)
+		client.send_notification(
+			registration_id, data,
+			get_manager().get_apns_topic(application_id=application_id),
 			**notification_kwargs
 		)
-
-	data = _apns_prepare(registration_id, alert, **kwargs)
-	client.send_notification(
-		registration_id, data,
-		get_manager().get_apns_topic(application_id=application_id),
-		**notification_kwargs
-	)
 
 
 def apns_send_message(registration_id, alert, application_id=None, **kwargs):
