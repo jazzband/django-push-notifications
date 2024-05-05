@@ -16,19 +16,18 @@ from .conf import get_manager
 from .exceptions import APNSError, APNSUnsupportedPriority, APNSServerError
 
 
-def _apns_create_socket(creds=None, application_id=None):
-	if creds is None:
-		if not get_manager().has_auth_token_creds(application_id):
-			cert = get_manager().get_apns_certificate(application_id)
-			creds = apns2_credentials.CertificateCredentials(cert)
-		else:
-			keyPath, keyId, teamId = get_manager().get_apns_auth_creds(application_id)
-			# No use getting a lifetime because this credential is
-			# ephemeral, but if you're looking at this to see how to
-			# create a credential, you could also pass the lifetime and
-			# algorithm. Neither of those settings are exposed in the
-			# settings API at the moment.
-			creds = creds or apns2_credentials.TokenCredentials(keyPath, keyId, teamId)
+def _apns_create_socket(application_id=None):
+	if not get_manager().has_auth_token_creds(application_id):
+		cert = get_manager().get_apns_certificate(application_id)
+		creds = apns2_credentials.CertificateCredentials(cert)
+	else:
+		keyPath, keyId, teamId = get_manager().get_apns_auth_creds(application_id)
+		# No use getting a lifetime because this credential is
+		# ephemeral, but if you're looking at this to see how to
+		# create a credential, you could also pass the lifetime and
+		# algorithm. Neither of those settings are exposed in the
+		# settings API at the moment.
+		creds = apns2_credentials.TokenCredentials(keyPath, keyId, teamId)
 	client = apns2_client.APNsClient(
 		creds,
 		use_sandbox=get_manager().get_apns_use_sandbox(application_id),
@@ -59,9 +58,9 @@ def _apns_prepare(
 
 
 def _apns_send(
-	registration_id, alert, batch=False, application_id=None, creds=None, **kwargs
+	registration_id, alert, batch=False, application_id=None, **kwargs
 ):
-	client = _apns_create_socket(creds=creds, application_id=application_id)
+	client = _apns_create_socket(application_id=application_id)
 
 	notification_kwargs = {}
 
@@ -97,7 +96,7 @@ def _apns_send(
 	)
 
 
-def apns_send_message(registration_id, alert, application_id=None, creds=None, **kwargs):
+def apns_send_message(registration_id, alert, application_id=None, **kwargs):
 	"""
 	Sends an APNS notification to a single registration_id.
 	This will send the notification as form data.
@@ -112,7 +111,7 @@ def apns_send_message(registration_id, alert, application_id=None, creds=None, *
 	try:
 		_apns_send(
 			registration_id, alert, application_id=application_id,
-			creds=creds, **kwargs
+			**kwargs
 		)
 	except apns2_errors.APNsException as apns2_exception:
 		if isinstance(apns2_exception, apns2_errors.Unregistered):
@@ -124,7 +123,7 @@ def apns_send_message(registration_id, alert, application_id=None, creds=None, *
 
 
 def apns_send_bulk_message(
-	registration_ids, alert, application_id=None, creds=None, **kwargs
+	registration_ids, alert, application_id=None, **kwargs
 ):
 	"""
 	Sends an APNS notification to one or more registration_ids.
@@ -137,7 +136,7 @@ def apns_send_bulk_message(
 
 	results = _apns_send(
 		registration_ids, alert, batch=True, application_id=application_id,
-		creds=creds, **kwargs
+		**kwargs
 	)
 	inactive_tokens = [token for token, result in results.items() if result == "Unregistered"]
 	models.APNSDevice.objects.filter(registration_id__in=inactive_tokens).update(active=False)
