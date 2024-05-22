@@ -1,7 +1,7 @@
 import asyncio
 from dataclasses import asdict, dataclass
 import time
-from typing import Union
+from typing import Dict, Union
 
 from aioapns import APNs, NotificationRequest, ConnectionError
 
@@ -313,7 +313,7 @@ def apns_send_bulk_message(
 	"""
 
 	topic = get_manager().get_apns_topic(application_id)
-	results = {}
+	results: Dict[str, str] = {}
 	inactive_tokens = []
 	apns_service = APNsService(application_id=application_id, creds=creds, topic=topic)
 	for registration_id in registration_ids:
