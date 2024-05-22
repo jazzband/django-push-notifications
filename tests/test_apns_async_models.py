@@ -40,10 +40,8 @@ class APNSModelTestCase(TestCase):
 		APNSDevice.objects.all().send_message("Hello world", expiration=time.time() + 3)
 
 		[call1, call2] = mock_apns.return_value.send_notification.call_args_list
-		print(call1)
 		req1 = call1.args[0]
 		req2 = call2.args[0]
-		print(dir(req1))
 
 		self.assertEqual(req1.device_token, "abc")
 		self.assertEqual(req2.device_token, "def")

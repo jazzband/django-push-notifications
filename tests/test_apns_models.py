@@ -12,7 +12,7 @@ try:
 
 	from push_notifications.exceptions import APNSError
 	from push_notifications.models import APNSDevice
-except AttributeError:
+except (AttributeError, ModuleNotFoundError):
 	# skipping because apns2 is not supported on python 3.10
 	# it uses hyper that imports from collections which were changed in 3.10
 	# and we would get  "AttributeError: module 'collections' has no attribute 'MutableMapping'"
