@@ -37,8 +37,8 @@ Dependencies
 - For WebPush (WP), pywebpush 1.3.0+ is required (optional). py-vapid 1.3.0+ is required for generating the WebPush private key; however this
   step does not need to occur on the application server.
 - For Apple Push (APNS), apns2 0.3+ is required (optional).
+- For Apple Push (apns-async) using async, aioapns 3.1+ is required (optional). Installed aioapns overrides apns2 which does not support python 3.10+.
 - For FCM, firebase-admin 6.2+ is required (optional).
-- For Apple Push (APNS_ASYNC) using async, aioapns 3.1+ is required (optional), installed aioapns overrides apns2.
 
 Setup
 -----
@@ -46,7 +46,7 @@ You can install the library directly from pypi using pip:
 
 .. code-block:: shell
 
-	$ pip install django-push-notifications[WP,APNS_ASYNC]
+	$ pip install django-push-notifications[WP,apns-async,FCM]
 
 
 Edit your settings.py file:
