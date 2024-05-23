@@ -40,20 +40,20 @@ def _apns_create_client(application_id=None):
 
 	if not get_manager().has_auth_token_creds(application_id):
 		cert = get_manager().get_apns_certificate(application_id)
+		with _apns_path_for_cert(cert) as cert_path:
+			client = aioapns.APNs(
+				client_cert=cert_path,
+				team_id=team_id,
+				topic=get_manager().get_apns_topic(application_id),
+				use_sandbox=get_manager().get_apns_use_sandbox(application_id),
+			)
 	else:
 		key_path, key_id, team_id = get_manager().get_apns_auth_creds(application_id)
-		# No use getting a lifetime because this credential is
-		# ephemeral, but if you're looking at this to see how to
-		# create a credential, you could also pass the lifetime and
-		# algorithm. Neither of those settings are exposed in the
-		# settings API at the moment.
-
-	with _apns_path_for_cert(cert) as cert_path:
 		client = aioapns.APNs(
-			client_cert=cert_path,
 			key=key_path,
 			key_id=key_id,
 			team_id=team_id,
+			topic=get_manager().get_apns_topic(application_id),
 			use_sandbox=get_manager().get_apns_use_sandbox(application_id),
 		)
 
