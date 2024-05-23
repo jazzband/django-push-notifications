@@ -1,9 +1,10 @@
 import asyncio
-from dataclasses import asdict, dataclass
 import time
+from dataclasses import asdict, dataclass
 from typing import Awaitable, Callable, Dict, Optional, Union
 
-from aioapns import APNs, NotificationRequest, ConnectionError, NotificationResult
+from aioapns import APNs, ConnectionError, NotificationRequest
+from aioapns.common import NotificationResult
 
 from . import models
 from .conf import get_manager
@@ -134,9 +135,12 @@ class APNsService:
 		self,
 		request: NotificationRequest,
 	):
+		print("a")
 		loop = asyncio.get_event_loop()
 		res1 = self.client.send_notification(request)
+		print("b", res1)
 		res = loop.run_until_complete(res1)
+		print("c", res)
 		return res
 
 	def _create_notification_request_from_args(

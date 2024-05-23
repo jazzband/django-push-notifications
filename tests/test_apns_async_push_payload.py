@@ -5,6 +5,7 @@ from unittest import mock
 import pytest
 from django.test import TestCase
 
+from aioapns.common import NotificationResult
 
 try:
 	from push_notifications.apns_async import TokenCredentials, apns_send_message
@@ -53,11 +54,7 @@ class APNSAsyncPushPayloadTest(TestCase):
 			sound="chime",
 			extra={"custom_data": 12345},
 			expiration=int(time.time()) + 3,
-			creds=TokenCredentials(
-				key="aaa",
-				key_id="bbb",
-				team_id="ccc",
-			),
+			creds=TokenCredentials(key="aaa", key_id="bbb", team_id="ccc"),
 		)
 		args, kwargs = mock_apns.return_value.send_notification.call_args
 		req = args[0]
@@ -158,6 +155,34 @@ class APNSAsyncPushPayloadTest(TestCase):
 		self.assertEqual(req.device_token, "123")
 		self.assertEqual(req.message["aps"]["alert"], "sample")
 		self.assertEqual(req.collapse_key, "456789")
+
+	@mock.patch("aioapns.client.APNsCertConnectionPool", autospec=True)
+	@mock.patch("aioapns.client.APNsKeyConnectionPool", autospec=True)
+	def test_aioapns_err_func(self, mock_cert_pool, mock_key_pool):
+		mock_cert_pool.return_value.send_notification = mock.AsyncMock()
+		result =  NotificationResult(
+			"123", "400"
+		)
+		mock_cert_pool.return_value.send_notification.return_value = result
+		err_func = mock.AsyncMock()
+		with pytest.raises(Exception):
+			apns_send_message(
+				"123",
+				"sample",
+				creds=TokenCredentials(
+					key="aaa",
+					key_id="bbb",
+					team_id="ccc",
+				),
+				topic="default",
+				err_func=err_func,
+			)
+		mock_cert_pool.assert_called_once()
+		mock_cert_pool.return_value.send_notification.assert_called_once()
+		mock_cert_pool.return_value.send_notification.assert_awaited_once()
+		err_func.assert_called_with(
+			mock.ANY, result
+		)
 
 	# def test_bad_priority(self):
 	# 	with mock.patch("apns2.credentials.init_context"):
