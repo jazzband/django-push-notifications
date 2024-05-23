@@ -1,13 +1,16 @@
 import asyncio
 from dataclasses import asdict, dataclass
 import time
-from typing import Dict, Union
+from typing import Awaitable, Callable, Dict, Optional, Union
 
-from aioapns import APNs, NotificationRequest, ConnectionError
+from aioapns import APNs, NotificationRequest, ConnectionError, NotificationResult
 
 from . import models
 from .conf import get_manager
 from .exceptions import APNSServerError
+
+ErrFunc = Optional[Callable[[NotificationRequest, NotificationResult], Awaitable[None]]]
+"""function to proces errors from aioapns send_message"""
 
 
 class NotSet:
@@ -111,7 +114,11 @@ class APNsService:
 	__slots__ = ("client",)
 
 	def __init__(
-		self, application_id: str = None, creds: Credentials = None, topic: str = None
+		self,
+		application_id: str = None,
+		creds: Credentials = None,
+		topic: str = None,
+		err_func: ErrFunc = None,
 	):
 		try:
 			loop = asyncio.get_event_loop()
@@ -120,7 +127,7 @@ class APNsService:
 			asyncio.set_event_loop(loop)
 
 		self.client = self._create_client(
-			creds=creds, application_id=application_id, topic=topic
+			creds=creds, application_id=application_id, topic=topic, err_func=err_func
 		)
 
 	def send_message(
@@ -162,7 +169,9 @@ class APNsService:
 		notification_request_kwargs_out = notification_request_kwargs.copy()
 
 		if expiration is not None:
-			notification_request_kwargs_out["time_to_live"] = expiration - int(time.time())
+			notification_request_kwargs_out["time_to_live"] = expiration - int(
+				time.time()
+			)
 		if priority is not None:
 			notification_request_kwargs_out["priority"] = priority
 
@@ -188,7 +197,11 @@ class APNsService:
 		return request
 
 	def _create_client(
-		self, creds: Credentials = None, application_id: str = None, topic=None
+		self,
+		creds: Credentials = None,
+		application_id: str = None,
+		topic=None,
+		err_func: ErrFunc = None,
 	) -> APNs:
 		use_sandbox = get_manager().get_apns_use_sandbox(application_id)
 		if topic is None:
@@ -200,6 +213,7 @@ class APNsService:
 			**asdict(creds),
 			topic=topic,  # Bundle ID
 			use_sandbox=use_sandbox,
+			err_func=err_func,
 		)
 		return client
 
@@ -238,6 +252,7 @@ def apns_send_message(
 	loc_key: str = None,
 	priority: int = None,
 	collapse_id: str = None,
+	err_func: ErrFunc = None,
 ):
 	"""
 	Sends an APNS notification to a single registration_id.
@@ -257,7 +272,7 @@ def apns_send_message(
 
 	try:
 		apns_service = APNsService(
-			application_id=application_id, creds=creds, topic=topic
+			application_id=application_id, creds=creds, topic=topic, err_func=err_func
 		)
 
 		request = apns_service._create_notification_request_from_args(
@@ -297,6 +312,7 @@ def apns_send_bulk_message(
 	loc_key: str = None,
 	priority: int = None,
 	collapse_id: str = None,
+	err_func: ErrFunc = None,
 ):
 	"""
 	Sends an APNS notification to one or more registration_ids.
@@ -315,9 +331,10 @@ def apns_send_bulk_message(
 	topic = get_manager().get_apns_topic(application_id)
 	results: Dict[str, str] = {}
 	inactive_tokens = []
-	apns_service = APNsService(application_id=application_id, creds=creds, topic=topic)
+	apns_service = APNsService(
+		application_id=application_id, creds=creds, topic=topic, err_func=err_func
+	)
 	for registration_id in registration_ids:
-
 		request = apns_service._create_notification_request_from_args(
 			registration_id,
 			alert,
@@ -331,10 +348,10 @@ def apns_send_bulk_message(
 			collapse_id=collapse_id,
 		)
 
-		result = apns_service.send_message(
-			request
+		result = apns_service.send_message(request)
+		results[registration_id] = (
+			"Success" if result.is_successful else result.description
 		)
-		results[registration_id] = "Success" if result.is_successful else result.description
 		if not result.is_successful and result.description == "Unregistered":
 			inactive_tokens.append(registration_id)
 
