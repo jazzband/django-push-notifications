@@ -343,9 +343,9 @@ Routes can be added one of two ways:
 Update of device with duplicate registration ID
 -----------------------------------------------
 
-The DRF viewset enforce the uniqueness of the registration ID. In some use case it
-may cause issue: If an already registered mobile change its user and it will
-fail to register because the registration ID already exist.
+The DRF viewset enforces the uniqueness of the registration ID. In some use cases it
+may cause issue: If an already registered mobile device application changes its user and attempts to re-register, it will
+fail to register because the registration ID already exists.
 
 When option ``UPDATE_ON_DUPLICATE_REG_ID`` is set to True, then any creation of
 device with an already existing registration ID will be transformed into an update.
