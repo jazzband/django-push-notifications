@@ -344,7 +344,7 @@ Update of device with duplicate registration ID
 -----------------------------------------------
 
 The DRF viewset enforces the uniqueness of the registration ID. In some use cases it
-may cause issue: If an already registered mobile device application changes its user and attempts to re-register, it will
+may cause issues: If an already registered mobile device application changes its user and attempts to re-register, it will
 fail to register because the registration ID already exists.
 
 When option ``UPDATE_ON_DUPLICATE_REG_ID`` is set to True, then any creation of
