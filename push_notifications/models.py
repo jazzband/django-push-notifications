@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from .apns import apns_send_bulk_message
 from .fields import HexIntegerField
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
@@ -133,7 +134,7 @@ class APNSDeviceManager(models.Manager):
 
 
 class APNSDeviceQuerySet(models.query.QuerySet):
-	def send_message(self, message, creds=None, **kwargs):
+	def send_message(self, message, **kwargs):
 		if self.exists():
 			from .apns import apns_send_bulk_message
 
@@ -146,7 +147,7 @@ class APNSDeviceQuerySet(models.query.QuerySet):
 				)
 				r = apns_send_bulk_message(
 					registration_ids=reg_ids, alert=message, application_id=app_id,
-					creds=creds, **kwargs
+					**kwargs
 				)
 				if hasattr(r, "keys"):
 					res += [r]
@@ -169,13 +170,13 @@ class APNSDevice(Device):
 	class Meta:
 		verbose_name = _("APNS device")
 
-	def send_message(self, message, creds=None, **kwargs):
+	def send_message(self, message, **kwargs):
 		from .apns import apns_send_message
 
 		return apns_send_message(
 			registration_id=self.registration_id,
 			alert=message,
-			application_id=self.application_id, creds=creds,
+			application_id=self.application_id,
 			**kwargs
 		)
 
