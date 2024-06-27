@@ -244,7 +244,7 @@ When using FCM, ``django-push-notifications`` will automatically use the `notifi
 	# Send a notification message
 	fcm_device.send_message("This is a message")
 
-	# Send a notification message with additionnal payload
+	# Send a notification message with additional payload
 	fcm_device.send_message("This is a enriched message", extra={"title": "Notification title", "icon": "icon_ressource"})
 
 	# Send a notification message with additionnal payload (alternative syntax)
