@@ -135,12 +135,9 @@ class APNsService:
 		self,
 		request: NotificationRequest,
 	):
-		print("a")
 		loop = asyncio.get_event_loop()
-		res1 = self.client.send_notification(request)
-		print("b", res1)
-		res = loop.run_until_complete(res1)
-		print("c", res)
+		routine = self.client.send_notification(request)
+		res = loop.run_until_complete(routine)
 		return res
 
 	def _create_notification_request_from_args(

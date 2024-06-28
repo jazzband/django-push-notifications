@@ -5,9 +5,9 @@ from unittest import mock
 import pytest
 from django.test import TestCase
 
-from aioapns.common import NotificationResult
 
 try:
+	from aioapns.common import NotificationResult
 	from push_notifications.apns_async import TokenCredentials, apns_send_message
 except ModuleNotFoundError:
 	# skipping because apns2 is not supported on python 3.10
