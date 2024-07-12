@@ -1,10 +1,21 @@
+import sys
 from unittest import mock
 
-from apns2.client import NotificationPriority
+import pytest
 from django.test import TestCase
 
-from push_notifications.apns import _apns_send
-from push_notifications.exceptions import APNSUnsupportedPriority
+try:
+	from apns2.client import NotificationPriority
+	from push_notifications.apns import _apns_send
+	from push_notifications.exceptions import APNSUnsupportedPriority
+except (AttributeError, ModuleNotFoundError):
+	# skipping because apns2 is not supported on python 3.10
+	# it uses hyper that imports from collections which were changed in 3.10
+	# and we would get  "AttributeError: module 'collections' has no attribute 'MutableMapping'"
+	if sys.version_info >= (3, 10):
+		pytest.skip(allow_module_level=True)
+	else:
+		raise
 
 
 class APNSPushPayloadTest(TestCase):
