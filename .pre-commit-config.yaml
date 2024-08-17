@@ -12,3 +12,5 @@ repos:
     rev: v3.17.0
     hooks:
     -   id: pyupgrade
+        args:
+            - --keep-mock # for AsyncMock in 3.7
