@@ -45,7 +45,7 @@ You can install the library directly from pypi using pip:
 
 .. code-block:: shell
 
-	$ pip install django-push-notifications[WP,APNS,FCM]
+	$ pip install django-push-notifications[WP,apns-async,FCM]
 
 
 Edit your settings.py file:
