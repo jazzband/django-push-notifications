@@ -116,9 +116,7 @@ def apns_send_message(registration_id, alert, application_id=None, creds=None, *
 		)
 	except apns2_errors.APNsException as apns2_exception:
 		if isinstance(apns2_exception, apns2_errors.Unregistered):
-			device = models.APNSDevice.objects.get(registration_id=registration_id)
-			device.active = False
-			device.save()
+			models.APNSDevice.objects.filter(registration_id=registration_id).update(active=False)
 
 		raise APNSServerError(status=apns2_exception.__class__.__name__)
 
