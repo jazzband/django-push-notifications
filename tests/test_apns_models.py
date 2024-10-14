@@ -131,3 +131,17 @@ class APNSModelTestCase(TestCase):
 					self.assertTrue(
 						APNSDevice.objects.get(registration_id=token).active
 					)
+
+	def test_apns_send_message_to_duplicated_device_with_error(self):
+		# these errors are device specific, device.active will be set false
+		devices = ["abc", "abc"]
+		self._create_devices(devices)
+
+		with mock.patch("push_notifications.apns._apns_send") as s:
+			s.side_effect = Unregistered
+			device = APNSDevice.objects.filter(registration_id="abc").first()
+			with self.assertRaises(APNSError) as ae:
+				device.send_message("Hello World!")
+			self.assertEqual(ae.exception.status, "Unregistered")
+			for device in APNSDevice.objects.filter(registration_id="abc"):
+				self.assertFalse(device.active)
