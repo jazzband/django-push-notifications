@@ -87,19 +87,19 @@ class APNSModelTestCase(TestCase):
 		mock_apns.return_value.send_notification.return_value = NotificationResult(
 			status="400",
 			notification_id="abc",
-			description="Unregistered",
+			description="PayloadTooLarge",
 		)
 		device = APNSDevice.objects.get(registration_id="abc")
 		with self.assertRaises(APNSError) as ae:
 			device.send_message("Hello World!")
-		self.assertEqual(ae.exception.status, "Unregistered")
-		self.assertFalse(APNSDevice.objects.get(registration_id="abc").active)
+		self.assertTrue("PayloadTooLarge" in ae.exception.message)
+		self.assertTrue(APNSDevice.objects.get(registration_id="abc").active)
 
 	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
 	def test_apns_send_message_to_several_devices_with_error(self, mock_apns):
 		# these errors are device specific, device.active will be set false
 		devices = ["abc", "def", "ghi"]
-		expected_exceptions_statuses = ["PayloadTooLarge", "BadTopic", "Unregistered"]
+		expected_exceptions_statuses = ["PayloadTooLarge", "DeviceTokenNotForTopic", "Unregistered"]
 		self._create_devices(devices)
 
 		mock_apns.return_value.send_notification.side_effect = [
@@ -111,7 +111,7 @@ class APNSModelTestCase(TestCase):
 			NotificationResult(
 				status="400",
 				notification_id="def",
-				description="BadTopic",
+				description="DeviceTokenNotForTopic",
 			),
 			NotificationResult(
 				status="400",
@@ -124,12 +124,12 @@ class APNSModelTestCase(TestCase):
 			device = APNSDevice.objects.get(registration_id=token)
 			with self.assertRaises(APNSError) as ae:
 				device.send_message("Hello World!")
-			self.assertEqual(ae.exception.status, expected_exceptions_statuses[idx])
+			self.assertTrue(expected_exceptions_statuses[idx] in ae.exception.message)
 
-			if idx == 2:
-				self.assertFalse(APNSDevice.objects.get(registration_id=token).active)
-			else:
+			if idx == 0:
 				self.assertTrue(APNSDevice.objects.get(registration_id=token).active)
+			else:
+				self.assertFalse(APNSDevice.objects.get(registration_id=token).active)
 
 	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
 	def test_apns_send_message_to_bulk_devices_with_error(self, mock_apns):
@@ -144,7 +144,7 @@ class APNSModelTestCase(TestCase):
 			NotificationResult(
 				status="400",
 				notification_id="def",
-				description="BadTopic",
+				description="DeviceTokenNotForTopic",
 			),
 			NotificationResult(
 				status="400",
@@ -156,13 +156,14 @@ class APNSModelTestCase(TestCase):
 
 		mock_apns.return_value.send_notification.side_effect = results
 
-		results = APNSDevice.objects.all().send_message("Hello World!")
+		with self.assertRaises(APNSError):
+			APNSDevice.objects.all().send_message("Hello World!")
 
 		for idx, token in enumerate(devices):
-			if idx == 2:
-				self.assertFalse(APNSDevice.objects.get(registration_id=token).active)
-			else:
+			if idx == 0:
 				self.assertTrue(APNSDevice.objects.get(registration_id=token).active)
+			else:
+				self.assertFalse(APNSDevice.objects.get(registration_id=token).active)
 
 	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
 	def test_apns_send_messages_different_priority(self, mock_apns):
