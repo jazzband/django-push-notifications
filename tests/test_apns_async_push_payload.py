@@ -8,7 +8,7 @@ from django.test import TestCase
 
 try:
 	from aioapns.common import NotificationResult
-	from push_notifications.apns_async import TokenCredentials, apns_send_message
+	from push_notifications.apns_async import TokenCredentials, apns_send_message, CertificateCredentials
 except ModuleNotFoundError:
 	# skipping because apns2 is not supported on python 3.10
 	# it uses hyper that imports from collections which were changed in 3.10
@@ -157,8 +157,7 @@ class APNSAsyncPushPayloadTest(TestCase):
 		self.assertEqual(req.collapse_key, "456789")
 
 	@mock.patch("aioapns.client.APNsCertConnectionPool", autospec=True)
-	@mock.patch("aioapns.client.APNsKeyConnectionPool", autospec=True)
-	def test_aioapns_err_func(self, mock_cert_pool, mock_key_pool):
+	def test_aioapns_err_func(self, mock_cert_pool):
 		mock_cert_pool.return_value.send_notification = mock.AsyncMock()
 		result =  NotificationResult(
 			"123", "400"
@@ -169,10 +168,8 @@ class APNSAsyncPushPayloadTest(TestCase):
 			apns_send_message(
 				"123",
 				"sample",
-				creds=TokenCredentials(
-					key="aaa",
-					key_id="bbb",
-					team_id="ccc",
+				creds=CertificateCredentials(
+					client_cert="dummy/path.pem",
 				),
 				topic="default",
 				err_func=err_func,
