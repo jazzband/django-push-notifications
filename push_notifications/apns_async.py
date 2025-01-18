@@ -123,6 +123,7 @@ def _create_notification_request_from_args(
 	loc_key: str = None,
 	priority: int = None,
 	collapse_id: str = None,
+	category: str = None,
 	aps_kwargs: dict = {},
 	message_kwargs: dict = {},
 	notification_request_kwargs: dict = {},
@@ -158,6 +159,7 @@ def _create_notification_request_from_args(
 				"badge": badge,
 				"sound": sound,
 				"thread-id": thread_id,
+				"category": category,
 				**aps_kwargs,
 			},
 			**extra,
@@ -223,6 +225,7 @@ def apns_send_message(
 	priority: int = None,
 	collapse_id: str = None,
 	err_func: ErrFunc = None,
+	category: str = None,
 ):
 	"""
 	Sends an APNS notification to a single registration_id.
@@ -254,6 +257,7 @@ def apns_send_message(
 		priority=priority,
 		collapse_id=collapse_id,
 		err_func=err_func,
+		category=category,
 	)
 
 	for result in results.values():
@@ -278,6 +282,7 @@ def apns_send_bulk_message(
 	priority: int = None,
 	collapse_id: str = None,
 	err_func: ErrFunc = None,
+	category: str = None,
 ):
 	"""
 	Sends an APNS notification to one or more registration_ids.
@@ -312,6 +317,7 @@ def apns_send_bulk_message(
 			priority=priority,
 			collapse_id=collapse_id,
 			err_func=err_func,
+			category=category,
 		))
 
 		results = {}
@@ -356,6 +362,7 @@ async def _send_bulk_request(
 	priority: int = None,
 	collapse_id: str = None,
 	err_func: ErrFunc = None,
+	category: str = None,
 ):
 	client = _create_client(
 		creds=creds, application_id=application_id, topic=topic, err_func=err_func
@@ -372,6 +379,7 @@ async def _send_bulk_request(
 		loc_key=loc_key,
 		priority=priority,
 		collapse_id=collapse_id,
+		category=category,
 	) for registration_id in registration_ids]
 
 	send_requests = [_send_request(client, request) for request in requests]
