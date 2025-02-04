@@ -239,8 +239,8 @@ def apns_send_message(
 	:param alert: The alert message to send
 	:param application_id: The application_id to use
 	:param creds: The credentials to use
- 	:param mutable_content: If True, enables the "mutable-content" flag in the payload.  
-                            This allows the app's Notification Service Extension to modify  
+ 	:param mutable_content: If True, enables the "mutable-content" flag in the payload.
+                            This allows the app's Notification Service Extension to modify
                             the notification before it is displayed.
 	"""
 	results = apns_send_bulk_message(
@@ -297,8 +297,8 @@ def apns_send_bulk_message(
 	:param alert: The alert message to send
 	:param application_id: The application_id to use
 	:param creds: The credentials to use
- 	:param mutable_content: If True, enables the "mutable-content" flag in the payload.  
-                            This allows the app's Notification Service Extension to modify  
+ 	:param mutable_content: If True, enables the "mutable-content" flag in the payload.
+                            This allows the app's Notification Service Extension to modify
                             the notification before it is displayed.
 	"""
 	try:
