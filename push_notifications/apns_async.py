@@ -222,6 +222,7 @@ def apns_send_message(
 	loc_key: str = None,
 	priority: int = None,
 	collapse_id: str = None,
+	mutable_content: bool = False,
 	err_func: ErrFunc = None,
 ):
 	"""
@@ -238,6 +239,9 @@ def apns_send_message(
 	:param alert: The alert message to send
 	:param application_id: The application_id to use
 	:param creds: The credentials to use
+ 	:param mutable_content: If True, enables the "mutable-content" flag in the payload.
+                            This allows the app's Notification Service Extension to modify
+                            the notification before it is displayed.
 	"""
 	results = apns_send_bulk_message(
 		registration_ids=[registration_id],
@@ -253,6 +257,7 @@ def apns_send_message(
 		loc_key=loc_key,
 		priority=priority,
 		collapse_id=collapse_id,
+		mutable_content=mutable_content,
 		err_func=err_func,
 	)
 
@@ -277,6 +282,7 @@ def apns_send_bulk_message(
 	loc_key: str = None,
 	priority: int = None,
 	collapse_id: str = None,
+	mutable_content: bool = False,
 	err_func: ErrFunc = None,
 ):
 	"""
@@ -291,6 +297,9 @@ def apns_send_bulk_message(
 	:param alert: The alert message to send
 	:param application_id: The application_id to use
 	:param creds: The credentials to use
+ 	:param mutable_content: If True, enables the "mutable-content" flag in the payload.
+                            This allows the app's Notification Service Extension to modify
+                            the notification before it is displayed.
 	"""
 	try:
 		topic = get_manager().get_apns_topic(application_id)
@@ -311,6 +320,7 @@ def apns_send_bulk_message(
 			loc_key=loc_key,
 			priority=priority,
 			collapse_id=collapse_id,
+			mutable_content=mutable_content,
 			err_func=err_func,
 		))
 
@@ -355,11 +365,16 @@ async def _send_bulk_request(
 	loc_key: str = None,
 	priority: int = None,
 	collapse_id: str = None,
+	mutable_content: bool = False,
 	err_func: ErrFunc = None,
 ):
 	client = _create_client(
 		creds=creds, application_id=application_id, topic=topic, err_func=err_func
 	)
+
+	aps_kwargs = {}
+	if mutable_content:
+		aps_kwargs["mutable-content"] = mutable_content
 
 	requests = [_create_notification_request_from_args(
 		registration_id,
@@ -372,6 +387,7 @@ async def _send_bulk_request(
 		loc_key=loc_key,
 		priority=priority,
 		collapse_id=collapse_id,
+		aps_kwargs=aps_kwargs
 	) for registration_id in registration_ids]
 
 	send_requests = [_send_request(client, request) for request in requests]
