@@ -200,6 +200,25 @@ class APNSAsyncPushPayloadTest(TestCase):
 		self.assertTrue("mutable-content" in req.message["aps"])
 		self.assertEqual(req.message["aps"]["mutable-content"], 1)  # APNs expects 1 for True
 
+	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
+	def test_push_payload_with_category(self, mock_apns):
+		apns_send_message(
+			"123",
+			"Hello world",
+			category="MESSAGE_CATEGORY",
+			creds=TokenCredentials(key="aaa", key_id="bbb", team_id="ccc"),
+			sound="chime",
+			extra={"custom_data": 12345},
+			expiration=int(time.time()) + 3,
+		)
+
+		args, kwargs = mock_apns.return_value.send_notification.call_args
+		req = args[0]
+
+		# Assertions
+		self.assertTrue("category" in req.message["aps"])
+		self.assertEqual(req.message["aps"]["category"], "MESSAGE_CATEGORY")  # Verify correct category value
+
 	# def test_bad_priority(self):
 	# 	with mock.patch("apns2.credentials.init_context"):
 	# 		with mock.patch("apns2.client.APNsClient.connect"):
