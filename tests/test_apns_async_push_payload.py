@@ -260,4 +260,3 @@ class APNSAsyncPushPayloadTest(TestCase):
 
 		assert "content-available" in req.message["aps"]
 		assert req.message["aps"]["content-available"] == 5
-
