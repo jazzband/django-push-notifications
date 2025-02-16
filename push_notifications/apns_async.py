@@ -222,6 +222,7 @@ def apns_send_message(
 	priority: int = None,
 	collapse_id: str = None,
 	mutable_content: bool = False,
+	category: str = None,
 	err_func: ErrFunc = None,
 ):
 	"""
@@ -241,6 +242,10 @@ def apns_send_message(
 	:param mutable_content: If True, enables the "mutable-content" flag in the payload.
 	                    This allows the app's Notification Service Extension to modify
 	                    the notification before it is displayed.
+	:param category: The category identifier for actionable notifications.
+	                 This should match a category identifier defined in the app's
+	                 Notification Content Extension or UNNotificationCategory configuration.
+	                 It allows the app to display custom actions with the notification.
 	:param content_available: If True or 1 the `content-available` flag will be set to 1, allowing the app to be woken up in the background
 	"""
 	results = apns_send_bulk_message(
@@ -259,6 +264,7 @@ def apns_send_message(
 		priority=priority,
 		collapse_id=collapse_id,
 		mutable_content=mutable_content,
+		category=category,
 		err_func=err_func,
 	)
 
@@ -285,6 +291,7 @@ def apns_send_bulk_message(
 	priority: int = None,
 	collapse_id: str = None,
 	mutable_content: bool = False,
+	category: str = None,
 	err_func: ErrFunc = None,
 ):
 	"""
@@ -302,6 +309,10 @@ def apns_send_bulk_message(
 	:param mutable_content: If True, enables the "mutable-content" flag in the payload.
 	                    This allows the app's Notification Service Extension to modify
 	                    the notification before it is displayed.
+	:param category: The category identifier for actionable notifications.
+	                 This should match a category identifier defined in the app's
+	                 Notification Content Extension or UNNotificationCategory configuration.
+	                 It allows the app to display custom actions with the notification.
 	:param content_available: If True or 1 the `content-available` flag will be set to 1, allowing the app to be woken up in the background
 	"""
 	try:
@@ -326,6 +337,7 @@ def apns_send_bulk_message(
 				priority=priority,
 				collapse_id=collapse_id,
 				mutable_content=mutable_content,
+				category=category,
 				err_func=err_func,
 			)
 		)
@@ -376,6 +388,7 @@ async def _send_bulk_request(
 	priority: int = None,
 	collapse_id: str = None,
 	mutable_content: bool = False,
+	category: str = None,
 	err_func: ErrFunc = None,
 ):
 	client = _create_client(
@@ -385,6 +398,8 @@ async def _send_bulk_request(
 	aps_kwargs = {}
 	if mutable_content:
 		aps_kwargs["mutable-content"] = mutable_content
+	if category:
+		aps_kwargs["category"] = category
 
 	if content_available is not None:
 		if isinstance(content_available, bool):
