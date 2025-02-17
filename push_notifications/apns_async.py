@@ -214,7 +214,7 @@ def apns_send_message(
 	topic: str = None,
 	badge: int = None,
 	sound: str = None,
-	content_available: bool | int = None,
+	content_available: bool = None,
 	extra: dict = {},
 	expiration: int = None,
 	thread_id: str = None,
@@ -246,7 +246,7 @@ def apns_send_message(
 	                 This should match a category identifier defined in the app's
 	                 Notification Content Extension or UNNotificationCategory configuration.
 	                 It allows the app to display custom actions with the notification.
-	:param content_available: If True or 1 the `content-available` flag will be set to 1, allowing the app to be woken up in the background
+	:param content_available: If True the `content-available` flag will be set to 1, allowing the app to be woken up in the background
 	"""
 	results = apns_send_bulk_message(
 		registration_ids=[registration_id],
@@ -283,7 +283,7 @@ def apns_send_bulk_message(
 	topic: str = None,
 	badge: int = None,
 	sound: str = None,
-	content_available: bool | int = None,
+	content_available: bool = None,
 	extra: dict = {},
 	expiration: int = None,
 	thread_id: str = None,
@@ -313,7 +313,7 @@ def apns_send_bulk_message(
 	                 This should match a category identifier defined in the app's
 	                 Notification Content Extension or UNNotificationCategory configuration.
 	                 It allows the app to display custom actions with the notification.
-	:param content_available: If True or 1 the `content-available` flag will be set to 1, allowing the app to be woken up in the background
+	:param content_available: If True the `content-available` flag will be set to 1, allowing the app to be woken up in the background
 	"""
 	try:
 		topic = get_manager().get_apns_topic(application_id)
@@ -380,7 +380,7 @@ async def _send_bulk_request(
 	topic: str = None,
 	badge: int = None,
 	sound: str = None,
-	content_available: bool | int = None,
+	content_available: bool = None,
 	extra: dict = {},
 	expiration: int = None,
 	thread_id: str = None,
@@ -401,11 +401,8 @@ async def _send_bulk_request(
 	if category:
 		aps_kwargs["category"] = category
 
-	if content_available is not None:
-		if isinstance(content_available, bool):
-			aps_kwargs["content-available"] = int(content_available)
-		else:
-			aps_kwargs["content-available"] = content_available
+	if content_available:
+		aps_kwargs["content-available"] = 1
 
 	requests = [
 		_create_notification_request_from_args(

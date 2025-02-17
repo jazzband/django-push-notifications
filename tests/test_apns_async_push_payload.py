@@ -259,16 +259,14 @@ class APNSAsyncPushPayloadTest(TestCase):
 		args, kwargs = mock_apns.return_value.send_notification.call_args
 		req = args[0]
 
-		assert "content-available" in req.message["aps"]
-		assert req.message["aps"]["content-available"] == 0
+		assert "content-available" not in req.message["aps"]
 
 
 	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
-	def test_push_payload_with_content_available_int(self, mock_apns):
+	def test_push_payload_with_content_available_not_set(self, mock_apns):
 		apns_send_message(
 			"123",
 			"Hello world",
-			content_available=5,
 			creds=TokenCredentials(key="aaa", key_id="bbb", team_id="ccc"),
 			extra={"custom_data": 12345},
 			expiration=int(time.time()) + 3,
@@ -277,5 +275,4 @@ class APNSAsyncPushPayloadTest(TestCase):
 		args, kwargs = mock_apns.return_value.send_notification.call_args
 		req = args[0]
 
-		assert "content-available" in req.message["aps"]
-		assert req.message["aps"]["content-available"] == 5
+		assert "content-available" not in req.message["aps"]
