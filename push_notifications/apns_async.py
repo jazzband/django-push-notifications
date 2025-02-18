@@ -141,9 +141,7 @@ def _create_notification_request_from_args(
 	notification_request_kwargs_out = notification_request_kwargs.copy()
 
 	if expiration is not None:
-		notification_request_kwargs_out["time_to_live"] = expiration - int(
-			time.time()
-		)
+		notification_request_kwargs_out["time_to_live"] = expiration - int(time.time())
 	if priority is not None:
 		notification_request_kwargs_out["priority"] = priority
 
@@ -216,6 +214,7 @@ def apns_send_message(
 	topic: str = None,
 	badge: int = None,
 	sound: str = None,
+	content_available: bool = None,
 	extra: dict = {},
 	expiration: int = None,
 	thread_id: str = None,
@@ -240,13 +239,14 @@ def apns_send_message(
 	:param alert: The alert message to send
 	:param application_id: The application_id to use
 	:param creds: The credentials to use
- 	:param mutable_content: If True, enables the "mutable-content" flag in the payload.
-                            This allows the app's Notification Service Extension to modify
-                            the notification before it is displayed.
+	:param mutable_content: If True, enables the "mutable-content" flag in the payload.
+	                    This allows the app's Notification Service Extension to modify
+	                    the notification before it is displayed.
 	:param category: The category identifier for actionable notifications.
-                     This should match a category identifier defined in the app's
-                     Notification Content Extension or UNNotificationCategory configuration.
-                     It allows the app to display custom actions with the notification.
+	                 This should match a category identifier defined in the app's
+	                 Notification Content Extension or UNNotificationCategory configuration.
+	                 It allows the app to display custom actions with the notification.
+	:param content_available: If True the `content-available` flag will be set to 1, allowing the app to be woken up in the background
 	"""
 	results = apns_send_bulk_message(
 		registration_ids=[registration_id],
@@ -256,6 +256,7 @@ def apns_send_message(
 		topic=topic,
 		badge=badge,
 		sound=sound,
+		content_available=content_available,
 		extra=extra,
 		expiration=expiration,
 		thread_id=thread_id,
@@ -263,7 +264,7 @@ def apns_send_message(
 		priority=priority,
 		collapse_id=collapse_id,
 		mutable_content=mutable_content,
-		category = category,
+		category=category,
 		err_func=err_func,
 	)
 
@@ -282,6 +283,7 @@ def apns_send_bulk_message(
 	topic: str = None,
 	badge: int = None,
 	sound: str = None,
+	content_available: bool = None,
 	extra: dict = {},
 	expiration: int = None,
 	thread_id: str = None,
@@ -304,37 +306,41 @@ def apns_send_bulk_message(
 	:param alert: The alert message to send
 	:param application_id: The application_id to use
 	:param creds: The credentials to use
- 	:param mutable_content: If True, enables the "mutable-content" flag in the payload.
-                            This allows the app's Notification Service Extension to modify
-                            the notification before it is displayed.
+	:param mutable_content: If True, enables the "mutable-content" flag in the payload.
+	                    This allows the app's Notification Service Extension to modify
+	                    the notification before it is displayed.
 	:param category: The category identifier for actionable notifications.
-                     This should match a category identifier defined in the app's
-                     Notification Content Extension or UNNotificationCategory configuration.
-                     It allows the app to display custom actions with the notification.
+	                 This should match a category identifier defined in the app's
+	                 Notification Content Extension or UNNotificationCategory configuration.
+	                 It allows the app to display custom actions with the notification.
+	:param content_available: If True the `content-available` flag will be set to 1, allowing the app to be woken up in the background
 	"""
 	try:
 		topic = get_manager().get_apns_topic(application_id)
 		results: Dict[str, str] = {}
 		inactive_tokens = []
 
-		responses = asyncio.run(_send_bulk_request(
-			registration_ids=registration_ids,
-			alert=alert,
-			application_id=application_id,
-			creds=creds,
-			topic=topic,
-			badge=badge,
-			sound=sound,
-			extra=extra,
-			expiration=expiration,
-			thread_id=thread_id,
-			loc_key=loc_key,
-			priority=priority,
-			collapse_id=collapse_id,
-			mutable_content=mutable_content,
-			category=category,
-			err_func=err_func,
-		))
+		responses = asyncio.run(
+			_send_bulk_request(
+				registration_ids=registration_ids,
+				alert=alert,
+				application_id=application_id,
+				creds=creds,
+				topic=topic,
+				badge=badge,
+				sound=sound,
+				content_available=content_available,
+				extra=extra,
+				expiration=expiration,
+				thread_id=thread_id,
+				loc_key=loc_key,
+				priority=priority,
+				collapse_id=collapse_id,
+				mutable_content=mutable_content,
+				category=category,
+				err_func=err_func,
+			)
+		)
 
 		results = {}
 		errors = []
@@ -344,14 +350,17 @@ def apns_send_bulk_message(
 			)
 			if not result.is_successful:
 				errors.append(result.description)
-				if result.description in ["Unregistered", "BadDeviceToken",
-										  "DeviceTokenNotForTopic"]:
+				if result.description in [
+					"Unregistered",
+					"BadDeviceToken",
+					"DeviceTokenNotForTopic",
+				]:
 					inactive_tokens.append(registration_id)
 
 		if len(inactive_tokens) > 0:
-			models.APNSDevice.objects.filter(registration_id__in=inactive_tokens).update(
-				active=False
-			)
+			models.APNSDevice.objects.filter(
+				registration_id__in=inactive_tokens
+			).update(active=False)
 
 		if len(errors) > 0:
 			msg = "One or more errors failed with errors: {}".format(", ".join(errors))
@@ -371,6 +380,7 @@ async def _send_bulk_request(
 	topic: str = None,
 	badge: int = None,
 	sound: str = None,
+	content_available: bool = None,
 	extra: dict = {},
 	expiration: int = None,
 	thread_id: str = None,
@@ -391,19 +401,25 @@ async def _send_bulk_request(
 	if category:
 		aps_kwargs["category"] = category
 
-	requests = [_create_notification_request_from_args(
-		registration_id,
-		alert,
-		badge=badge,
-		sound=sound,
-		extra=extra,
-		expiration=expiration,
-		thread_id=thread_id,
-		loc_key=loc_key,
-		priority=priority,
-		collapse_id=collapse_id,
-		aps_kwargs=aps_kwargs
-	) for registration_id in registration_ids]
+	if content_available:
+		aps_kwargs["content-available"] = 1
+
+	requests = [
+		_create_notification_request_from_args(
+			registration_id,
+			alert,
+			badge=badge,
+			sound=sound,
+			extra=extra,
+			expiration=expiration,
+			thread_id=thread_id,
+			loc_key=loc_key,
+			priority=priority,
+			collapse_id=collapse_id,
+			aps_kwargs=aps_kwargs,
+		)
+		for registration_id in registration_ids
+	]
 
 	send_requests = [_send_request(client, request) for request in requests]
 	return await asyncio.gather(*send_requests)
@@ -417,11 +433,11 @@ async def _send_request(apns, request):
 		return request.device_token, NotificationResult(
 			notification_id=request.notification_id,
 			status="failed",
-			description="TimeoutError"
+			description="TimeoutError",
 		)
 	except:
 		return request.device_token, NotificationResult(
 			notification_id=request.notification_id,
 			status="failed",
-			description="CommunicationError"
+			description="CommunicationError",
 		)
