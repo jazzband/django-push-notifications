@@ -239,7 +239,7 @@ def apns_send_message(
 	:param alert: The alert message to send
 	:param application_id: The application_id to use
 	:param creds: The credentials to use
-	:param mutable_content: If True, enables the "mutable-content" flag in the payload.
+	:param mutable_content: If True, the "mutable-content" flag will be set to 1.
 	                    This allows the app's Notification Service Extension to modify
 	                    the notification before it is displayed.
 	:param category: The category identifier for actionable notifications.
@@ -306,7 +306,7 @@ def apns_send_bulk_message(
 	:param alert: The alert message to send
 	:param application_id: The application_id to use
 	:param creds: The credentials to use
-	:param mutable_content: If True, enables the "mutable-content" flag in the payload.
+	:param mutable_content: If True, the "mutable-content" flag will be set to 1.
 	                    This allows the app's Notification Service Extension to modify
 	                    the notification before it is displayed.
 	:param category: The category identifier for actionable notifications.
@@ -397,10 +397,9 @@ async def _send_bulk_request(
 
 	aps_kwargs = {}
 	if mutable_content:
-		aps_kwargs["mutable-content"] = mutable_content
+		aps_kwargs["mutable-content"] = 1
 	if category:
 		aps_kwargs["category"] = category
-
 	if content_available:
 		aps_kwargs["content-available"] = 1
 
