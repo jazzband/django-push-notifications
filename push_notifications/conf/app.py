@@ -51,7 +51,7 @@ APNS_AUTH_CREDS_REQUIRED = ["AUTH_KEY_PATH", "AUTH_KEY_ID", "TEAM_ID"]
 APNS_AUTH_CREDS_OPTIONAL = ["CERTIFICATE", "ENCRYPTION_ALGORITHM", "TOKEN_LIFETIME"]
 
 APNS_OPTIONAL_SETTINGS = [
-	"USE_SANDBOX", "USE_ALTERNATIVE_PORT", "TOPIC"
+	"USE_SANDBOX", "USE_ALTERNATIVE_PORT", "TOPIC", "ERROR_TIMEOUT"
 ]
 
 FCM_REQUIRED_SETTINGS = []
@@ -165,6 +165,7 @@ class AppConfig(BaseConfig):
 		application_config.setdefault("USE_SANDBOX", False)
 		application_config.setdefault("USE_ALTERNATIVE_PORT", False)
 		application_config.setdefault("TOPIC", None)
+		application_config.setdefault("ERROR_TIMEOUT", 1)
 
 	def _validate_apns_certificate(self, certfile):
 		"""Validate the APNS certificate at startup."""
@@ -334,6 +335,9 @@ class AppConfig(BaseConfig):
 
 	def get_apns_topic(self, application_id=None):
 		return self._get_application_settings(application_id, "APNS", "TOPIC")
+
+	def get_apns_error_timeout(self, application_id=None):
+		return self._get_application_settings(application_id, "APNS", "ERROR_TIMEOUT")
 
 	def get_wns_package_security_id(self, application_id=None):
 		return self._get_application_settings(application_id, "WNS", "PACKAGE_SECURITY_ID")
