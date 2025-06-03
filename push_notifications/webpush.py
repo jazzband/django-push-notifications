@@ -92,4 +92,3 @@ def webpush_send_message(device, message, results=None, **kwargs):
 				device.save(update_fields=('active',))
 			return results
 		raise WebPushError(exception_message)
-
