@@ -217,6 +217,7 @@ class AppConfig(BaseConfig):
 			"OPERA": "https://fcm.googleapis.com/fcm/send",
 			"EDGE": "https://wns2-par02p.notify.windows.com/w",
 			"FIREFOX": "https://updates.push.services.mozilla.com/wpush/v2",
+			"SAFARI": "https://web.push.apple.com",
 		})
 
 	def _validate_allowed_settings(self, application_id, application_config, allowed_settings):
