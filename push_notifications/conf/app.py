@@ -63,7 +63,7 @@ WNS_REQUIRED_SETTINGS = ["PACKAGE_SECURITY_ID", "SECRET_KEY"]
 WNS_OPTIONAL_SETTINGS = ["WNS_ACCESS_URL"]
 
 WP_REQUIRED_SETTINGS = ["PRIVATE_KEY", "CLAIMS"]
-WP_OPTIONAL_SETTINGS = ["ERROR_TIMEOUT", "POST_URL"]
+WP_OPTIONAL_SETTINGS = ["ERROR_TIMEOUT", "POST_URL", "TTL"]
 
 
 class AppConfig(BaseConfig):
@@ -218,6 +218,7 @@ class AppConfig(BaseConfig):
 			"EDGE": "https://wns2-par02p.notify.windows.com/w",
 			"FIREFOX": "https://updates.push.services.mozilla.com/wpush/v2",
 		})
+		application_config.setdefault("TTL", 300)
 
 	def _validate_allowed_settings(self, application_id, application_config, allowed_settings):
 		"""Confirm only allowed settings are present."""
@@ -349,3 +350,6 @@ class AppConfig(BaseConfig):
 
 	def get_wp_claims(self, application_id=None):
 		return self._get_application_settings(application_id, "WP", "CLAIMS")
+
+	def get_wp_ttl(self, application_id=None):
+		return self._get_application_settings(application_id, "WP", "TTL")
