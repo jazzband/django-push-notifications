@@ -110,6 +110,9 @@ class LegacyConfig(BaseConfig):
 	def get_apns_feedback_port(self, application_id=None):
 		return self._get_application_settings(application_id, "APNS_FEEDBACK_PORT", self.msg)
 
+	def get_apns_error_timeout(self, application_id=None):
+		return self._get_application_settings(application_id, "APNS_ERROR_TIMEOUT")
+
 	def get_wns_package_security_id(self, application_id=None):
 		return self._get_application_settings(application_id, "WNS_PACKAGE_SECURITY_ID", self.msg)
 
