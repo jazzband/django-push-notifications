@@ -207,6 +207,7 @@ class WNSDeviceAuthorizedViewSet(AuthorizedMixin, WNSDeviceViewSet):
 class WebPushDeviceViewSet(DeviceViewSetMixin, ModelViewSet):
 	queryset = WebPushDevice.objects.all()
 	serializer_class = WebPushDeviceSerializer
+	lookup_value_regex = '.+'
 
 
 class WebPushDeviceAuthorizedViewSet(AuthorizedMixin, WebPushDeviceViewSet):
