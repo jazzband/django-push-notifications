@@ -37,6 +37,7 @@ PUSH_NOTIFICATIONS_SETTINGS.setdefault("WP_POST_URL", {
 	"OPERA": PUSH_NOTIFICATIONS_SETTINGS["FCM_POST_URL"],
 	"FIREFOX": "https://updates.push.services.mozilla.com/wpush/v2",
 	"EDGE": "https://wns2-par02p.notify.windows.com/w",
+	"SAFARI": "https://web.push.apple.com",
 })
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("WP_PRIVATE_KEY", None)
 PUSH_NOTIFICATIONS_SETTINGS.setdefault("WP_CLAIMS", None)
