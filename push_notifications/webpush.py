@@ -37,6 +37,7 @@ def webpush_send_message(device, message, **kwargs):
 			data=message,
 			vapid_private_key=get_manager().get_wp_private_key(device.application_id),
 			vapid_claims=get_manager().get_wp_claims(device.application_id).copy(),
+			timeout=get_manager().get_wp_error_timeout(device.application_id),
 			**kwargs
 		)
 		if response.ok:
