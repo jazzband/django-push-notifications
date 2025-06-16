@@ -317,6 +317,7 @@ def apns_send_bulk_message(
 	"""
 	try:
 		topic = get_manager().get_apns_topic(application_id)
+		timeout = get_manager().get_apns_error_timeout(application_id)
 		results: Dict[str, str] = {}
 		inactive_tokens = []
 
@@ -339,6 +340,7 @@ def apns_send_bulk_message(
 				mutable_content=mutable_content,
 				category=category,
 				err_func=err_func,
+				timeout=timeout,
 			)
 		)
 
@@ -390,6 +392,7 @@ async def _send_bulk_request(
 	mutable_content: bool = False,
 	category: str = None,
 	err_func: ErrFunc = None,
+	timeout: float = None,
 ):
 	client = _create_client(
 		creds=creds, application_id=application_id, topic=topic, err_func=err_func
@@ -420,13 +423,13 @@ async def _send_bulk_request(
 		for registration_id in registration_ids
 	]
 
-	send_requests = [_send_request(client, request) for request in requests]
+	send_requests = [_send_request(client, request, timeout) for request in requests]
 	return await asyncio.gather(*send_requests)
 
 
-async def _send_request(apns, request):
+async def _send_request(apns, request, timeout):
 	try:
-		res = await asyncio.wait_for(apns.send_notification(request), timeout=1)
+		res = await asyncio.wait_for(apns.send_notification(request), timeout=timeout)
 		return request.device_token, res
 	except asyncio.TimeoutError:
 		return request.device_token, NotificationResult(
