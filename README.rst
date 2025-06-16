@@ -62,6 +62,7 @@ Edit your settings.py file:
 	from firebase_admin import auth
 
 	# Initialize the default app (either use `GOOGLE_APPLICATION_CREDENTIALS` environment variable, or pass a firebase_admin.credentials.Certificate instance)
+	# You can also pass options. One of them is httpTimeout: This sets the timeout (in seconds) for outgoing HTTP connections initiated by the SDK.
 	default_app = firebase_admin.initialize_app()
 
 	PUSH_NOTIFICATIONS_SETTINGS = {
