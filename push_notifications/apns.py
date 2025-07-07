@@ -40,19 +40,19 @@ def _apns_create_socket(creds=None, application_id=None) -> apns2_client.APNsCli
 
 
 def _apns_prepare(
-	token: str, 
-	alert: str | dict[str, Any] | None, 
-	application_id: str | None = None, 
-	badge: int | Callable | None = None, 
-	sound: str | None = None, 
+	token: str,
+	alert: str | dict[str, Any] | None,
+	application_id: str | None = None,
+	badge: int | Callable | None = None,
+	sound: str | None = None,
 	category: str | None = None,
-	content_available: bool = False, 
-	action_loc_key: str | None = None, 
-	loc_key: str | None = None, 
+	content_available: bool = False,
+	action_loc_key: str | None = None,
+	loc_key: str | None = None,
 	loc_args: str | None = [],
-	extra: dict[str, Any] = {}, 
-	mutable_content: bool = False, 
-	thread_id: str | None = None, 
+	extra: dict[str, Any] = {},
+	mutable_content: bool = False,
+	thread_id: str | None = None,
 	url_args: list[str] | None = None) -> apns2_payload.Payload:
 		if action_loc_key or loc_key or loc_args:
 			apns2_alert = apns2_payload.PayloadAlert(
@@ -71,11 +71,11 @@ def _apns_prepare(
 
 
 def _apns_send(
-	registration_id: str | list[str], 
-	alert: str | dict[str, Any] | None, 
-	batch: bool = False, 
-	application_id: str | None = None, 
-	creds: apns2_credentials.Credentials | None = None, 
+	registration_id: str | list[str],
+	alert: str | dict[str, Any] | None,
+	batch: bool = False,
+	application_id: str | None = None,
+	creds: apns2_credentials.Credentials | None = None,
 	**kwargs: Any
 ) -> dict[str, str] | None:
 	client = _apns_create_socket(creds=creds, application_id=application_id)
@@ -116,10 +116,10 @@ def _apns_send(
 
 
 def apns_send_message(
-	registration_id: str, 
-	alert: str | dict[str, Any] | None, 
-	application_id: str | None = None, 
-	creds: apns2_credentials.Credentials | None = None, 
+	registration_id: str,
+	alert: str | dict[str, Any] | None,
+	application_id: str | None = None,
+	creds: apns2_credentials.Credentials | None = None,
 	**kwargs: Any
 ) -> None:
 	"""
@@ -146,10 +146,10 @@ def apns_send_message(
 
 
 def apns_send_bulk_message(
-	registration_ids: list[str], 
-	alert: str | dict[str, Any] | None, 
-	application_id: str | None = None, 
-	creds: apns2_credentials.Credentials | None = None, 
+	registration_ids: list[str],
+	alert: str | dict[str, Any] | None,
+	application_id: str | None = None,
+	creds: apns2_credentials.Credentials | None = None,
 	**kwargs: Any
 ) -> dict[str, str]:
 	"""

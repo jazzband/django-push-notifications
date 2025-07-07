@@ -170,11 +170,11 @@ def _wns_prepare_toast(data: dict[str, Any], **kwargs: Any) -> bytes:
 
 
 def wns_send_message(
-	uri: str, 
-	message: str | dict[str, list[str]] = None, 
-	xml_data: dict[str, Any] = None, 
-	raw_data: str | bytes | None= None, 
-	application_id: str | None = None, 
+	uri: str,
+	message: str | dict[str, list[str]] = None,
+	xml_data: dict[str, Any] = None,
+	raw_data: str | bytes | None= None,
+	application_id: str | None = None,
 	**kwargs: Any
 ) -> str:
 	"""
@@ -240,11 +240,11 @@ def wns_send_message(
 
 
 def wns_send_bulk_message(
-	uri_list: list[str], 
-	message: str | dict[str, list[str]] | None = None, 
-	xml_data: dict[str, Any] | None = None, 
-	raw_data: str | bytes | None = None, 
-	application_id: str | None = None, 
+	uri_list: list[str],
+	message: str | dict[str, list[str]] | None = None,
+	xml_data: dict[str, Any] | None = None,
+	raw_data: str | bytes | None = None,
+	application_id: str | None = None,
 	**kwargs: Any
 ) -> list[str]:
 	"""
