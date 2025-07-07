@@ -14,9 +14,10 @@ from apns2 import payload as apns2_payload
 from . import models
 from .conf import get_manager
 from .exceptions import APNSError, APNSUnsupportedPriority, APNSServerError
+from typing import Any, Callable
 
 
-def _apns_create_socket(creds=None, application_id=None):
+def _apns_create_socket(creds=None, application_id=None) -> apns2_client.APNsClient:
 	if creds is None:
 		if not get_manager().has_auth_token_creds(application_id):
 			cert = get_manager().get_apns_certificate(application_id)
@@ -39,9 +40,20 @@ def _apns_create_socket(creds=None, application_id=None):
 
 
 def _apns_prepare(
-	token, alert, application_id=None, badge=None, sound=None, category=None,
-	content_available=False, action_loc_key=None, loc_key=None, loc_args=[],
-	extra={}, mutable_content=False, thread_id=None, url_args=None):
+	token: str, 
+	alert: str | dict[str, Any] | None, 
+	application_id: str | None = None, 
+	badge: int | Callable | None = None, 
+	sound: str | None = None, 
+	category: str | None = None,
+	content_available: bool = False, 
+	action_loc_key: str | None = None, 
+	loc_key: str | None = None, 
+	loc_args: str | None = [],
+	extra: dict[str, Any] = {}, 
+	mutable_content: bool = False, 
+	thread_id: str | None = None, 
+	url_args: list[str] | None = None) -> apns2_payload.Payload:
 		if action_loc_key or loc_key or loc_args:
 			apns2_alert = apns2_payload.PayloadAlert(
 				body=alert if alert else {}, body_localized_key=loc_key,
@@ -59,8 +71,13 @@ def _apns_prepare(
 
 
 def _apns_send(
-	registration_id, alert, batch=False, application_id=None, creds=None, **kwargs
-):
+	registration_id: str | list[str], 
+	alert: str | dict[str, Any] | None, 
+	batch: bool = False, 
+	application_id: str | None = None, 
+	creds: apns2_credentials.Credentials | None = None, 
+	**kwargs: Any
+) -> dict[str, str] | None:
 	client = _apns_create_socket(creds=creds, application_id=application_id)
 
 	notification_kwargs = {}
@@ -95,9 +112,16 @@ def _apns_send(
 		get_manager().get_apns_topic(application_id=application_id),
 		**notification_kwargs
 	)
+	return None
 
 
-def apns_send_message(registration_id, alert, application_id=None, creds=None, **kwargs):
+def apns_send_message(
+	registration_id: str, 
+	alert: str | dict[str, Any] | None, 
+	application_id: str | None = None, 
+	creds: apns2_credentials.Credentials | None = None, 
+	**kwargs: Any
+) -> None:
 	"""
 	Sends an APNS notification to a single registration_id.
 	This will send the notification as form data.
@@ -122,8 +146,12 @@ def apns_send_message(registration_id, alert, application_id=None, creds=None, *
 
 
 def apns_send_bulk_message(
-	registration_ids, alert, application_id=None, creds=None, **kwargs
-):
+	registration_ids: list[str], 
+	alert: str | dict[str, Any] | None, 
+	application_id: str | None = None, 
+	creds: apns2_credentials.Credentials | None = None, 
+	**kwargs: Any
+) -> dict[str, str]:
 	"""
 	Sends an APNS notification to one or more registration_ids.
 	The registration_ids argument needs to be a list.
