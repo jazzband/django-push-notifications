@@ -2,7 +2,7 @@ import asyncio
 import time
 
 from dataclasses import asdict, dataclass
-from typing import Awaitable, Callable, Dict, Optional, Union
+from typing import Awaitable, Callable, Any
 
 from aioapns import APNs, ConnectionError, NotificationRequest
 from aioapns.common import NotificationResult
@@ -11,12 +11,12 @@ from . import models
 from .conf import get_manager
 from .exceptions import APNSServerError, APNSError
 
-ErrFunc = Optional[Callable[[NotificationRequest, NotificationResult], Awaitable[None]]]
+ErrFunc = Callable[[NotificationRequest, NotificationResult], Awaitable[None]] | None
 """function to proces errors from aioapns send_message"""
 
 
 class NotSet:
-	def __init__(self):
+	def __init__(self) -> None:
 		raise RuntimeError("NotSet cannot be instantiated")
 
 
@@ -94,7 +94,7 @@ class Alert:
 	An array of strings containing replacement values for variables in your message text. Each %@ character in the string specified by loc-key is replaced by a value from this array. The first item in the array replaces the first instance of the %@ character in the string, the second item replaces the second instance, and so on.
 	"""
 
-	sound: Union[str, any] = NotSet
+	sound: str | Any = NotSet
 	"""
 	string
 	The name of a sound file in your app’s main bundle or in the Library/Sounds folder of your app’s container directory. Specify the string “default” to play the system sound. Use this key for regular notifications. For critical alerts, use the sound dictionary instead. For information about how to prepare sounds, see UNNotificationSound.
@@ -103,7 +103,7 @@ class Alert:
 	A dictionary that contains sound information for critical alerts. For regular notifications, use the sound string instead.
 	"""
 
-	def asDict(self) -> dict[str, any]:
+	def asDict(self) -> dict[str, Any]:
 		python_dict = asdict(self)
 		return {
 			key.replace("_", "-"): value
@@ -114,19 +114,19 @@ class Alert:
 
 def _create_notification_request_from_args(
 	registration_id: str,
-	alert: Union[str, Alert],
-	badge: int = None,
-	sound: str = None,
-	extra: dict = {},
-	expiration: int = None,
-	thread_id: str = None,
-	loc_key: str = None,
-	priority: int = None,
-	collapse_id: str = None,
-	aps_kwargs: dict = {},
-	message_kwargs: dict = {},
-	notification_request_kwargs: dict = {},
-):
+	alert: str | Alert,
+	badge: int | None = None,
+	sound: str | None = None,
+	extra: dict[str, Any] = {},
+	expiration: int | None = None,
+	thread_id: str | None = None,
+	loc_key: str | None = None,
+	priority: int | None = None,
+	collapse_id: str | None = None,
+	aps_kwargs: dict[str, Any] = {},
+	message_kwargs: dict[str, Any] = {},
+	notification_request_kwargs: dict[str, Any] = {},
+) -> NotificationRequest:
 	if alert is None:
 		alert = Alert(body="")
 
@@ -168,10 +168,10 @@ def _create_notification_request_from_args(
 
 
 def _create_client(
-	creds: Credentials = None,
-	application_id: str = None,
-	topic=None,
-	err_func: ErrFunc = None,
+	creds: Credentials | None = None,
+	application_id: str | None = None,
+	topic: str | None = None,
+	err_func: ErrFunc | None = None,
 ) -> APNs:
 	use_sandbox = get_manager().get_apns_use_sandbox(application_id)
 	if topic is None:
@@ -188,7 +188,7 @@ def _create_client(
 	return client
 
 
-def _get_credentials(application_id):
+def _get_credentials(application_id: str | None) -> Credentials:
 	if not get_manager().has_auth_token_creds(application_id):
 		# TLS certificate authentication
 		cert = get_manager().get_apns_certificate(application_id)
@@ -208,23 +208,23 @@ def _get_credentials(application_id):
 
 def apns_send_message(
 	registration_id: str,
-	alert: Union[str, Alert],
-	application_id: str = None,
-	creds: Credentials = None,
-	topic: str = None,
-	badge: int = None,
-	sound: str = None,
-	content_available: bool = None,
-	extra: dict = {},
-	expiration: int = None,
-	thread_id: str = None,
-	loc_key: str = None,
-	priority: int = None,
-	collapse_id: str = None,
+	alert: str | Alert,
+	application_id: str | None = None,
+	creds: Credentials | None = None,
+	topic: str | None = None,
+	badge: int | None = None,
+	sound: str | None = None,
+	content_available: bool | None = None,
+	extra: dict[str, Any] = {},
+	expiration: int | None = None,
+	thread_id: str | None = None,
+	loc_key: str | None = None,
+	priority: int | None = None,
+	collapse_id: str | None = None,
 	mutable_content: bool = False,
-	category: str = None,
-	err_func: ErrFunc = None,
-):
+	category: str | None= None,
+	err_func: ErrFunc | None = None,
+) -> dict[str, list[str | dict[str, str]]]:
 	"""
 	Sends an APNS notification to a single registration_id.
 	If sending multiple notifications, it is more efficient to use
@@ -240,12 +240,12 @@ def apns_send_message(
 	:param application_id: The application_id to use
 	:param creds: The credentials to use
 	:param mutable_content: If True, the "mutable-content" flag will be set to 1.
-	                    This allows the app's Notification Service Extension to modify
-	                    the notification before it is displayed.
+						This allows the app's Notification Service Extension to modify
+						the notification before it is displayed.
 	:param category: The category identifier for actionable notifications.
-	                 This should match a category identifier defined in the app's
-	                 Notification Content Extension or UNNotificationCategory configuration.
-	                 It allows the app to display custom actions with the notification.
+					 This should match a category identifier defined in the app's
+					 Notification Content Extension or UNNotificationCategory configuration.
+					 It allows the app to display custom actions with the notification.
 	:param content_available: If True the `content-available` flag will be set to 1, allowing the app to be woken up in the background
 	"""
 	results = apns_send_bulk_message(
@@ -277,23 +277,23 @@ def apns_send_message(
 
 def apns_send_bulk_message(
 	registration_ids: list[str],
-	alert: Union[str, Alert],
-	application_id: str = None,
-	creds: Credentials = None,
-	topic: str = None,
-	badge: int = None,
-	sound: str = None,
-	content_available: bool = None,
-	extra: dict = {},
-	expiration: int = None,
-	thread_id: str = None,
-	loc_key: str = None,
-	priority: int = None,
-	collapse_id: str = None,
+	alert: str | Alert,
+	application_id: str | None = None,
+	creds: Credentials | None = None,
+	topic: str | None = None,
+	badge: int | None = None,
+	sound: str | None = None,
+	content_available: bool | None = None,
+	extra: dict[str, Any] = {},
+	expiration: int | None = None,
+	thread_id: str | None = None,
+	loc_key: str | None = None,
+	priority: int | None = None,
+	collapse_id: str | None = None,
 	mutable_content: bool = False,
-	category: str = None,
-	err_func: ErrFunc = None,
-):
+	category: str | None = None,
+	err_func: ErrFunc | None = None,
+) -> dict[str, str]:
 	"""
 	Sends an APNS notification to one or more registration_ids.
 	The registration_ids argument needs to be a list.
@@ -307,17 +307,17 @@ def apns_send_bulk_message(
 	:param application_id: The application_id to use
 	:param creds: The credentials to use
 	:param mutable_content: If True, the "mutable-content" flag will be set to 1.
-	                    This allows the app's Notification Service Extension to modify
-	                    the notification before it is displayed.
+						This allows the app's Notification Service Extension to modify
+						the notification before it is displayed.
 	:param category: The category identifier for actionable notifications.
-	                 This should match a category identifier defined in the app's
-	                 Notification Content Extension or UNNotificationCategory configuration.
-	                 It allows the app to display custom actions with the notification.
+					 This should match a category identifier defined in the app's
+					 Notification Content Extension or UNNotificationCategory configuration.
+					 It allows the app to display custom actions with the notification.
 	:param content_available: If True the `content-available` flag will be set to 1, allowing the app to be woken up in the background
 	"""
 	try:
 		topic = get_manager().get_apns_topic(application_id)
-		results: Dict[str, str] = {}
+		results: dict[str, str] = {}
 		inactive_tokens = []
 
 		responses = asyncio.run(
@@ -374,23 +374,23 @@ def apns_send_bulk_message(
 
 async def _send_bulk_request(
 	registration_ids: list[str],
-	alert: Union[str, Alert],
-	application_id: str = None,
-	creds: Credentials = None,
-	topic: str = None,
-	badge: int = None,
-	sound: str = None,
-	content_available: bool = None,
-	extra: dict = {},
-	expiration: int = None,
-	thread_id: str = None,
-	loc_key: str = None,
-	priority: int = None,
-	collapse_id: str = None,
+	alert: str | Alert,
+	application_id: str | None = None,
+	creds: Credentials | None = None,
+	topic: str | None = None,
+	badge: int | None = None,
+	sound: str | None = None,
+	content_available: bool | None = None,
+	extra: dict[str, Any] = {},
+	expiration: int | None = None,
+	thread_id: str | None = None,
+	loc_key: str | None = None,
+	priority: int | None = None,
+	collapse_id: str | None = None,
 	mutable_content: bool = False,
-	category: str = None,
-	err_func: ErrFunc = None,
-):
+	category: str | None = None,
+	err_func: ErrFunc | None = None,
+) -> list[tuple[str, NotificationResult]]:
 	client = _create_client(
 		creds=creds, application_id=application_id, topic=topic, err_func=err_func
 	)
@@ -424,7 +424,7 @@ async def _send_bulk_request(
 	return await asyncio.gather(*send_requests)
 
 
-async def _send_request(apns, request):
+async def _send_request(apns: APNs, request: NotificationRequest) -> tuple[str, NotificationResult]:
 	try:
 		res = await asyncio.wait_for(apns.send_notification(request), timeout=1)
 		return request.device_token, res

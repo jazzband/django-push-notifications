@@ -1,5 +1,5 @@
 class NotificationError(Exception):
-	def __init__(self, message):
+	def __init__(self, message: str) -> None:
 		super().__init__(message)
 		self.message = message
 	pass
@@ -15,7 +15,7 @@ class APNSUnsupportedPriority(APNSError):
 
 
 class APNSServerError(APNSError):
-	def __init__(self, status):
+	def __init__(self, status: int) -> None:
 		super().__init__(status)
 		self.status = status
 

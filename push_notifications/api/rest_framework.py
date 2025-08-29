@@ -3,10 +3,11 @@ from rest_framework.fields import IntegerField
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer, Serializer, ValidationError
 from rest_framework.viewsets import ModelViewSet
-
-from ..fields import UNSIGNED_64BIT_INT_MAX_VALUE, hex_re
-from ..models import APNSDevice, GCMDevice, WebPushDevice, WNSDevice
-from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from typing import Any
+from push_notifications.fields import UNSIGNED_64BIT_INT_MAX_VALUE, hex_re
+from push_notifications.models import APNSDevice, GCMDevice, WebPushDevice, WNSDevice
+from push_notifications.settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from django.db.models import QuerySet
 
 
 # Fields
@@ -15,16 +16,16 @@ class HexIntegerField(IntegerField):
 	Store an integer represented as a hex string of form "0x01".
 	"""
 
-	def to_internal_value(self, data):
+	def to_internal_value(self, data: str | int) -> int:
 		# validate hex string and convert it to the unsigned
 		# integer representation for internal use
 		try:
-			data = int(data, 16) if type(data) != int else data
+			data = int(data, 16) if not isinstance(data, int) else data
 		except ValueError:
 			raise ValidationError("Device ID is not a valid hex number")
 		return super().to_internal_value(data)
 
-	def to_representation(self, value):
+	def to_representation(self, value: int) -> int:
 		return value
 
 
@@ -45,7 +46,7 @@ class APNSDeviceSerializer(ModelSerializer):
 	class Meta(DeviceSerializerMixin.Meta):
 		model = APNSDevice
 
-	def validate_registration_id(self, value):
+	def validate_registration_id(self, value: str) -> str:
 
 		# https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1622958-application
 		# As of 02/2023 APNS tokens (registration_id) "are of variable length. Do not hard-code their size."
@@ -56,7 +57,7 @@ class APNSDeviceSerializer(ModelSerializer):
 
 
 class UniqueRegistrationSerializerMixin(Serializer):
-	def validate(self, attrs):
+	def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
 		devices = None
 		primary_key = None
 		request_method = None
@@ -103,7 +104,7 @@ class GCMDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer):
 		)
 		extra_kwargs = {"id": {"read_only": False, "required": False}}
 
-	def validate_device_id(self, value):
+	def validate_device_id(self, value: int) -> int:
 		# device ids are 64 bit unsigned values
 		if value > UNSIGNED_64BIT_INT_MAX_VALUE:
 			raise ValidationError("Device ID is out of range")
@@ -126,7 +127,7 @@ class WebPushDeviceSerializer(UniqueRegistrationSerializerMixin, ModelSerializer
 
 # Permissions
 class IsOwner(permissions.BasePermission):
-	def has_object_permission(self, request, view, obj):
+	def has_object_permission(self, request: Any, view: Any, obj: Any) -> bool:
 		# must be the owner to view the object
 		return obj.user == request.user
 
@@ -135,7 +136,7 @@ class IsOwner(permissions.BasePermission):
 class DeviceViewSetMixin:
 	lookup_field = "registration_id"
 
-	def create(self, request, *args, **kwargs):
+	def create(self, request: Any, *args: Any, **kwargs: Any) -> Response:
 		serializer = None
 		is_update = False
 		if SETTINGS.get("UPDATE_ON_DUPLICATE_REG_ID") and self.lookup_field in request.data:
@@ -157,12 +158,12 @@ class DeviceViewSetMixin:
 			headers = self.get_success_headers(serializer.data)
 			return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-	def perform_create(self, serializer):
+	def perform_create(self, serializer: ModelSerializer) -> None:
 		if self.request.user.is_authenticated:
 			serializer.save(user=self.request.user)
 		return super().perform_create(serializer)
 
-	def perform_update(self, serializer):
+	def perform_update(self, serializer: ModelSerializer) -> None:
 		if self.request.user.is_authenticated:
 			serializer.save(user=self.request.user)
 		return super().perform_update(serializer)
@@ -171,7 +172,7 @@ class DeviceViewSetMixin:
 class AuthorizedMixin:
 	permission_classes = (permissions.IsAuthenticated, IsOwner)
 
-	def get_queryset(self):
+	def get_queryset(self) -> QuerySet:
 		# filter all devices to only those belonging to the current user
 		return self.queryset.filter(user=self.request.user)
 

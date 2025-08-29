@@ -8,8 +8,7 @@ from .legacy import LegacyConfig  # noqa: F401
 
 manager = None
 
-
-def get_manager(reload=False):
+def get_manager(reload: bool = False) -> object:
 	global manager
 
 	if not manager or reload is True:
