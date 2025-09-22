@@ -1,36 +1,36 @@
 from django.core.exceptions import ImproperlyConfigured
-from typing import Any
+
 
 class BaseConfig:
 
-	def get_firebase_app(self, application_id: str | None = None) -> object:
+	def get_firebase_app(self, application_id=None):
 		raise NotImplementedError
 
-	def has_auth_token_creds(self, application_id: str | None = None) -> bool:
+	def has_auth_token_creds(self, application_id=None):
 		raise NotImplementedError
 
-	def get_apns_certificate(self, application_id: str | None = None) -> str:
+	def get_apns_certificate(self, application_id=None):
 		raise NotImplementedError
 
-	def get_apns_auth_creds(self, application_id: str | None = None) -> dict[str, Any]:
+	def get_apns_auth_creds(self, application_id=None):
 		raise NotImplementedError
 
-	def get_apns_use_sandbox(self, application_id: str | None = None) -> bool:
+	def get_apns_use_sandbox(self, application_id=None):
 		raise NotImplementedError
 
-	def get_apns_use_alternative_port(self, application_id: str | None = None) -> bool:
+	def get_apns_use_alternative_port(self, application_id=None):
 		raise NotImplementedError
 
-	def get_wns_package_security_id(self, application_id: str | None = None) -> str:
+	def get_wns_package_security_id(self, application_id=None):
 		raise NotImplementedError
 
-	def get_wns_secret_key(self, application_id: str | None = None) -> str:
+	def get_wns_secret_key(self, application_id=None):
 		raise NotImplementedError
 
-	def get_max_recipients(self, application_id: str | None = None) -> int:
+	def get_max_recipients(self, application_id=None):
 		raise NotImplementedError
 
-	def get_applications(self) -> list[str]:
+	def get_applications(self):
 		"""Returns a collection containing the configured applications."""
 
 		raise NotImplementedError
@@ -38,7 +38,7 @@ class BaseConfig:
 
 # This works for both the certificate and the auth key (since that's just
 # a certificate).
-def check_apns_certificate(ss: str) -> None:
+def check_apns_certificate(ss):
 	mode = "start"
 	for s in ss.split("\n"):
 		if mode == "start":

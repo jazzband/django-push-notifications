@@ -6,7 +6,7 @@ https://firebase.google.com/docs/cloud-messaging/
 """
 
 from copy import copy
-from typing import Any, Generator
+from typing import List, Union
 
 from firebase_admin import messaging
 from firebase_admin.exceptions import FirebaseError, InvalidArgumentError
@@ -22,7 +22,7 @@ FCM_NOTIFICATIONS_PAYLOAD_KEYS = [
 ]
 
 
-def dict_to_fcm_message(data: dict[str, Any], dry_run: bool = False, **kwargs: Any) -> messaging.Message:
+def dict_to_fcm_message(data: dict, dry_run=False, **kwargs) -> messaging.Message:
 	"""
 	Constructs a messaging.Message from the old dictionary.
 
@@ -87,7 +87,7 @@ def dict_to_fcm_message(data: dict[str, Any], dry_run: bool = False, **kwargs: A
 	return message
 
 
-def _chunks(l: list, n: int) -> Generator[list, None, None]:
+def _chunks(l, n):
 	"""
 	Yield successive chunks from list \a l with a maximum size \a n
 	"""
@@ -105,7 +105,7 @@ fcm_error_list = [
 fcm_error_list_str = [x.code for x in fcm_error_list]
 
 
-def _validate_exception_for_deactivation(exc: FirebaseError | None) -> bool:
+def _validate_exception_for_deactivation(exc: Union[FirebaseError]) -> bool:
 	if not exc:
 		return False
 	exc_type = type(exc)
@@ -117,9 +117,9 @@ def _validate_exception_for_deactivation(exc: FirebaseError | None) -> bool:
 
 
 def _deactivate_devices_with_error_results(
-	registration_ids: list[str],
-	results: list[messaging.SendResponse | messaging.ErrorInfo],
-) -> list[str]:
+	registration_ids: List[str],
+	results: List[Union[messaging.SendResponse, messaging.ErrorInfo]],
+) -> List[str]:
 	if not results:
 		return []
 	if isinstance(results[0], messaging.SendResponse):
@@ -139,18 +139,18 @@ def _deactivate_devices_with_error_results(
 	return deactivated_ids
 
 
-def _prepare_message(message: messaging.Message, token: str) -> messaging.Message:
+def _prepare_message(message: messaging.Message, token: str):
 	message.token = token
 	return copy(message)
 
 
 def send_message(
-	registration_ids: list[str] | str | None,
+	registration_ids,
 	message: messaging.Message,
-	application_id: str | None = None,
-	dry_run: bool = False,
-	**kwargs: Any
-) -> messaging.BatchResponse | None:
+	application_id=None,
+	dry_run=False,
+	**kwargs
+):
 	"""
 	Sends an FCM notification to one or more registration_ids. The registration_ids
 	can be a list or a single string.
@@ -167,7 +167,7 @@ def send_message(
 
 	# Checks for valid recipient
 	if registration_ids is None and message.topic is None and message.condition is None:
-		return None
+		return
 
 	# Bundles the registration_ids in an list if only one is sent
 	if not isinstance(registration_ids, list):
@@ -176,7 +176,7 @@ def send_message(
 	# FCM only allows up to 1000 reg ids per bulk message
 	# https://firebase.google.com/docs/cloud-messaging/server#http-request
 	if registration_ids:
-		ret: list[messaging.SendResponse] = []
+		ret: List[messaging.SendResponse] = []
 		for chunk in _chunks(registration_ids, max_recipients):
 			messages = [
 				_prepare_message(message, token) for token in chunk
