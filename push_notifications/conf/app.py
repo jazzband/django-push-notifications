@@ -2,11 +2,10 @@ from django.core.exceptions import ImproperlyConfigured
 
 from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 from .base import BaseConfig, check_apns_certificate
+from typing import Dict, List, Any, Optional, Tuple
 
 
-SETTING_MISMATCH = (
-	"Application '{application_id}' ({platform}) does not support the setting '{setting}'."
-)
+SETTING_MISMATCH = "Application '{application_id}' ({platform}) does not support the setting '{setting}'."
 
 # code can be "missing" or "invalid"
 BAD_PLATFORM = (
@@ -14,13 +13,9 @@ BAD_PLATFORM = (
 	"Must be one of: {platforms}."
 )
 
-UNKNOWN_PLATFORM = (
-	"Unknown Platform: {platform}. Must be one of: {platforms}."
-)
+UNKNOWN_PLATFORM = "Unknown Platform: {platform}. Must be one of: {platforms}."
 
-MISSING_SETTING = (
-	'PUSH_NOTIFICATIONS_SETTINGS.APPLICATIONS["{application_id}"]["{setting}"] is missing.'
-)
+MISSING_SETTING = 'PUSH_NOTIFICATIONS_SETTINGS.APPLICATIONS["{application_id}"]["{setting}"] is missing.'
 
 PLATFORMS = [
 	"APNS",
@@ -37,9 +32,7 @@ REQUIRED_SETTINGS = [
 # Settings that an application may have to enable optional features
 # these settings are stubs for registry support and have no effect on the operation
 # of the application at this time.
-OPTIONAL_SETTINGS = [
-	"APPLICATION_GROUP", "APPLICATION_SECRET"
-]
+OPTIONAL_SETTINGS = ["APPLICATION_GROUP", "APPLICATION_SECRET"]
 
 # Since we can have an auth key, combined with a auth key id and team id *or*
 # a certificate, we make these all optional, and then make sure we have one or
@@ -50,14 +43,10 @@ APNS_SETTINGS_CERT_CREDS = "CERTIFICATE"
 APNS_AUTH_CREDS_REQUIRED = ["AUTH_KEY_PATH", "AUTH_KEY_ID", "TEAM_ID"]
 APNS_AUTH_CREDS_OPTIONAL = ["CERTIFICATE", "ENCRYPTION_ALGORITHM", "TOKEN_LIFETIME"]
 
-APNS_OPTIONAL_SETTINGS = [
-	"USE_SANDBOX", "USE_ALTERNATIVE_PORT", "TOPIC"
-]
+APNS_OPTIONAL_SETTINGS = ["USE_SANDBOX", "USE_ALTERNATIVE_PORT", "TOPIC"]
 
 FCM_REQUIRED_SETTINGS = []
-FCM_OPTIONAL_SETTINGS = [
-	"MAX_RECIPIENTS", "FIREBASE_APP"
-]
+FCM_OPTIONAL_SETTINGS = ["MAX_RECIPIENTS", "FIREBASE_APP"]
 
 WNS_REQUIRED_SETTINGS = ["PACKAGE_SECURITY_ID", "SECRET_KEY"]
 WNS_OPTIONAL_SETTINGS = ["WNS_ACCESS_URL"]
@@ -71,7 +60,7 @@ class AppConfig(BaseConfig):
 	Supports any number of push notification enabled applications.
 	"""
 
-	def __init__(self, settings=None):
+	def __init__(self, settings: Optional[Dict[str, Any]] = None) -> None:
 		# supports overriding the settings to be loaded. Will load from ..settings by default.
 		self._settings = settings or SETTINGS
 
@@ -81,14 +70,16 @@ class AppConfig(BaseConfig):
 		# validate application configurations
 		self._validate_applications(self._settings["APPLICATIONS"])
 
-	def _validate_applications(self, apps):
+	def _validate_applications(self, apps: Dict[str, Dict[str, Any]]) -> None:
 		"""Validate the application collection"""
 		for application_id, application_config in apps.items():
 			self._validate_config(application_id, application_config)
 
 			application_config["APPLICATION_ID"] = application_id
 
-	def _validate_config(self, application_id, application_config):
+	def _validate_config(
+		self, application_id: str, application_config: Dict[str, Any]
+	) -> None:
 		platform = application_config.get("PLATFORM", None)
 
 		# platform is not present
@@ -97,7 +88,7 @@ class AppConfig(BaseConfig):
 				BAD_PLATFORM.format(
 					application_id=application_id,
 					code="required",
-					platforms=", ".join(PLATFORMS)
+					platforms=", ".join(PLATFORMS),
 				)
 			)
 
@@ -107,7 +98,7 @@ class AppConfig(BaseConfig):
 				BAD_PLATFORM.format(
 					application_id=application_id,
 					code="invalid",
-					platforms=", ".join(PLATFORMS)
+					platforms=", ".join(PLATFORMS),
 				)
 			)
 
@@ -118,23 +109,26 @@ class AppConfig(BaseConfig):
 		else:
 			raise ImproperlyConfigured(
 				UNKNOWN_PLATFORM.format(
-					platform=platform,
-					platforms=", ".join(PLATFORMS)
+					platform=platform, platforms=", ".join(PLATFORMS)
 				)
 			)
 
-	def _validate_apns_config(self, application_id, application_config):
-		allowed = REQUIRED_SETTINGS + OPTIONAL_SETTINGS + \
-			APNS_AUTH_CREDS_REQUIRED + \
-			APNS_AUTH_CREDS_OPTIONAL + \
-			APNS_OPTIONAL_SETTINGS
+	def _validate_apns_config(
+		self, application_id: str, application_config: Dict[str, Any]
+	) -> None:
+		allowed = (
+			REQUIRED_SETTINGS
+			+ OPTIONAL_SETTINGS
+			+ APNS_AUTH_CREDS_REQUIRED
+			+ APNS_AUTH_CREDS_OPTIONAL
+			+ APNS_OPTIONAL_SETTINGS
+		)
 
 		self._validate_allowed_settings(application_id, application_config, allowed)
 		# We have two sets of settings, certificate and JWT auth key.
 		# Auth Key requires 3 values, so if that is set, that will take
 		# precedence. If None are set, we will throw an error.
-		has_cert_creds = APNS_SETTINGS_CERT_CREDS in \
-			application_config.keys()
+		has_cert_creds = APNS_SETTINGS_CERT_CREDS in application_config.keys()
 		self.has_token_creds = True
 		for token_setting in APNS_AUTH_CREDS_REQUIRED:
 			if token_setting not in application_config.keys():
@@ -145,17 +139,23 @@ class AppConfig(BaseConfig):
 			raise ImproperlyConfigured(
 				MISSING_SETTING.format(
 					application_id=application_id,
-					setting=(APNS_SETTINGS_CERT_CREDS, APNS_AUTH_CREDS_REQUIRED)))
+					setting=(APNS_SETTINGS_CERT_CREDS, APNS_AUTH_CREDS_REQUIRED),
+				)
+			)
 		cert_path = None
 		if has_cert_creds:
 			cert_path = "CERTIFICATE"
 		elif self.has_token_creds:
 			cert_path = "AUTH_KEY_PATH"
-			allowed_tokens = APNS_AUTH_CREDS_REQUIRED + \
-				APNS_AUTH_CREDS_OPTIONAL + \
-				APNS_OPTIONAL_SETTINGS + \
-				REQUIRED_SETTINGS
-			self._validate_allowed_settings(application_id, application_config, allowed_tokens)
+			allowed_tokens = (
+				APNS_AUTH_CREDS_REQUIRED
+				+ APNS_AUTH_CREDS_OPTIONAL
+				+ APNS_OPTIONAL_SETTINGS
+				+ REQUIRED_SETTINGS
+			)
+			self._validate_allowed_settings(
+				application_id, application_config, allowed_tokens
+			)
 			self._validate_required_settings(
 				application_id, application_config, APNS_AUTH_CREDS_REQUIRED
 			)
@@ -166,7 +166,7 @@ class AppConfig(BaseConfig):
 		application_config.setdefault("USE_ALTERNATIVE_PORT", False)
 		application_config.setdefault("TOPIC", None)
 
-	def _validate_apns_certificate(self, certfile):
+	def _validate_apns_certificate(self, certfile: str) -> None:
 		"""Validate the APNS certificate at startup."""
 
 		try:
@@ -175,12 +175,19 @@ class AppConfig(BaseConfig):
 				check_apns_certificate(content)
 		except Exception as e:
 			raise ImproperlyConfigured(
-				"The APNS certificate file at {!r} is not readable: {}".format(certfile, e)
+				"The APNS certificate file at {!r} is not readable: {}".format(
+					certfile, e
+				)
 			)
 
-	def _validate_fcm_config(self, application_id, application_config):
+	def _validate_fcm_config(
+		self, application_id: str, application_config: Dict[str, Any]
+	) -> None:
 		allowed = (
-			REQUIRED_SETTINGS + OPTIONAL_SETTINGS + FCM_REQUIRED_SETTINGS + FCM_OPTIONAL_SETTINGS
+			REQUIRED_SETTINGS
+			+ OPTIONAL_SETTINGS
+			+ FCM_REQUIRED_SETTINGS
+			+ FCM_OPTIONAL_SETTINGS
 		)
 
 		self._validate_allowed_settings(application_id, application_config, allowed)
@@ -191,9 +198,14 @@ class AppConfig(BaseConfig):
 		application_config.setdefault("FIREBASE_APP", None)
 		application_config.setdefault("MAX_RECIPIENTS", 1000)
 
-	def _validate_wns_config(self, application_id, application_config):
+	def _validate_wns_config(
+		self, application_id: str, application_config: Dict[str, Any]
+	) -> None:
 		allowed = (
-			REQUIRED_SETTINGS + OPTIONAL_SETTINGS + WNS_REQUIRED_SETTINGS + WNS_OPTIONAL_SETTINGS
+			REQUIRED_SETTINGS
+			+ OPTIONAL_SETTINGS
+			+ WNS_REQUIRED_SETTINGS
+			+ WNS_OPTIONAL_SETTINGS
 		)
 
 		self._validate_allowed_settings(application_id, application_config, allowed)
@@ -201,27 +213,42 @@ class AppConfig(BaseConfig):
 			application_id, application_config, WNS_REQUIRED_SETTINGS
 		)
 
-		application_config.setdefault("WNS_ACCESS_URL", "https://login.live.com/accesstoken.srf")
+		application_config.setdefault(
+			"WNS_ACCESS_URL", "https://login.live.com/accesstoken.srf"
+		)
 
-	def _validate_wp_config(self, application_id, application_config):
+	def _validate_wp_config(
+		self, application_id: str, application_config: Dict[str, Any]
+	) -> None:
 		allowed = (
-			REQUIRED_SETTINGS + OPTIONAL_SETTINGS + WP_REQUIRED_SETTINGS + WP_OPTIONAL_SETTINGS
+			REQUIRED_SETTINGS
+			+ OPTIONAL_SETTINGS
+			+ WP_REQUIRED_SETTINGS
+			+ WP_OPTIONAL_SETTINGS
 		)
 
 		self._validate_allowed_settings(application_id, application_config, allowed)
 		self._validate_required_settings(
 			application_id, application_config, WP_REQUIRED_SETTINGS
 		)
-		application_config.setdefault("POST_URL", {
-			"CHROME": "https://fcm.googleapis.com/fcm/send",
-			"OPERA": "https://fcm.googleapis.com/fcm/send",
-			"EDGE": "https://wns2-par02p.notify.windows.com/w",
-			"FIREFOX": "https://updates.push.services.mozilla.com/wpush/v2",
-			"SAFARI": "https://web.push.apple.com",
-		})
+		application_config.setdefault(
+			"POST_URL",
+			{
+				"CHROME": "https://fcm.googleapis.com/fcm/send",
+				"OPERA": "https://fcm.googleapis.com/fcm/send",
+				"EDGE": "https://wns2-par02p.notify.windows.com/w",
+				"FIREFOX": "https://updates.push.services.mozilla.com/wpush/v2",
+				"SAFARI": "https://web.push.apple.com",
+			},
+		)
 		application_config.setdefault("ERROR_TIMEOUT", 1)
 
-	def _validate_allowed_settings(self, application_id, application_config, allowed_settings):
+	def _validate_allowed_settings(
+		self,
+		application_id: str,
+		application_config: Dict[str, Any],
+		allowed_settings: List[str],
+	) -> None:
 		"""Confirm only allowed settings are present."""
 
 		for setting_key in application_config.keys():
@@ -233,9 +260,12 @@ class AppConfig(BaseConfig):
 				)
 
 	def _validate_required_settings(
-		self, application_id, application_config, required_settings,
-		should_throw=True
-	):
+		self,
+		application_id: str,
+		application_config: Dict[str, Any],
+		required_settings: List[str],
+		should_throw: bool = True,
+	) -> bool:
 		"""All required keys must be present"""
 
 		for setting_key in required_settings:
@@ -250,7 +280,9 @@ class AppConfig(BaseConfig):
 					return False
 		return True
 
-	def _get_application_settings(self, application_id, platform, settings_key):
+	def _get_application_settings(
+		self, application_id: Optional[str], platform: str, settings_key: str
+	) -> Any:
 		"""
 		Walks through PUSH_NOTIFICATIONS_SETTINGS to find the correct setting value
 		or raises ImproperlyConfigured.
@@ -259,14 +291,18 @@ class AppConfig(BaseConfig):
 		if not application_id:
 			conf_cls = "push_notifications.conf.AppConfig"
 			raise ImproperlyConfigured(
-				"{} requires the application_id be specified at all times.".format(conf_cls)
+				"{} requires the application_id be specified at all times.".format(
+					conf_cls
+				)
 			)
 
 		# verify that the application config exists
 		app_config = self._settings.get("APPLICATIONS").get(application_id, None)
 		if app_config is None:
 			raise ImproperlyConfigured(
-				"No application configured with application_id: {}.".format(application_id)
+				"No application configured with application_id: {}.".format(
+					application_id
+				)
 			)
 
 		# fetch a setting for the incorrect type of platform
@@ -275,7 +311,7 @@ class AppConfig(BaseConfig):
 				SETTING_MISMATCH.format(
 					application_id=application_id,
 					platform=app_config.get("PLATFORM"),
-					setting=settings_key
+					setting=settings_key,
 				)
 			)
 
@@ -289,16 +325,16 @@ class AppConfig(BaseConfig):
 
 		return app_config.get(settings_key)
 
-	def get_firebase_app(self, application_id=None):
+	def get_firebase_app(self, application_id: Optional[str] = None) -> Any:
 		return self._get_application_settings(application_id, "FCM", "FIREBASE_APP")
 
-	def has_auth_token_creds(self, application_id=None):
+	def has_auth_token_creds(self, application_id: Optional[str] = None) -> bool:
 		return self.has_token_creds
 
-	def get_max_recipients(self, application_id=None):
+	def get_max_recipients(self, application_id: Optional[str] = None) -> int:
 		return self._get_application_settings(application_id, "FCM", "MAX_RECIPIENTS")
 
-	def get_apns_certificate(self, application_id=None):
+	def get_apns_certificate(self, application_id: Optional[str] = None) -> str:
 		r = self._get_application_settings(application_id, "APNS", "CERTIFICATE")
 		if not isinstance(r, str):
 			# probably the (Django) file, and file path should be got
@@ -313,44 +349,53 @@ class AppConfig(BaseConfig):
 				)
 		return r
 
-	def get_apns_auth_creds(self, application_id=None):
-		return \
-		(self._get_apns_auth_key_path(application_id),
+	def get_apns_auth_creds(
+		self, application_id: Optional[str] = None
+	) -> Tuple[str, str, str]:
+		return (
+			self._get_apns_auth_key_path(application_id),
 			self._get_apns_auth_key_id(application_id),
-			self._get_apns_team_id(application_id))
+			self._get_apns_team_id(application_id),
+		)
 
-	def _get_apns_auth_key_path(self, application_id=None):
+	def _get_apns_auth_key_path(self, application_id: Optional[str] = None) -> str:
 		return self._get_application_settings(application_id, "APNS", "AUTH_KEY_PATH")
 
-	def _get_apns_auth_key_id(self, application_id=None):
+	def _get_apns_auth_key_id(self, application_id: Optional[str] = None) -> str:
 		return self._get_application_settings(application_id, "APNS", "AUTH_KEY_ID")
 
-	def _get_apns_team_id(self, application_id=None):
+	def _get_apns_team_id(self, application_id: Optional[str] = None) -> str:
 		return self._get_application_settings(application_id, "APNS", "TEAM_ID")
 
-	def get_apns_use_sandbox(self, application_id=None):
+	def get_apns_use_sandbox(self, application_id: Optional[str] = None) -> bool:
 		return self._get_application_settings(application_id, "APNS", "USE_SANDBOX")
 
-	def get_apns_use_alternative_port(self, application_id=None):
-		return self._get_application_settings(application_id, "APNS", "USE_ALTERNATIVE_PORT")
+	def get_apns_use_alternative_port(
+		self, application_id: Optional[str] = None
+	) -> bool:
+		return self._get_application_settings(
+			application_id, "APNS", "USE_ALTERNATIVE_PORT"
+		)
 
-	def get_apns_topic(self, application_id=None):
+	def get_apns_topic(self, application_id: Optional[str] = None) -> Optional[str]:
 		return self._get_application_settings(application_id, "APNS", "TOPIC")
 
-	def get_wns_package_security_id(self, application_id=None):
-		return self._get_application_settings(application_id, "WNS", "PACKAGE_SECURITY_ID")
+	def get_wns_package_security_id(self, application_id: Optional[str] = None) -> str:
+		return self._get_application_settings(
+			application_id, "WNS", "PACKAGE_SECURITY_ID"
+		)
 
-	def get_wns_secret_key(self, application_id=None):
+	def get_wns_secret_key(self, application_id: Optional[str] = None) -> str:
 		return self._get_application_settings(application_id, "WNS", "SECRET_KEY")
 
-	def get_wp_post_url(self, application_id, browser):
+	def get_wp_post_url(self, application_id: str, browser: str) -> str:
 		return self._get_application_settings(application_id, "WP", "POST_URL")[browser]
 
-	def get_wp_private_key(self, application_id=None):
+	def get_wp_private_key(self, application_id: Optional[str] = None) -> str:
 		return self._get_application_settings(application_id, "WP", "PRIVATE_KEY")
 
-	def get_wp_claims(self, application_id=None):
+	def get_wp_claims(self, application_id: Optional[str] = None) -> Dict[str, Any]:
 		return self._get_application_settings(application_id, "WP", "CLAIMS")
 
-	def get_wp_error_timeout(self, application_id=None):
+	def get_wp_error_timeout(self, application_id: Optional[str] = None) -> int:
 		return self._get_application_settings(application_id, "WP", "ERROR_TIMEOUT")
