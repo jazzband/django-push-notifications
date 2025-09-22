@@ -14,7 +14,8 @@ BROWSER_TYPES = (
 	("CHROME", "Chrome"),
 	("FIREFOX", "Firefox"),
 	("OPERA", "Opera"),
-	("EDGE", "Edge")
+	("EDGE", "Edge"),
+	("SAFARI", "Safari")
 )
 
 
@@ -261,7 +262,7 @@ class WebPushDevice(Device):
 	browser = models.CharField(
 		verbose_name=_("Browser"), max_length=10,
 		choices=BROWSER_TYPES, default=BROWSER_TYPES[0][0],
-		help_text=_("Currently only support to Chrome, Firefox, Edge and Opera browsers")
+		help_text=_("Currently only support to Chrome, Firefox, Edge, Safari and Opera browsers")
 	)
 	objects = WebPushDeviceManager()
 
