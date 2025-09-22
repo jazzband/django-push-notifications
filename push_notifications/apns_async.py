@@ -119,7 +119,7 @@ def _create_notification_request_from_args(
 	alert: Union[str, Alert],
 	badge: Optional[int] = None,
 	sound: Optional[str] = None,
-	extra: Dict[str, Any] = {},
+	extra: Optional[Dict[str, Any]] = None, 
 	expiration: Optional[int] = None,
 	thread_id: Optional[str] = None,
 	loc_key: Optional[str] = None,
@@ -149,6 +149,9 @@ def _create_notification_request_from_args(
 
 	if collapse_id is not None:
 		notification_request_kwargs_out["collapse_key"] = collapse_id
+
+	if extra is None:
+		extra = {}
 
 	request = NotificationRequest(
 		device_token=registration_id,
@@ -181,8 +184,15 @@ def _create_client(
 	if creds is None:
 		creds = _get_credentials(application_id)
 
+	# Convert credentials to dict based on type
+	creds_dict = {}
+	if isinstance(creds, TokenCredentials):
+		creds_dict = asdict(creds)
+	elif isinstance(creds, CertificateCredentials):
+		creds_dict = asdict(creds)
+
 	client = APNs(
-		**asdict(creds),
+		**creds_dict,
 		topic=topic,  # Bundle ID
 		use_sandbox=use_sandbox,
 		err_func=err_func,

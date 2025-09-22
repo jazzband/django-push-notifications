@@ -1,5 +1,5 @@
 from django.utils.module_loading import import_string
-from push_notifications.settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 from typing import Union, Optional
 from .app import AppConfig
 from .appmodel import AppModelConfig
