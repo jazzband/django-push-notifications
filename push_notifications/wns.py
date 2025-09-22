@@ -9,7 +9,7 @@ import json
 import xml.etree.ElementTree as ET
 
 from django.core.exceptions import ImproperlyConfigured
-from typing import Any
+
 from .compat import HTTPError, Request, urlencode, urlopen
 from .conf import get_manager
 from .exceptions import NotificationError
@@ -28,7 +28,7 @@ class WNSNotificationResponseError(WNSError):
 	pass
 
 
-def _wns_authenticate(scope: str = "notify.windows.com", application_id: str | None = None) -> str:
+def _wns_authenticate(scope="notify.windows.com", application_id=None):
 	"""
 	Requests an Access token for WNS communication.
 
@@ -82,13 +82,13 @@ def _wns_authenticate(scope: str = "notify.windows.com", application_id: str | N
 	return access_token
 
 
-def _wns_send(uri: str, data: str | bytes, wns_type: str = "wns/toast", application_id: str | None = None) -> str:
+def _wns_send(uri, data, wns_type="wns/toast", application_id=None):
 	"""
 	Sends a notification data and authentication to WNS.
 
 	:param uri: str: The device's unique notification URI
 	:param data: dict: The notification data to be sent.
-	:return: str: The response from WNS server
+	:return:
 	"""
 	access_token = _wns_authenticate(application_id=application_id)
 
@@ -139,7 +139,7 @@ def _wns_send(uri: str, data: str | bytes, wns_type: str = "wns/toast", applicat
 	return response.read().decode("utf-8")
 
 
-def _wns_prepare_toast(data: dict[str, Any], **kwargs: Any) -> bytes:
+def _wns_prepare_toast(data, **kwargs):
 	"""
 	Creates the xml tree for a `toast` notification
 
@@ -150,7 +150,7 @@ def _wns_prepare_toast(data: dict[str, Any], **kwargs: Any) -> bytes:
 		"image": ["src1", "src2"],
 	}
 
-	:return: bytes
+	:return: str
 	"""
 	root = ET.Element("toast")
 	visual = ET.SubElement(root, "visual")
@@ -170,13 +170,8 @@ def _wns_prepare_toast(data: dict[str, Any], **kwargs: Any) -> bytes:
 
 
 def wns_send_message(
-	uri: str,
-	message: str | dict[str, list[str]] = None,
-	xml_data: dict[str, Any] = None,
-	raw_data: str | bytes | None= None,
-	application_id: str | None = None,
-	**kwargs: Any
-) -> str:
+	uri, message=None, xml_data=None, raw_data=None, application_id=None, **kwargs
+):
 	"""
 	Sends a notification request to WNS.
 	There are four notification types that WNS can send: toast, tile, badge and raw.
@@ -240,13 +235,8 @@ def wns_send_message(
 
 
 def wns_send_bulk_message(
-	uri_list: list[str],
-	message: str | dict[str, list[str]] | None = None,
-	xml_data: dict[str, Any] | None = None,
-	raw_data: str | bytes | None = None,
-	application_id: str | None = None,
-	**kwargs: Any
-) -> list[str]:
+	uri_list, message=None, xml_data=None, raw_data=None, application_id=None, **kwargs
+):
 	"""
 	WNS doesn't support bulk notification, so we loop through each uri.
 
@@ -266,7 +256,7 @@ def wns_send_bulk_message(
 	return res
 
 
-def dict_to_xml_schema(data: dict[str, Any]) -> ET.Element:
+def dict_to_xml_schema(data):
 	"""
 	Input a dictionary to be converted to xml. There should be only one key at
 	the top level. The value must be a dict with (required) `children` key and
@@ -332,7 +322,7 @@ def dict_to_xml_schema(data: dict[str, Any]) -> ET.Element:
 		return root
 
 
-def _add_sub_elements_from_dict(parent: ET.Element, sub_dict: dict[str, Any]) -> None:
+def _add_sub_elements_from_dict(parent, sub_dict):
 	"""
 	Add SubElements to the parent element.
 
@@ -367,7 +357,7 @@ def _add_sub_elements_from_dict(parent: ET.Element, sub_dict: dict[str, Any]) ->
 				sub_element.text = children
 
 
-def _add_element_attrs(elem: ET.Element, attrs: dict[str, str]) -> ET.Element:
+def _add_element_attrs(elem, attrs):
 	"""
 	Add attributes to the given element.
 

@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from typing import Any
+
 from .fields import HexIntegerField
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
@@ -42,7 +42,7 @@ class Device(models.Model):
 	class Meta:
 		abstract = True
 
-	def __str__(self) -> str:
+	def __str__(self):
 		return (
 			self.name or
 			str(self.device_id or "") or
@@ -51,12 +51,12 @@ class Device(models.Model):
 
 
 class GCMDeviceManager(models.Manager):
-	def get_queryset(self) -> "GCMDeviceQuerySet":
+	def get_queryset(self):
 		return GCMDeviceQuerySet(self.model)
 
 
 class GCMDeviceQuerySet(models.query.QuerySet):
-	def send_message(self, message: object, **kwargs: Any):
+	def send_message(self, message, **kwargs):
 		if self.exists():
 			from .gcm import dict_to_fcm_message, messaging
 			from .gcm import send_message as fcm_send_message
@@ -106,13 +106,13 @@ class GCMDevice(Device):
 	class Meta:
 		verbose_name = _("FCM device")
 
-	def send_message(self, message: object, **kwargs: Any) -> Any:
+	def send_message(self, message, **kwargs):
 		from .gcm import dict_to_fcm_message, messaging
 		from .gcm import send_message as fcm_send_message
 
 		# GCM is not supported.
 		if self.cloud_message_type == "GCM":
-			return None
+			return
 
 		if not isinstance(message, messaging.Message):
 			data = kwargs.pop("extra", {})
@@ -128,12 +128,12 @@ class GCMDevice(Device):
 
 
 class APNSDeviceManager(models.Manager):
-	def get_queryset(self) -> "APNSDeviceQuerySet":
+	def get_queryset(self):
 		return APNSDeviceQuerySet(self.model)
 
 
 class APNSDeviceQuerySet(models.query.QuerySet):
-	def send_message(self, message: str, creds: dict[str, Any] | None = None, **kwargs: Any) -> list:
+	def send_message(self, message, creds=None, **kwargs):
 		if self.exists():
 			try:
 				from .apns_async import apns_send_bulk_message
@@ -174,7 +174,7 @@ class APNSDevice(Device):
 	class Meta:
 		verbose_name = _("APNS device")
 
-	def send_message(self, message: str, creds: dict[str, Any] | None = None, **kwargs: Any) -> Any:
+	def send_message(self, message, creds=None, **kwargs):
 		try:
 			from .apns_async import apns_send_message
 		except ImportError:
@@ -189,12 +189,12 @@ class APNSDevice(Device):
 
 
 class WNSDeviceManager(models.Manager):
-	def get_queryset(self) -> "WebPushDeviceQuerySet":
+	def get_queryset(self):
 		return WNSDeviceQuerySet(self.model)
 
 
 class WNSDeviceQuerySet(models.query.QuerySet):
-	def send_message(self, message: str, **kwargs: Any) -> list:
+	def send_message(self, message, **kwargs):
 		from .wns import wns_send_bulk_message
 
 		app_ids = self.filter(active=True).order_by("application_id").values_list(
@@ -226,7 +226,7 @@ class WNSDevice(Device):
 	class Meta:
 		verbose_name = _("WNS device")
 
-	def send_message(self, message: str, **kwargs: Any) -> Any:
+	def send_message(self, message, **kwargs):
 		from .wns import wns_send_message
 
 		return wns_send_message(
@@ -236,12 +236,12 @@ class WNSDevice(Device):
 
 
 class WebPushDeviceManager(models.Manager):
-	def get_queryset(self) -> "WebPushDeviceQuerySet":
+	def get_queryset(self):
 		return WebPushDeviceQuerySet(self.model)
 
 
 class WebPushDeviceQuerySet(models.query.QuerySet):
-	def send_message(self, message: str, **kwargs: Any) -> list:
+	def send_message(self, message, **kwargs):
 		devices = self.filter(active=True).order_by("application_id").distinct()
 		res = []
 		for device in devices:
@@ -269,10 +269,10 @@ class WebPushDevice(Device):
 		verbose_name = _("WebPush device")
 
 	@property
-	def device_id(self) -> None:
+	def device_id(self):
 		return None
 
-	def send_message(self, message: str, **kwargs: Any) -> Any:
+	def send_message(self, message, **kwargs):
 		from .webpush import webpush_send_message
 
 		return webpush_send_message(self, message, **kwargs)
