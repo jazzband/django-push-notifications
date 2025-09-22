@@ -6,6 +6,8 @@ from django.utils.translation import gettext_lazy as _
 from .exceptions import APNSServerError, GCMError, WebPushError
 from .models import APNSDevice, GCMDevice, WebPushDevice, WNSDevice
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from django.http import HttpRequest
+from django.db.models import QuerySet
 
 
 User = apps.get_model(*SETTINGS["USER_MODEL"].split("."))
@@ -20,9 +22,9 @@ class DeviceAdmin(admin.ModelAdmin):
 	if hasattr(User, "USERNAME_FIELD"):
 		search_fields = ("name", "device_id", "user__%s" % (User.USERNAME_FIELD))
 	else:
-		search_fields = ("name", "device_id")
+		search_fields = ("name", "device_id", "")
 
-	def send_messages(self, request, queryset, bulk=False):
+	def send_messages(self, request: HttpRequest, queryset: QuerySet, bulk: bool = False) -> None:
 		"""
 		Provides error handling for DeviceAdmin send_message and send_bulk_message methods.
 		"""
@@ -105,22 +107,22 @@ class DeviceAdmin(admin.ModelAdmin):
 				msg = _("All messages were sent: %s" % (ret))
 			self.message_user(request, msg)
 
-	def send_message(self, request, queryset):
+	def send_message(self, request: HttpRequest, queryset: QuerySet) -> None:
 		self.send_messages(request, queryset)
 
 	send_message.short_description = _("Send test message")
 
-	def send_bulk_message(self, request, queryset):
+	def send_bulk_message(self, request: HttpRequest, queryset: QuerySet) -> None:
 		self.send_messages(request, queryset, True)
 
 	send_bulk_message.short_description = _("Send test message in bulk")
 
-	def enable(self, request, queryset):
+	def enable(self, request: HttpRequest, queryset: QuerySet) -> None:
 		queryset.update(active=True)
 
 	enable.short_description = _("Enable selected devices")
 
-	def disable(self, request, queryset):
+	def disable(self, request: HttpRequest, queryset: QuerySet) -> None:
 		queryset.update(active=False)
 
 	disable.short_description = _("Disable selected devices")
@@ -132,7 +134,7 @@ class GCMDeviceAdmin(DeviceAdmin):
 	)
 	list_filter = ("active", "cloud_message_type")
 
-	def send_messages(self, request, queryset, bulk=False):
+	def send_messages(self, request: HttpRequest, queryset: QuerySet, bulk: bool = False) -> None:
 		"""
 		Provides error handling for DeviceAdmin send_message and send_bulk_message methods.
 		"""
