@@ -39,19 +39,19 @@ def _apns_create_socket(creds: Optional[apns2_credentials.Credentials] = None, a
 
 
 def _apns_prepare(
-	token: str, 
-	alert: Optional[str], 
-	application_id: Optional[str] = None, 
-	badge: Optional[int] = None, 
-	sound: Optional[str] = None, 
+	token: str,
+	alert: Optional[str],
+	application_id: Optional[str] = None,
+	badge: Optional[int] = None,
+	sound: Optional[str] = None,
 	category: Optional[str] = None,
-	content_available: bool = False, 
-	action_loc_key: Optional[str] = None, 
-	loc_key: Optional[str] = None, 
+	content_available: bool = False,
+	action_loc_key: Optional[str] = None,
+	loc_key: Optional[str] = None,
 	loc_args: List[Any] = [],
-	extra: Dict[str, Any] = {}, 
-	mutable_content: bool = False, 
-	thread_id: Optional[str] = None, 
+	extra: Dict[str, Any] = {},
+	mutable_content: bool = False,
+	thread_id: Optional[str] = None,
 	url_args: Optional[list] = None
 ) -> apns2_payload.Payload:
 	if action_loc_key or loc_key or loc_args:
@@ -71,11 +71,11 @@ def _apns_prepare(
 
 
 def _apns_send(
-	registration_id: Union[str, List[str]], 
-	alert: Optional[str] = None, 
-	batch: bool = False, 
-	application_id: Optional[str] = None, 
-	creds: Optional[apns2_credentials.Credentials] = None, 
+	registration_id: Union[str, List[str]],
+	alert: Optional[str] = None,
+	batch: bool = False,
+	application_id: Optional[str] = None,
+	creds: Optional[apns2_credentials.Credentials] = None,
 	**kwargs: Any
 ) -> Optional[Dict[str, str]]:
 	client = _apns_create_socket(creds=creds, application_id=application_id)
@@ -115,10 +115,10 @@ def _apns_send(
 
 
 def apns_send_message(
-	registration_id: str, 
-	alert: Optional[str] = None, 
-	application_id: Optional[str] = None, 
-	creds: Optional[apns2_credentials.Credentials] = None, 
+	registration_id: str,
+	alert: Optional[str] = None,
+	application_id: Optional[str] = None,
+	creds: Optional[apns2_credentials.Credentials] = None,
 	**kwargs: Any
 ) -> None:
 	"""
@@ -145,10 +145,10 @@ def apns_send_message(
 
 
 def apns_send_bulk_message(
-	registration_ids: List[str], 
-	alert: Optional[str] = None, 
-	application_id: Optional[str] = None, 
-	creds: Optional[apns2_credentials.Credentials] = None, 
+	registration_ids: List[str],
+	alert: Optional[str] = None,
+	application_id: Optional[str] = None,
+	creds: Optional[apns2_credentials.Credentials] = None,
 	**kwargs: Any
 ) -> Optional[Dict[str, str]]:
 	"""

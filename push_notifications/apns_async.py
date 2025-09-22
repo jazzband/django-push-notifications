@@ -95,7 +95,7 @@ class Alert:
 	"""
 
 	sound:Union[str, Any] = (
-		NotSet 
+		NotSet
 	)
 	"""
 	string
@@ -119,7 +119,7 @@ def _create_notification_request_from_args(
 	alert: Union[str, Alert],
 	badge: Optional[int] = None,
 	sound: Optional[str] = None,
-	extra: Optional[Dict[str, Any]] = None, 
+	extra: Optional[Dict[str, Any]] = None,
 	expiration: Optional[int] = None,
 	thread_id: Optional[str] = None,
 	loc_key: Optional[str] = None,
