@@ -149,7 +149,7 @@ def send_message(
 	application_id: Optional[str] = None,
 	dry_run: bool = False,
 	**kwargs: Any
-) -> messaging.BatchResponse:
+) -> Optional[messaging.BatchResponse]:
 	"""
 	Sends an FCM notification to one or more registration_ids. The registration_ids
 	can be a list or a single string.

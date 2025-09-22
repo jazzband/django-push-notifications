@@ -1,6 +1,6 @@
 from django.core.exceptions import ImproperlyConfigured
 
-from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from push_notifications.settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 from .base import BaseConfig, check_apns_certificate
 from typing import Dict, List, Any, Optional, Tuple
 

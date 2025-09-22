@@ -2,12 +2,12 @@ from django.apps import apps
 from django.contrib import admin, messages
 from django.utils.encoding import force_str
 from django.utils.translation import gettext_lazy as _
+from django.http import HttpRequest
+from django.db.models import QuerySet
 
 from .exceptions import APNSServerError, GCMError, WebPushError
 from .models import APNSDevice, GCMDevice, WebPushDevice, WNSDevice
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
-from django.http import HttpRequest
-from django.db.models import QuerySet
 
 
 User = apps.get_model(*SETTINGS["USER_MODEL"].split("."))
@@ -173,7 +173,7 @@ class WebPushDeviceAdmin(DeviceAdmin):
 	if hasattr(User, "USERNAME_FIELD"):
 		search_fields = ("name", "registration_id", "user__%s" % (User.USERNAME_FIELD))
 	else:
-		search_fields = ("name", "registration_id")
+		search_fields = ("name", "registration_id", "")
 
 
 admin.site.register(APNSDevice, DeviceAdmin)

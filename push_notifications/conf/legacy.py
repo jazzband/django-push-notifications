@@ -1,8 +1,9 @@
 from django.core.exceptions import ImproperlyConfigured
 
-from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from push_notifications.settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from typing import Any, Optional, Tuple, Dict
+
 from .base import BaseConfig
-from typing import Any, Optional, Tuple
 
 
 __all__ = [
@@ -126,7 +127,7 @@ class LegacyConfig(BaseConfig):
 		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
 		return self._get_application_settings(application_id, "WP_PRIVATE_KEY", msg)
 
-	def get_wp_claims(self, application_id: Optional[str] = None) -> dict:
+	def get_wp_claims(self, application_id: Optional[str] = None) -> Dict[str, Any] :
 		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
 		return self._get_application_settings(application_id, "WP_CLAIMS", msg)
 
