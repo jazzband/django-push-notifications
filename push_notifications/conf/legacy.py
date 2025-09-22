@@ -1,6 +1,6 @@
 from django.core.exceptions import ImproperlyConfigured
-
-from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from typing import Any
+from push_notifications.settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 from .base import BaseConfig
 
 
@@ -16,7 +16,7 @@ class empty:
 class LegacyConfig(BaseConfig):
 	msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
 
-	def _get_application_settings(self, application_id, settings_key, error_message):
+	def _get_application_settings(self, application_id: str | None = None, settings_key: str | None = None, error_message: str | None = None) -> Any:
 		"""Legacy behaviour"""
 
 		if not application_id:
@@ -31,21 +31,21 @@ class LegacyConfig(BaseConfig):
 			)
 			raise ImproperlyConfigured(msg)
 
-	def get_firebase_app(self, application_id=None):
+	def get_firebase_app(self, application_id: str | None = None) -> Any:
 		key = "FIREBASE_APP"
 		msg = (
 			'Set PUSH_NOTIFICATIONS_SETTINGS["{}"] to send messages through FCM.'.format(key)
 		)
 		return self._get_application_settings(application_id, key, msg)
 
-	def get_max_recipients(self, application_id=None):
+	def get_max_recipients(self, application_id: str = None) -> int:
 		key = "FCM_MAX_RECIPIENTS"
 		msg = (
 			'Set PUSH_NOTIFICATIONS_SETTINGS["{}"] to send messages through FCM.'.format(key)
 		)
 		return self._get_application_settings(application_id, key, msg)
 
-	def has_auth_token_creds(self, application_id=None):
+	def has_auth_token_creds(self, application_id: str | None = None) -> bool:
 		try:
 			self._get_apns_auth_key(application_id)
 			self._get_apns_auth_key_id(application_id)
@@ -55,7 +55,7 @@ class LegacyConfig(BaseConfig):
 
 		return True
 
-	def get_apns_certificate(self, application_id=None):
+	def get_apns_certificate(self, application_id: str | None = None) -> str:
 		r = self._get_application_settings(
 			application_id, "APNS_CERTIFICATE",
 			"You need to setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
@@ -74,58 +74,58 @@ class LegacyConfig(BaseConfig):
 				raise ImproperlyConfigured(msg)
 		return r
 
-	def get_apns_auth_creds(self, application_id=None):
+	def get_apns_auth_creds(self, application_id: str | None = None) -> tuple[Any, Any, Any]:
 		return (
 			self._get_apns_auth_key(application_id),
 			self._get_apns_auth_key_id(application_id),
 			self._get_apns_team_id(application_id))
 
-	def _get_apns_auth_key(self, application_id=None):
+	def _get_apns_auth_key(self, application_id: str | None = None) -> str:
 		return self._get_application_settings(application_id, "APNS_AUTH_KEY_PATH", self.msg)
 
-	def _get_apns_team_id(self, application_id=None):
+	def _get_apns_team_id(self, application_id: str | None = None) -> str:
 		return self._get_application_settings(application_id, "APNS_TEAM_ID", self.msg)
 
-	def _get_apns_auth_key_id(self, application_id=None):
+	def _get_apns_auth_key_id(self, application_id: str | None = None) -> str:
 		return self._get_application_settings(application_id, "APNS_AUTH_KEY_ID", self.msg)
 
-	def get_apns_use_sandbox(self, application_id=None):
+	def get_apns_use_sandbox(self, application_id: str | None = None) -> bool:
 		return self._get_application_settings(application_id, "APNS_USE_SANDBOX", self.msg)
 
-	def get_apns_use_alternative_port(self, application_id=None):
+	def get_apns_use_alternative_port(self, application_id: str | None = None) -> bool:
 		return self._get_application_settings(application_id, "APNS_USE_ALTERNATIVE_PORT", self.msg)
 
-	def get_apns_topic(self, application_id=None):
+	def get_apns_topic(self, application_id: str | None = None) -> str:
 		return self._get_application_settings(application_id, "APNS_TOPIC", self.msg)
 
-	def get_apns_host(self, application_id=None):
+	def get_apns_host(self, application_id: str | None = None) -> str:
 		return self._get_application_settings(application_id, "APNS_HOST", self.msg)
 
-	def get_apns_port(self, application_id=None):
+	def get_apns_port(self, application_id: str | None = None) -> int:
 		return self._get_application_settings(application_id, "APNS_PORT", self.msg)
 
-	def get_apns_feedback_host(self, application_id=None):
+	def get_apns_feedback_host(self, application_id: str | None = None) -> str:
 		return self._get_application_settings(application_id, "APNS_FEEDBACK_HOST", self.msg)
 
-	def get_apns_feedback_port(self, application_id=None):
+	def get_apns_feedback_port(self, application_id: str | None = None) -> int:
 		return self._get_application_settings(application_id, "APNS_FEEDBACK_PORT", self.msg)
 
-	def get_wns_package_security_id(self, application_id=None):
+	def get_wns_package_security_id(self, application_id: str | None = None) -> str:
 		return self._get_application_settings(application_id, "WNS_PACKAGE_SECURITY_ID", self.msg)
 
-	def get_wns_secret_key(self, application_id=None):
+	def get_wns_secret_key(self, application_id: str | None = None) -> str:
 		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
 		return self._get_application_settings(application_id, "WNS_SECRET_KEY", msg)
 
-	def get_wp_post_url(self, application_id, browser):
+	def get_wp_post_url(self, application_id: str, browser: str) -> str:
 		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
 		return self._get_application_settings(application_id, "WP_POST_URL", msg)[browser]
 
-	def get_wp_private_key(self, application_id=None):
+	def get_wp_private_key(self, application_id: str | None = None) -> str:
 		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
 		return self._get_application_settings(application_id, "WP_PRIVATE_KEY", msg)
 
-	def get_wp_claims(self, application_id=None):
+	def get_wp_claims(self, application_id: str | None = None) -> dict[str, Any]:
 		msg = "Setup PUSH_NOTIFICATIONS_SETTINGS properly to send messages"
 		return self._get_application_settings(application_id, "WP_CLAIMS", msg)
 

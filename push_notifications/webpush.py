@@ -1,4 +1,5 @@
 import warnings
+from typing import Any
 
 from pywebpush import WebPushException, webpush
 
@@ -6,7 +7,7 @@ from .conf import get_manager
 from .exceptions import WebPushError
 
 
-def get_subscription_info(application_id, uri, browser, auth, p256dh):
+def get_subscription_info(application_id: str, uri: str, browser: str, auth: str, p256dh: str) -> dict[str, Any]:
 	if uri.startswith("https://"):
 		endpoint = uri
 	else:
@@ -26,7 +27,7 @@ def get_subscription_info(application_id, uri, browser, auth, p256dh):
 	}
 
 
-def webpush_send_message(device, message, **kwargs):
+def webpush_send_message(device: Any, message: str, **kwargs: Any) -> dict[str, Any]:
 	subscription_info = get_subscription_info(
 		device.application_id, device.registration_id,
 		device.browser, device.auth, device.p256dh)
