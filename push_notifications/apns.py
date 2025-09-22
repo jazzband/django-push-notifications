@@ -5,7 +5,7 @@ https://developer.apple.com/library/content/documentation/NetworkingInternet/Con
 """
 
 import time
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Union
 from apns2 import client as apns2_client
 from apns2 import credentials as apns2_credentials
 from apns2 import errors as apns2_errors
@@ -71,7 +71,7 @@ def _apns_prepare(
 
 
 def _apns_send(
-	registration_id: str | List[str], 
+	registration_id: Union[str, List[str]], 
 	alert: Optional[str] = None, 
 	batch: bool = False, 
 	application_id: Optional[str] = None, 
