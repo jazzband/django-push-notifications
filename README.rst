@@ -175,7 +175,7 @@ FCM/GCM and APNS services have slightly different semantics. The app tries to of
 .. note::
 	APNS does not support sending payloads that exceed 2048 bytes (increased from 256 in 2014).
 	The message is only one part of the payload, if
-	once constructed the payload exceeds the maximum size, an ``APNSDataOverflow`` exception will be raised before anything is sent.
+	once constructed the payload exceeds the maximum size, an ``APNSError`` exception will be raised before anything is sent.
 	Reference: `Apple Payload Documentation <https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/CreatingtheNotificationPayload.html#//apple_ref/doc/uid/TP40008194-CH10-SW1>`_
 
 Web Push accepts only one variable (``message``), which is passed directly to pywebpush. This message can be a simple string, which will be used as your notification's body, or it can be contain `any data supported by pywebpush<https://github.com/web-push-libs/pywebpush>`.
@@ -319,7 +319,6 @@ Exceptions
 
 - ``NotificationError(Exception)``: Base exception for all notification-related errors.
 - ``apns.APNSError(NotificationError)``: Something went wrong upon sending APNS notifications.
-- ``apns.APNSDataOverflow(APNSError)``: The APNS payload exceeds its maximum size and cannot be sent.
 
 Django REST Framework (DRF) support
 -----------------------------------
