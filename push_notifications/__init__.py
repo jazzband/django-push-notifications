@@ -14,6 +14,6 @@ if sys.version_info < (3, 10):
         "Please upgrade to Python 3.10 or later.",
         UserWarning,
         stacklevel=2
-    )    
+    )
 
 __version__ = importlib_metadata.version("django-push-notifications")
