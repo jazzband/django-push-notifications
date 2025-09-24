@@ -243,12 +243,11 @@ class WebPushDeviceManager(models.Manager):
 
 class WebPushDeviceQuerySet(models.query.QuerySet):
 	def send_message(self, message, **kwargs):
+		from .webpush import webpush_send_bulk_message
 		devices = self.filter(active=True).order_by("application_id").distinct()
-		res = []
-		for device in devices:
-			res.append(device.send_message(message))
-
-		return res
+		ret = []
+		ret.append(webpush_send_bulk_message(devices, message, **kwargs))
+		return ret
 
 
 class WebPushDevice(Device):
