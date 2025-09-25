@@ -24,3 +24,5 @@ coverage.xml
 
 # vscode files
 .vscode/*
+
+dist/
