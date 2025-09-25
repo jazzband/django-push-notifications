@@ -5,7 +5,7 @@ https://developer.apple.com/library/content/documentation/NetworkingInternet/Con
 """
 
 import time
-
+from typing import Optional, Dict, Any, List, Union
 from apns2 import client as apns2_client
 from apns2 import credentials as apns2_credentials
 from apns2 import errors as apns2_errors
@@ -13,10 +13,10 @@ from apns2 import payload as apns2_payload
 
 from . import models
 from .conf import get_manager
-from .exceptions import APNSError, APNSUnsupportedPriority, APNSServerError
+from .exceptions import APNSUnsupportedPriority, APNSServerError
 
 
-def _apns_create_socket(creds=None, application_id=None):
+def _apns_create_socket(creds: Optional[apns2_credentials.Credentials] = None, application_id: Optional[str] = None) -> apns2_client.APNsClient:
 	if creds is None:
 		if not get_manager().has_auth_token_creds(application_id):
 			cert = get_manager().get_apns_certificate(application_id)
@@ -39,31 +39,48 @@ def _apns_create_socket(creds=None, application_id=None):
 
 
 def _apns_prepare(
-	token, alert, application_id=None, badge=None, sound=None, category=None,
-	content_available=False, action_loc_key=None, loc_key=None, loc_args=[],
-	extra={}, mutable_content=False, thread_id=None, url_args=None):
-		if action_loc_key or loc_key or loc_args:
-			apns2_alert = apns2_payload.PayloadAlert(
-				body=alert if alert else {}, body_localized_key=loc_key,
-				body_localized_args=loc_args, action_localized_key=action_loc_key)
-		else:
-			apns2_alert = alert
+	token: str,
+	alert: Optional[str],
+	application_id: Optional[str] = None,
+	badge: Optional[int] = None,
+	sound: Optional[str] = None,
+	category: Optional[str] = None,
+	content_available: bool = False,
+	action_loc_key: Optional[str] = None,
+	loc_key: Optional[str] = None,
+	loc_args: List[Any] = [],
+	extra: Dict[str, Any] = {},
+	mutable_content: bool = False,
+	thread_id: Optional[str] = None,
+	url_args: Optional[list] = None
+) -> apns2_payload.Payload:
+	if action_loc_key or loc_key or loc_args:
+		apns2_alert = apns2_payload.PayloadAlert(
+			body=alert if alert else {}, body_localized_key=loc_key,
+			body_localized_args=loc_args, action_localized_key=action_loc_key)
+	else:
+		apns2_alert = alert
 
-		if callable(badge):
-			badge = badge(token)
+	if callable(badge):
+		badge = badge(token)
 
-		return apns2_payload.Payload(
-			alert=apns2_alert, badge=badge, sound=sound, category=category,
-			url_args=url_args, custom=extra, thread_id=thread_id,
-			content_available=content_available, mutable_content=mutable_content)
+	return apns2_payload.Payload(
+		alert=apns2_alert, badge=badge, sound=sound, category=category,
+		url_args=url_args, custom=extra, thread_id=thread_id,
+		content_available=content_available, mutable_content=mutable_content)
 
 
 def _apns_send(
-	registration_id, alert, batch=False, application_id=None, creds=None, **kwargs
-):
+	registration_id: Union[str, List[str]],
+	alert: Optional[str] = None,
+	batch: bool = False,
+	application_id: Optional[str] = None,
+	creds: Optional[apns2_credentials.Credentials] = None,
+	**kwargs: Any
+) -> Optional[Dict[str, str]]:
 	client = _apns_create_socket(creds=creds, application_id=application_id)
 
-	notification_kwargs = {}
+	notification_kwargs: Dict[str, Any] = {}
 
 	# if expiration isn"t specified use 1 month from now
 	notification_kwargs["expiration"] = kwargs.pop("expiration", None)
@@ -97,7 +114,13 @@ def _apns_send(
 	)
 
 
-def apns_send_message(registration_id, alert, application_id=None, creds=None, **kwargs):
+def apns_send_message(
+	registration_id: str,
+	alert: Optional[str] = None,
+	application_id: Optional[str] = None,
+	creds: Optional[apns2_credentials.Credentials] = None,
+	**kwargs: Any
+) -> None:
 	"""
 	Sends an APNS notification to a single registration_id.
 	This will send the notification as form data.
@@ -122,8 +145,12 @@ def apns_send_message(registration_id, alert, application_id=None, creds=None, *
 
 
 def apns_send_bulk_message(
-	registration_ids, alert, application_id=None, creds=None, **kwargs
-):
+	registration_ids: List[str],
+	alert: Optional[str] = None,
+	application_id: Optional[str] = None,
+	creds: Optional[apns2_credentials.Credentials] = None,
+	**kwargs: Any
+) -> Optional[Dict[str, str]]:
 	"""
 	Sends an APNS notification to one or more registration_ids.
 	The registration_ids argument needs to be a list.

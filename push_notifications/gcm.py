@@ -6,7 +6,7 @@ https://firebase.google.com/docs/cloud-messaging/
 """
 
 from copy import copy
-from typing import List, Union
+from typing import List, Union, Dict, Any, Generator, Optional
 
 from firebase_admin import messaging
 from firebase_admin.exceptions import FirebaseError, InvalidArgumentError
@@ -22,7 +22,7 @@ FCM_NOTIFICATIONS_PAYLOAD_KEYS = [
 ]
 
 
-def dict_to_fcm_message(data: dict, dry_run=False, **kwargs) -> messaging.Message:
+def dict_to_fcm_message(data: Dict[str, Any], dry_run: bool = False, **kwargs: Any) -> messaging.Message:
 	"""
 	Constructs a messaging.Message from the old dictionary.
 
@@ -87,12 +87,12 @@ def dict_to_fcm_message(data: dict, dry_run=False, **kwargs) -> messaging.Messag
 	return message
 
 
-def _chunks(l, n):
+def _chunks(lst: List[Any], n: int) -> Generator[List[Any], None, None]:
 	"""
-	Yield successive chunks from list \a l with a maximum size \a n
+	Yield successive chunks from list \a lst with a maximum size \a n
 	"""
-	for i in range(0, len(l), n):
-		yield l[i:i + n]
+	for i in range(0, len(lst), n):
+		yield lst[i:i + n]
 
 
 # Error codes: https://firebase.google.com/docs/reference/fcm/rest/v1/ErrorCode
@@ -108,12 +108,11 @@ fcm_error_list_str = [x.code for x in fcm_error_list]
 def _validate_exception_for_deactivation(exc: Union[FirebaseError]) -> bool:
 	if not exc:
 		return False
-	exc_type = type(exc)
-	if exc_type == str:
+	if isinstance(exc, str):
 		return exc in fcm_error_list_str
 	return (
-		exc_type == InvalidArgumentError and exc.cause == "Invalid registration"
-	) or (exc_type in fcm_error_list)
+		isinstance(exc, InvalidArgumentError) and exc.cause == "Invalid registration"
+	) or (type(exc) in fcm_error_list)
 
 
 def _deactivate_devices_with_error_results(
@@ -139,18 +138,18 @@ def _deactivate_devices_with_error_results(
 	return deactivated_ids
 
 
-def _prepare_message(message: messaging.Message, token: str):
+def _prepare_message(message: messaging.Message, token: str) -> messaging.Message:
 	message.token = token
 	return copy(message)
 
 
 def send_message(
-	registration_ids,
+	registration_ids: Union[List[str], str, None],
 	message: messaging.Message,
-	application_id=None,
-	dry_run=False,
-	**kwargs
-):
+	application_id: Optional[str] = None,
+	dry_run: bool = False,
+	**kwargs: Any
+) -> Optional[messaging.BatchResponse]:
 	"""
 	Sends an FCM notification to one or more registration_ids. The registration_ids
 	can be a list or a single string.

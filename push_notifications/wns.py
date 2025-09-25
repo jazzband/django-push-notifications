@@ -9,7 +9,7 @@ import json
 import xml.etree.ElementTree as ET
 
 from django.core.exceptions import ImproperlyConfigured
-
+from typing import Dict, List, Optional, Any
 from .compat import HTTPError, Request, urlencode, urlopen
 from .conf import get_manager
 from .exceptions import NotificationError
@@ -28,7 +28,9 @@ class WNSNotificationResponseError(WNSError):
 	pass
 
 
-def _wns_authenticate(scope="notify.windows.com", application_id=None):
+def _wns_authenticate(
+	scope: str = "notify.windows.com", application_id: Optional[str] = None
+) -> str:
 	"""
 	Requests an Access token for WNS communication.
 
@@ -64,7 +66,9 @@ def _wns_authenticate(scope="notify.windows.com", application_id=None):
 		if err.code == 400:
 			# One of your settings is probably jacked up.
 			# https://msdn.microsoft.com/en-us/library/windows/apps/xaml/hh868245
-			raise WNSAuthenticationError("Authentication failed, check your WNS settings.")
+			raise WNSAuthenticationError(
+				"Authentication failed, check your WNS settings."
+			)
 		raise err
 
 	oauth_data = response.read().decode("utf-8")
@@ -82,7 +86,12 @@ def _wns_authenticate(scope="notify.windows.com", application_id=None):
 	return access_token
 
 
-def _wns_send(uri, data, wns_type="wns/toast", application_id=None):
+def _wns_send(
+	uri: str,
+	data: bytes,
+	wns_type: str = "wns/toast",
+	application_id: Optional[str] = None,
+) -> Any:
 	"""
 	Sends a notification data and authentication to WNS.
 
@@ -103,7 +112,7 @@ def _wns_send(uri, data, wns_type="wns/toast", application_id=None):
 		"X-WNS-Type": wns_type,  # wns/toast | wns/badge | wns/tile | wns/raw
 	}
 
-	if type(data) is str:
+	if isinstance(data, str):
 		data = data.encode("utf-8")
 
 	request = Request(uri, data, headers)
@@ -139,7 +148,7 @@ def _wns_send(uri, data, wns_type="wns/toast", application_id=None):
 	return response.read().decode("utf-8")
 
 
-def _wns_prepare_toast(data, **kwargs):
+def _wns_prepare_toast(data: Dict[str, List[str]], **kwargs: Any) -> bytes:
 	"""
 	Creates the xml tree for a `toast` notification
 
@@ -170,8 +179,13 @@ def _wns_prepare_toast(data, **kwargs):
 
 
 def wns_send_message(
-	uri, message=None, xml_data=None, raw_data=None, application_id=None, **kwargs
-):
+	uri: str,
+	message: Optional[Any] = None,
+	xml_data: Optional[Dict[str, Any]] = None,
+	raw_data: Optional[str] = None,
+	application_id: Optional[str] = None,
+	**kwargs: Any,
+) -> str:
 	"""
 	Sends a notification request to WNS.
 	There are four notification types that WNS can send: toast, tile, badge and raw.
@@ -211,7 +225,9 @@ def wns_send_message(
 		wns_type = "wns/toast"
 		if isinstance(message, str):
 			message = {
-				"text": [message, ],
+				"text": [
+					message,
+				],
 			}
 		prepared_data = _wns_prepare_toast(data=message, **kwargs)
 	# Create a toast/tile/badge notification from a dictionary
@@ -235,8 +251,13 @@ def wns_send_message(
 
 
 def wns_send_bulk_message(
-	uri_list, message=None, xml_data=None, raw_data=None, application_id=None, **kwargs
-):
+	uri_list: List[str],
+	message: Optional[Any] = None,
+	xml_data: Optional[Dict[str, Any]] = None,
+	raw_data: Optional[str] = None,
+	application_id: Optional[str] = None,
+	**kwargs: Any,
+) -> List[str]:
 	"""
 	WNS doesn't support bulk notification, so we loop through each uri.
 
@@ -249,14 +270,18 @@ def wns_send_bulk_message(
 	if uri_list:
 		for uri in uri_list:
 			r = wns_send_message(
-				uri=uri, message=message, xml_data=xml_data,
-				raw_data=raw_data, application_id=application_id, **kwargs
+				uri=uri,
+				message=message,
+				xml_data=xml_data,
+				raw_data=raw_data,
+				application_id=application_id,
+				**kwargs,
 			)
 			res.append(r)
 	return res
 
 
-def dict_to_xml_schema(data):
+def dict_to_xml_schema(data: Dict[str, Any]) -> ET.Element:
 	"""
 	Input a dictionary to be converted to xml. There should be only one key at
 	the top level. The value must be a dict with (required) `children` key and
@@ -322,7 +347,7 @@ def dict_to_xml_schema(data):
 		return root
 
 
-def _add_sub_elements_from_dict(parent, sub_dict):
+def _add_sub_elements_from_dict(parent: ET.Element, sub_dict: Dict[str, Any]) -> None:
 	"""
 	Add SubElements to the parent element.
 
@@ -357,7 +382,7 @@ def _add_sub_elements_from_dict(parent, sub_dict):
 				sub_element.text = children
 
 
-def _add_element_attrs(elem, attrs):
+def _add_element_attrs(elem: ET.Element, attrs: Dict[str, str]) -> ET.Element:
 	"""
 	Add attributes to the given element.
 

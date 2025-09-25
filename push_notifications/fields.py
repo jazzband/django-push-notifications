@@ -1,6 +1,6 @@
 import re
 import struct
-
+from typing import Optional, Any
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import connection, models
@@ -10,7 +10,7 @@ from django.utils.translation import gettext_lazy as _
 __all__ = ["HexadecimalField", "HexIntegerField"]
 
 UNSIGNED_64BIT_INT_MIN_VALUE = 0
-UNSIGNED_64BIT_INT_MAX_VALUE = 2 ** 64 - 1
+UNSIGNED_64BIT_INT_MAX_VALUE = 2**64 - 1
 
 
 hex_re = re.compile(r"^(0x)?([0-9a-f])+$", re.I)
@@ -20,23 +20,23 @@ signed_integer_vendors = [
 ]
 
 
-def _using_signed_storage():
+def _using_signed_storage() -> bool:
 	return connection.vendor in signed_integer_vendors
 
 
-def _signed_to_unsigned_integer(value):
+def _signed_to_unsigned_integer(value: int) -> int:
 	return struct.unpack("Q", struct.pack("q", value))[0]
 
 
-def _unsigned_to_signed_integer(value):
+def _unsigned_to_signed_integer(value: int) -> int:
 	return struct.unpack("q", struct.pack("Q", value))[0]
 
 
-def _hex_string_to_unsigned_integer(value):
+def _hex_string_to_unsigned_integer(value: str) -> int:
 	return int(value, 16)
 
 
-def _unsigned_integer_to_hex_string(value):
+def _unsigned_integer_to_hex_string(value: int) -> str:
 	return hex(value).rstrip("L")
 
 
@@ -44,16 +44,20 @@ class HexadecimalField(forms.CharField):
 	"""
 	A form field that accepts only hexadecimal numbers
 	"""
-	def __init__(self, *args, **kwargs):
+
+	def __init__(self, *args: Any, **kwargs: Any) -> None:
 		self.default_validators = [
 			RegexValidator(hex_re, _("Enter a valid hexadecimal number"), "invalid")
 		]
 		super().__init__(*args, **kwargs)
 
-	def prepare_value(self, value):
+	def prepare_value(self, value: Optional[Any]) -> str:
 		# converts bigint from db to hex before it is displayed in admin
-		if value and not isinstance(value, str) \
-			and connection.vendor in ("mysql", "sqlite"):
+		if (
+			value
+			and not isinstance(value, str)
+			and connection.vendor in ("mysql", "sqlite")
+		):
 			value = _unsigned_integer_to_hex_string(value)
 		return super(forms.CharField, self).prepare_value(value)
 
@@ -73,10 +77,10 @@ class HexIntegerField(models.BigIntegerField):
 
 	validators = [
 		MinValueValidator(UNSIGNED_64BIT_INT_MIN_VALUE),
-		MaxValueValidator(UNSIGNED_64BIT_INT_MAX_VALUE)
+		MaxValueValidator(UNSIGNED_64BIT_INT_MAX_VALUE),
 	]
 
-	def db_type(self, connection):
+	def db_type(self, connection: Any) -> str:
 		if "mysql" == connection.vendor:
 			return "bigint unsigned"
 		elif "sqlite" == connection.vendor:
@@ -84,8 +88,8 @@ class HexIntegerField(models.BigIntegerField):
 		else:
 			return super().db_type(connection=connection)
 
-	def get_prep_value(self, value):
-		""" Return the integer value to be stored from the hex string """
+	def get_prep_value(self, value: Optional[Any]) -> Optional[int]:
+		"""Return the integer value to be stored from the hex string"""
 		if value is None or value == "":
 			return None
 		if isinstance(value, str):
@@ -94,29 +98,31 @@ class HexIntegerField(models.BigIntegerField):
 			value = _unsigned_to_signed_integer(value)
 		return value
 
-	def from_db_value(self, value, *args):
-		""" Return an unsigned int representation from all db backends """
+	def from_db_value(self, value: Optional[int], *args: Any) -> Optional[int]:
+		"""Return an unsigned int representation from all db backends"""
 		if value is None:
 			return value
 		if _using_signed_storage():
 			value = _signed_to_unsigned_integer(value)
 		return value
 
-	def to_python(self, value):
-		""" Return a str representation of the hexadecimal """
+	def to_python(self, value: Optional[Any]) -> Optional[str]:
+		"""Return a str representation of the hexadecimal"""
 		if isinstance(value, str):
 			return value
 		if value is None:
 			return value
 		return _unsigned_integer_to_hex_string(value)
 
-	def formfield(self, **kwargs):
+	def formfield(self, **kwargs: Any) -> HexadecimalField:
 		defaults = {"form_class": HexadecimalField}
 		defaults.update(kwargs)
 		# yes, that super call is right
 		return super(models.IntegerField, self).formfield(**defaults)
 
-	def run_validators(self, value):
+	def run_validators(self, value: Any) -> None:
 		# make sure validation is performed on integer value not string value
+		# removed `return` since run_validators() never returns anything,
+		# it only raises ValidationError on failure
 		value = _hex_string_to_unsigned_integer(value)
-		return super(models.BigIntegerField, self).run_validators(value)
+		super(models.BigIntegerField, self).run_validators(value)

@@ -1,20 +1,21 @@
 from django.utils.module_loading import import_string
+from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from typing import Union, Optional
+from .app import AppConfig
+from .appmodel import AppModelConfig
+from .legacy import LegacyConfig
 
-from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS  # noqa: I001
-from .app import AppConfig  # noqa: F401
-from .appmodel import AppModelConfig  # noqa: F401
-from .legacy import LegacyConfig  # noqa: F401
+# ManagerType is an alias for the possible configuration manager classes
+# that can be loaded dynamically via SETTINGS["CONFIG"].
+ManagerType = Union[AppConfig, AppModelConfig, LegacyConfig]
+
+manager: Optional[ManagerType] = None
 
 
-manager = None
-
-
-def get_manager(reload=False):
+def get_manager(reload: bool = False) -> ManagerType:
 	global manager
-
-	if not manager or reload is True:
+	if not manager or reload:
 		manager = import_string(SETTINGS["CONFIG"])()
-
 	return manager
 
 
