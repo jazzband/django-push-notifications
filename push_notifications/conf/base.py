@@ -22,6 +22,9 @@ class BaseConfig:
 	def get_apns_use_alternative_port(self, application_id: Optional[str] = None) -> bool:
 		raise NotImplementedError
 
+	def get_apns_error_timeout(self, application_id: Optional[str] = None) -> int:
+		raise NotImplementedError
+
 	def get_wns_package_security_id(self, application_id: Optional[str] = None) -> str:
 		raise NotImplementedError
 

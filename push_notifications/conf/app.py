@@ -380,6 +380,10 @@ class AppConfig(BaseConfig):
 	def get_apns_topic(self, application_id: Optional[str] = None) -> Optional[str]:
 		return self._get_application_settings(application_id, "APNS", "TOPIC")
 
+
+	def get_apns_error_timeout(self, application_id: Optional[str] = None) -> int:
+		return self._get_application_settings(application_id, "APNS", "ERROR_TIMEOUT")
+
 	def get_wns_package_security_id(self, application_id: Optional[str] = None) -> str:
 		return self._get_application_settings(
 			application_id, "WNS", "PACKAGE_SECURITY_ID"
