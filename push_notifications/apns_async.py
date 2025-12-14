@@ -6,6 +6,7 @@ from typing import Any, Awaitable, Callable, Dict, List, Optional, Tuple, Union
 
 from aioapns import APNs, ConnectionError, NotificationRequest
 from aioapns.common import NotificationResult
+from push_notifications import settings
 
 from . import models
 from .conf import get_manager
@@ -368,7 +369,11 @@ def apns_send_bulk_message(
 					 Notification Content Extension or UNNotificationCategory configuration.
 					 It allows the app to display custom actions with the notification.
 	:param content_available: If True the `content-available` flag will be set to 1, allowing the app to be woken up in the background
+	:param timeout: Timeout in seconds for each notification send operation
 	"""
+	if not timeout:
+		timeout = get_manager().get_apns_error_timeout(application_id)
+
 	try:
 		topic = get_manager().get_apns_topic(application_id)
 		inactive_tokens = []
@@ -392,6 +397,7 @@ def apns_send_bulk_message(
 				mutable_content=mutable_content,
 				category=category,
 				err_func=err_func,
+				timeout=timeout,
 			)
 		)
 
@@ -431,6 +437,7 @@ def apns_send_bulk_message(
 
 async def _send_bulk_request(
 	registration_ids: list[str],
+	timeout: int,
 	alert: Optional[Union[str, Alert]],
 	application_id: Optional[str] = None,
 	creds: Optional[Credentials] = None,
@@ -477,16 +484,17 @@ async def _send_bulk_request(
 		for registration_id in registration_ids
 	]
 
-	send_requests = [_send_request(client, request) for request in requests]
+	send_requests = [_send_request(client, request, timeout) for request in requests]
 	return await asyncio.gather(*send_requests)
 
 
 async def _send_request(
 	apns: APNs,
 	request: NotificationRequest,
+	timeout: int,
 ) -> Tuple[str, NotificationResult]:
 	try:
-		res = await asyncio.wait_for(apns.send_notification(request), timeout=1)
+		res = await asyncio.wait_for(apns.send_notification(request), timeout=timeout)
 		return request.device_token, res
 
 	except asyncio.TimeoutError:
