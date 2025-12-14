@@ -7,33 +7,76 @@ These are in addition to the instalation steps for django-push-notifications[WP]
 
 Configure the VAPID keys
 ------------------------------
-- Install:
 
-.. code-block:: python
+.. note::
+   There is currently a known issue with the ``py-vapid`` library causing deprecation warnings with newer versions of the ``cryptography`` library. While this issue is being resolved upstream (see `py-vapid issue #105 <https://github.com/web-push-libs/vapid/issues/105>`_), we recommend using the alternative method below.
 
-	pip install py-vapid  (Only for generating key)
+**Recommended Method: Generate keys using standalone script**
 
-- Generate public and private keys:
+This method uses the ``ecdsa`` library directly and avoids the ``py-vapid`` compatibility issue:
+
+- Install the dependency:
 
 .. code-block:: bash
 
+	pip install ecdsa
+
+- Create and run this key generation script (shout-out to `@Tobiaqs <https://gist.github.com/Tobiaqs/450a4516ae44813792b7d84028c366c0>`_ for providing this script):
+
+.. code-block:: python
+
+	# vapid_keygen.py
+	import base64
+	import ecdsa
+
+	def generate_vapid_keypair():
+	    """
+	    Generate a new set of encoded key-pair for VAPID
+	    """
+	    pk = ecdsa.SigningKey.generate(curve=ecdsa.NIST256p)
+	    vk = pk.get_verifying_key()
+
+	    return {
+	        'private_key': base64.urlsafe_b64encode(pk.to_string()).strip(b"="),
+	        'public_key': base64.urlsafe_b64encode(b"\x04" + vk.to_string()).strip(b"=")
+	    }
+
+	keys = generate_vapid_keypair()
+
+	print("\nPrivate key (use for WP_PRIVATE_KEY setting):\n")
+	print(keys["private_key"].decode())
+	print("\nPublic key (use as Application Server Key in client JavaScript):\n")
+	print(keys["public_key"].decode())
+	print()
+
+- Run the script:
+
+.. code-block:: bash
+
+	python vapid_keygen.py
+
+The private key output should be used with the setting ``WP_PRIVATE_KEY``.
+The public key will be used in your client side JavaScript as the Application Server Key (see example below).
+
+**Method 2: Using py-vapid (once upstream fix is released)**
+
+Once the upstream issue is resolved, you can use ``py-vapid`` as originally documented:
+
+.. code-block:: bash
+
+	pip install py-vapid
 	vapid --gen
 
 	Generating private_key.pem
 	Generating public_key.pem
 
-
-The private key generated is the file to use with the setting ``WP_PRIVATE_KEY``
-The public key will be used in your client side javascript, but first it must be formated as an Application Server Key
-
-- Generate client public key (applicationServerKey)
+Then format as Application Server Key:
 
 .. code-block:: bash
 
 	vapid --applicationServerKey
 
 	Application Server Key = <Your Public Key>
-
 
 
 Client Side logic to ask user for permission and subscribe to WebPush
