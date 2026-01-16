@@ -284,7 +284,7 @@ When using FCM, ``django-push-notifications`` will automatically use the `notifi
 	fcm_device.send_message("This is a enriched message", title="Notification title", badge=6)
 
 	# Send a silent notification message with badge - *only working with iOS*:
-    fcm_device.send_message(
+	fcm_device.send_message(
 		messaging.Message(
 			apns=messaging.APNSConfig(
 				payload=messaging.APNSPayload(aps=messaging.Aps(badge=5))
@@ -296,9 +296,9 @@ When using FCM, ``django-push-notifications`` will automatically use the `notifi
 	fcm_device.send_message(
 		messaging.Message(
 			notification=messaging.Notification(title="otification title", body="This is a enriched message"),
+			apns=messaging.APNSConfig(payload=messaging.APNSPayload(aps=messaging.Aps(badge=6))), # ios
 		),
 		badge=6, # android
-		apns=messaging.APNSConfig(payload=messaging.APNSPayload(aps=messaging.Aps(badge=6))), # ios
 	)
 
 	# Send a notification message with extra data
