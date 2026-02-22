@@ -1,15 +1,16 @@
 import asyncio
 import time
-
 from dataclasses import asdict, dataclass
-from typing import Awaitable, Callable, Dict, Optional, Union, Any, Tuple, List
+from datetime import datetime
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Tuple, Union
 
 from aioapns import APNs, ConnectionError, NotificationRequest
 from aioapns.common import NotificationResult
 
 from . import models
 from .conf import get_manager
-from .exceptions import APNSServerError, APNSError
+from .exceptions import APNSError, APNSServerError
+
 
 ErrFunc = Optional[Callable[[NotificationRequest, NotificationResult], Awaitable[None]]]
 """function to proces errors from aioapns send_message"""
@@ -35,6 +36,15 @@ class TokenCredentials(Credentials):
 class CertificateCredentials(Credentials):
 	client_cert: str
 
+
+@dataclass
+class BulkNotificationResult:
+	results: dict[str, Any]
+	errors: list[dict[str, Any]]
+
+	@property
+	def has_errors(self) -> bool:
+		return len(self.errors) > 0
 
 @dataclass
 class Alert:
@@ -305,7 +315,7 @@ def apns_send_bulk_message(
 	mutable_content: Optional[bool] = False,
 	category: Optional[str] = None,
 	err_func: Optional[ErrFunc] = None,
-) -> Dict[str, str]:
+) -> BulkNotificationResult:
 	"""
 	Sends an APNS notification to one or more registration_ids.
 	The registration_ids argument needs to be a list.
@@ -361,7 +371,13 @@ def apns_send_bulk_message(
 				"Success" if result.is_successful else result.description
 			)
 			if not result.is_successful:
-				errors.append(result.description)
+				error_obj = {
+					'registration_id': registration_id,
+					'error_type': result.description,
+					'error_message': result.description,
+					'timestamp': datetime.now().isoformat(),
+				}
+				errors.append(error_obj)
 				if result.description in [
 					"Unregistered",
 					"BadDeviceToken",
@@ -374,11 +390,7 @@ def apns_send_bulk_message(
 				registration_id__in=inactive_tokens
 			).update(active=False)
 
-		if len(errors) > 0:
-			msg = "One or more errors failed with errors: {}".format(", ".join(errors))
-			raise APNSError(msg)
-
-		return results
+		return BulkNotificationResult(results=results, errors=errors)
 
 	except ConnectionError as e:
 		raise APNSServerError(status=e.__class__.__name__)
