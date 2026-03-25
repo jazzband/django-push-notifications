@@ -129,13 +129,13 @@ def _create_notification_request_from_args(
 	message_kwargs: Dict[str, Any] = {},
 	notification_request_kwargs: Dict[str, Any] = {},
 ) -> NotificationRequest:
-	if alert is None:
-		alert = Alert(body="")
-
 	if loc_key:
-		if isinstance(alert, str):
-			alert = Alert(body=alert)
-		alert.loc_key = loc_key
+		if alert is None:
+			alert = Alert(loc_key=loc_key)
+		else:
+			if isinstance(alert, str):
+				alert = Alert(body=alert)
+			alert.loc_key = loc_key
 
 	if isinstance(alert, Alert):
 		alert = alert.asDict()
@@ -153,16 +153,19 @@ def _create_notification_request_from_args(
 	if extra is None:
 		extra = {}
 
+	aps: Dict[str, Any] = {
+		"badge": badge,
+		"sound": sound,
+		"thread-id": thread_id,
+		**aps_kwargs,
+	}
+	if alert is not None:
+		aps["alert"] = alert
+
 	request = NotificationRequest(
 		device_token=registration_id,
 		message={
-			"aps": {
-				"alert": alert,
-				"badge": badge,
-				"sound": sound,
-				"thread-id": thread_id,
-				**aps_kwargs,
-			},
+			"aps": aps,
 			**extra,
 			**message_kwargs,
 		},

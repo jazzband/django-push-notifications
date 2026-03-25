@@ -276,3 +276,20 @@ class APNSAsyncPushPayloadTest(TestCase):
 		req = args[0]
 
 		assert "content-available" not in req.message["aps"]
+
+	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
+	def test_silent_push_with_alert_none(self, mock_apns):
+		"""alert=None should omit the 'alert' key from the APS payload (silent notification)."""
+		apns_send_message(
+			"123",
+			None,
+			content_available=True,
+			creds=TokenCredentials(key="aaa", key_id="bbb", team_id="ccc"),
+		)
+
+		args, _kwargs = mock_apns.return_value.send_notification.call_args
+		req = args[0]
+
+		self.assertEqual(req.device_token, "123")
+		assert "alert" not in req.message["aps"]
+		assert req.message["aps"]["content-available"] == 1
