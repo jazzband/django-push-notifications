@@ -116,7 +116,7 @@ class Alert:
 
 def _create_notification_request_from_args(
 	registration_id: str,
-	alert: Union[str, Alert, None],
+	alert: Optional[Union[str, Alert]],
 	badge: Optional[int] = None,
 	sound: Optional[str] = None,
 	extra: Optional[Dict[str, Any]] = None,
@@ -223,7 +223,7 @@ def _get_credentials(application_id: Optional[str] = None) -> Credentials:
 
 def apns_send_message(
 	registration_id: str,
-	alert: Union[str, Alert, None],
+	alert: Optional[Union[str, Alert]],
 	application_id: Optional[str] = None,
 	creds: Optional[Credentials] = None,
 	topic: Optional[str] = None,
@@ -292,7 +292,7 @@ def apns_send_message(
 
 def apns_send_bulk_message(
 	registration_ids: list[str],
-	alert: Union[str, Alert, None],
+	alert: Optional[Union[str, Alert]],
 	application_id: Optional[str] = None,
 	creds: Optional[Credentials] = None,
 	topic: Optional[str] = None,
@@ -389,7 +389,7 @@ def apns_send_bulk_message(
 
 async def _send_bulk_request(
 	registration_ids: list[str],
-	alert: Union[str, Alert, None],
+	alert: Optional[Union[str, Alert]],
 	application_id: Optional[str] = None,
 	creds: Optional[Credentials] = None,
 	topic: Optional[str] = None,
