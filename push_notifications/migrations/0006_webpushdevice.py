@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import migrations, models
 
+from ..settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
 
 class Migration(migrations.Migration):
 
@@ -22,7 +23,7 @@ class Migration(migrations.Migration):
                 ('p256dh', models.CharField(max_length=88, verbose_name='User public encryption key')),
                 ('auth', models.CharField(max_length=24, verbose_name='User auth secret')),
                 ('browser', models.CharField(default='CHROME', help_text='Currently only support to Chrome, Firefox and Opera browsers', max_length=10, verbose_name='Browser', choices=[('CHROME', 'Chrome'), ('FIREFOX', 'Firefox'), ('OPERA', 'Opera')])),
-                ('user', models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('user', models.ForeignKey(blank=True, to=SETTINGS["USER_MODEL"], null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name': 'WebPush device',
