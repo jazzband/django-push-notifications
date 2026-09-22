@@ -197,7 +197,7 @@ Or a generic function view (add your own boilerplate for errors and protections)
 
 Service Worker to show messages
 ------------------------------
-You will need a service worker registered with your web app that can handle the notfications, for example
+You will need a service worker registered with your web app that can handle the notifications, for example
 
 .. code-block:: javascript
 
