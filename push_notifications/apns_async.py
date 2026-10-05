@@ -9,11 +9,14 @@ from aioapns.common import NotificationResult
 
 from . import models
 from .conf import get_manager
-from .exceptions import APNSError, APNSServerError
+from .exceptions import APNSServerError
 
 
 ErrFunc = Optional[Callable[[NotificationRequest, NotificationResult], Awaitable[None]]]
 """function to proces errors from aioapns send_message"""
+
+SUCCESS = "Success"
+"""the result reported for a registration_id that APNS accepted"""
 
 
 class NotSet:
@@ -37,14 +40,41 @@ class CertificateCredentials(Credentials):
 	client_cert: str
 
 
-@dataclass
+@dataclass(frozen=True)
+class DeliveryError:
+	"""
+	A single registration_id that did not accept its notification.
+
+	error_type is the APNS rejection reason ("BadDeviceToken") or the connection failure reported by aioapns ("CommunicationError").
+	error_message holds the same reason for APNS rejections and the exception text for connection failures.
+	"""
+
+	registration_id: str
+	error_type: str
+	error_message: str
+	timestamp: Optional[datetime] = None
+
+
+@dataclass(frozen=True)
 class BulkNotificationResult:
-	results: dict[str, Any]
-	errors: list[dict[str, Any]]
+	registration_ids: List[str]
+	errors: List[DeliveryError]
 
 	@property
 	def has_errors(self) -> bool:
-		return len(self.errors) > 0
+		return bool(self.errors)
+
+	@property
+	def results(self) -> Dict[str, str]:
+		failed = {error.registration_id: error.error_type for error in self.errors}
+		return {
+			registration_id: failed.get(registration_id, SUCCESS)
+			for registration_id in self.registration_ids
+		}
+
+	def result_for(self, registration_id: str) -> str | None:
+		return self.results.get(registration_id)
+
 
 @dataclass
 class Alert:
@@ -270,7 +300,7 @@ def apns_send_message(
 					 It allows the app to display custom actions with the notification.
 	:param content_available: If True the `content-available` flag will be set to 1, allowing the app to be woken up in the background
 	"""
-	results = apns_send_bulk_message(
+	bulk_result = apns_send_bulk_message(
 		registration_ids=[registration_id],
 		alert=alert,
 		application_id=application_id,
@@ -290,11 +320,10 @@ def apns_send_message(
 		err_func=err_func,
 	)
 
-	for result in results.results.values():
-		if result == "Success":
-			return {"results": [result]}
-		else:
-			return {"results": [{"error": result}]}
+	result = bulk_result.result_for(registration_id)
+	if result == SUCCESS:
+		return {"results": [result]}
+	return {"results": [{"error": result}]}
 
 
 def apns_send_bulk_message(
@@ -339,7 +368,6 @@ def apns_send_bulk_message(
 	"""
 	try:
 		topic = get_manager().get_apns_topic(application_id)
-		results: Dict[str, str] = {}
 		inactive_tokens = []
 
 		responses = asyncio.run(
@@ -364,33 +392,35 @@ def apns_send_bulk_message(
 			)
 		)
 
-		results = {}
-		errors = []
+		errors: List[DeliveryError] = []
 		for registration_id, result in responses:
-			results[registration_id] = (
-				"Success" if result.is_successful else result.description
+			if result.is_successful:
+				continue
+
+			errors.append(
+				DeliveryError(
+					registration_id=registration_id,
+					error_type=result.description,
+					error_message=result.description,
+					timestamp=datetime.now(),
+				)
 			)
-			if not result.is_successful:
-				error_obj = {
-					'registration_id': registration_id,
-					'error_type': result.description,
-					'error_message': result.description,
-					'timestamp': datetime.now().isoformat(),
-				}
-				errors.append(error_obj)
-				if result.description in [
-					"Unregistered",
-					"BadDeviceToken",
-					"DeviceTokenNotForTopic",
-				]:
-					inactive_tokens.append(registration_id)
+			if result.description in [
+				"Unregistered",
+				"BadDeviceToken",
+				"DeviceTokenNotForTopic",
+			]:
+				inactive_tokens.append(registration_id)
 
 		if len(inactive_tokens) > 0:
 			models.APNSDevice.objects.filter(
 				registration_id__in=inactive_tokens
 			).update(active=False)
 
-		return BulkNotificationResult(results=results, errors=errors)
+		return BulkNotificationResult(
+			registration_ids=[rid for rid, _ in responses],
+			errors=errors,
+		)
 
 	except ConnectionError as e:
 		raise APNSServerError(status=e.__class__.__name__)

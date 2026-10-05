@@ -3,7 +3,8 @@ import time
 from unittest import mock
 
 import pytest
-from django.test import TestCase
+from django.conf import settings
+from django.test import TestCase, override_settings
 
 from push_notifications.models import APNSDevice
 
@@ -12,7 +13,7 @@ try:
 	from aioapns.common import NotificationResult
 	from push_notifications.apns_async import (
 		apns_send_bulk_message, apns_send_message, BulkNotificationResult,
-		CertificateCredentials, TokenCredentials,
+		CertificateCredentials, DeliveryError, SUCCESS, TokenCredentials,
 	)
 except ModuleNotFoundError:
 	# skipping because apns2 is not supported on python 3.10
@@ -284,98 +285,152 @@ class APNSAsyncPushPayloadTest(TestCase):
 
 
 class APNSAsyncBulkMessageErrorHandlingTest(TestCase):
-	def _bulk_send(self, mock_apns, responses):
-		registration_ids = ["token{}".format(idx) for idx in range(1, len(responses) + 1)]
+	REGISTRATION_IDS = [
+		"1e5a9c3f7b0d24e8a1c5f9b3d6a0e4c8f1b5d9a2c6e0f4b8d3a7c1e5f9b0d4a2c",
+		"4b8e2f6a1c3d59a7b0d4e2f8c1a5b3d6f9e0c2a5b8d1f4e7c0a3b6d9f2e5c8a1",
+		"c4a7e0b3f6d91a5c8e2b7f4d0a3c6e9f2b5d8a1c4e7f0b3d6a9c2e5f8b1d4a7c",
+	]
+
+	def setUp(self):
+		for registration_id in self.REGISTRATION_IDS:
+			APNSDevice.objects.create(registration_id=registration_id)
+
+	def _bulk_send(self, mock_apns, descriptions):
+		registration_ids = list(
+			APNSDevice.objects.order_by("registration_id").values_list(
+				"registration_id", flat=True
+			)
+		)
 		mock_apns.return_value.send_notification.side_effect = [
 			NotificationResult(
-				notification_id=registration_id,
-				status=status,
+				notification_id="8f14e45f-ceea-467a-9d0c-1e2b3c4d5e6f",
+				status="200" if description is None else "400",
 				description=description,
 			)
-			for registration_id, (status, description) in zip(registration_ids, responses)
+			for description in descriptions
 		]
 		return apns_send_bulk_message(
 			registration_ids=registration_ids,
-			alert="Hello world",
-			creds=TokenCredentials(key="aaa", key_id="bbb", team_id="ccc"),
+			alert="Happy Customer Service Week!",
+			creds=TokenCredentials(
+				key="aaa", key_id="ABCDE12345", team_id="FGHIJ67890"
+			),
 		)
 
 	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
-	def test_reports_per_registration_id_errors_without_raising(self, mock_apns):
+	def test_reports_errors_and_deactivates_rejected_registration_ids(self, mock_apns):
+		# per token: the description APNS returned, or None when APNS accepted it.
+		# then the expected results, the expected errors as (position, type)
+		# pairs, and the expected ``APNSDevice.active`` flags.
 		scenarios = [
 			(
-				"all delivered",
-				[("200", None), ("200", None)],
-				{"token1": "Success", "token2": "Success"},
+				"every notification delivered",
+				[None, None, None],
+				[SUCCESS, SUCCESS, SUCCESS],
 				[],
+				[True, True, True],
 			),
 			(
-				"one rejected token",
-				[("200", None), ("400", "BadDeviceToken")],
-				{"token1": "Success", "token2": "BadDeviceToken"},
-				[("token2", "BadDeviceToken")],
+				"one unregistered device",
+				[None, "Unregistered", None],
+				[SUCCESS, "Unregistered", SUCCESS],
+				[(1, "Unregistered")],
+				[True, False, True],
 			),
 			(
-				"several failures",
+				"two permanent failures",
+				["BadDeviceToken", None, "DeviceTokenNotForTopic"],
+				["BadDeviceToken", SUCCESS, "DeviceTokenNotForTopic"],
+				[(0, "BadDeviceToken"), (2, "DeviceTokenNotForTopic")],
+				[False, True, False],
+			),
+			(
+				"a timeout keeps the device",
+				["TimeoutError", None, None],
+				["TimeoutError", SUCCESS, SUCCESS],
+				[(0, "TimeoutError")],
+				[True, True, True],
+			),
+			(
+				"payload and connection failures keep the device",
+				[None, "PayloadTooLarge", "CommunicationError: connection reset by peer"],
 				[
-					("400", "Unregistered"),
-					("400", "DeviceTokenNotForTopic"),
-					("failed", "TimeoutError"),
+					SUCCESS,
+					"PayloadTooLarge",
+					"CommunicationError: connection reset by peer",
 				],
-				{
-					"token1": "Unregistered",
-					"token2": "DeviceTokenNotForTopic",
-					"token3": "TimeoutError",
-				},
 				[
-					("token1", "Unregistered"),
-					("token2", "DeviceTokenNotForTopic"),
-					("token3", "TimeoutError"),
+					(1, "PayloadTooLarge"),
+					(2, "CommunicationError: connection reset by peer"),
 				],
+				[True, True, True],
 			),
 		]
 
-		for name, responses, expected_results, expected_errors in scenarios:
+		for name, descriptions, expected_results, expected_errors, expected_active in scenarios:
 			with self.subTest(name):
-				result = self._bulk_send(mock_apns, responses)
+				APNSDevice.objects.update(active=True)
+				result = self._bulk_send(mock_apns, descriptions)
 
 				self.assertIsInstance(result, BulkNotificationResult)
-				self.assertEqual(result.results, expected_results)
+				self.assertEqual(result.registration_ids, self.REGISTRATION_IDS)
+				self.assertEqual(
+					result.results, dict(zip(self.REGISTRATION_IDS, expected_results))
+				)
+				self.assertIsNone(result.result_for("a-token-that-was-never-sent"))
 				self.assertEqual(result.has_errors, bool(expected_errors))
 				self.assertEqual(
 					result.errors,
 					[
-						{
-							"registration_id": registration_id,
-							"error_type": error_type,
-							"error_message": error_type,
-							"timestamp": mock.ANY,
-						}
-						for registration_id, error_type in expected_errors
+						DeliveryError(
+							registration_id=self.REGISTRATION_IDS[position],
+							error_type=error_type,
+							error_message=error_type,
+							timestamp=mock.ANY,
+						)
+						for position, error_type in expected_errors
 					],
 				)
+				self.assertEqual(
+					list(
+						APNSDevice.objects.order_by("registration_id").values_list(
+							"registration_id", "active"
+						)
+					),
+					list(zip(self.REGISTRATION_IDS, expected_active)),
+				)
 
+	@override_settings()
 	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
-	def test_deactivates_only_permanently_rejected_registration_ids(self, mock_apns):
-		for registration_id in ["token1", "token2", "token3"]:
-			APNSDevice.objects.create(registration_id=registration_id)
+	def test_queryset_send_message_returns_legacy_results(self, mock_apns):
+		settings.PUSH_NOTIFICATIONS_SETTINGS.update(
+			{"APNS_CERTIFICATE": "/path/to/apns/certificate.pem"}
+		)
 
-		scenarios = [
-			("unregistered", ["Unregistered", "DeviceTokenNotForTopic"], False, False),
-			("bad device token", ["BadDeviceToken", "TimeoutError"], False, True),
-			("transient error", ["PayloadTooLarge", "CommunicationError"], True, True),
+		mock_apns.return_value.send_notification.side_effect = [
+			NotificationResult(
+				notification_id="8f14e45f-ceea-467a-9d0c-1e2b3c4d5e6f", status="200"
+			),
+			NotificationResult(
+				notification_id="c9f0f895-fb98-4b9e-b1a1-e6f8c1d2a3b4",
+				status="400",
+				description="Unregistered",
+			),
+			NotificationResult(
+				notification_id="45c48cce-2e2d-4fbd-bb1f-b3d3f4e5f6a7",
+				status="200",
+			),
 		]
 
-		for name, descriptions, token2_active, token3_active in scenarios:
-			with self.subTest(name):
-				APNSDevice.objects.update(active=True)
-				self._bulk_send(mock_apns, [("200", None)] + [("400", d) for d in descriptions])
+		results = APNSDevice.objects.all().send_message("Your order has shipped")
 
-				self.assertEqual(
-					dict(APNSDevice.objects.values_list("registration_id", "active")),
-					{
-						"token1": True,
-						"token2": token2_active,
-						"token3": token3_active,
-					},
-				)
+		self.assertEqual(
+			results,
+			[
+				{
+					self.REGISTRATION_IDS[0]: SUCCESS,
+					self.REGISTRATION_IDS[1]: "Unregistered",
+					self.REGISTRATION_IDS[2]: SUCCESS,
+				}
+			],
+		)
