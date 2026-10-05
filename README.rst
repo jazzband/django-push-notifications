@@ -262,6 +262,23 @@ value per user. Assuming User model has a method get_badge returning badge count
 		badge=lambda token: APNSDevice.objects.get(registration_id=token).user.get_badge()
 	)
 
+With the apns-async backend, ``apns_send_bulk_message()`` reports device level failures in its
+return value instead of raising, so a single invalid token no longer discards the outcome of the
+whole batch:
+
+.. code-block:: python
+
+	from push_notifications.apns_async import apns_send_bulk_message
+
+	result = apns_send_bulk_message(registration_ids=[...], alert="Happy name day!")
+
+	result.has_errors   # True if at least one device failed
+	result.results      # {registration_id: "Success" | "<error description>"}
+	result.errors       # [DeliveryError(registration_id=..., error_type="Unregistered", ...)]
+
+``result.errors`` gives you the registration_ids that need cleaning up. Only transport level
+failures, such as ``APNSServerError``, are raised.
+
 Firebase
 ----------------------------------
 

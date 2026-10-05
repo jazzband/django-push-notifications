@@ -10,7 +10,6 @@ from django.test import TestCase, override_settings
 try:
 	from aioapns.common import NotificationResult
 
-	from push_notifications.exceptions import APNSError
 	from push_notifications.models import APNSDevice
 except ModuleNotFoundError:
 	# skipping because apns2 is not supported on python 3.10
@@ -90,9 +89,8 @@ class APNSModelTestCase(TestCase):
 			description="PayloadTooLarge",
 		)
 		device = APNSDevice.objects.get(registration_id="abc")
-		with self.assertRaises(APNSError) as ae:
-			device.send_message("Hello World!")
-		self.assertTrue("PayloadTooLarge" in ae.exception.message)
+		r = device.send_message("Hello World!")
+		self.assertTrue("PayloadTooLarge" in r["results"][0]["error"])
 		self.assertTrue(APNSDevice.objects.get(registration_id="abc").active)
 
 	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
@@ -122,9 +120,8 @@ class APNSModelTestCase(TestCase):
 
 		for idx, token in enumerate(devices):
 			device = APNSDevice.objects.get(registration_id=token)
-			with self.assertRaises(APNSError) as ae:
-				device.send_message("Hello World!")
-			self.assertTrue(expected_exceptions_statuses[idx] in ae.exception.message)
+			r = device.send_message("Hello World!")
+			self.assertTrue(expected_exceptions_statuses[idx] in r["results"][0]["error"])
 
 			if idx == 0:
 				self.assertTrue(APNSDevice.objects.get(registration_id=token).active)
@@ -156,8 +153,7 @@ class APNSModelTestCase(TestCase):
 
 		mock_apns.return_value.send_notification.side_effect = results
 
-		with self.assertRaises(APNSError):
-			APNSDevice.objects.all().send_message("Hello World!")
+		APNSDevice.objects.all().send_message("Hello World!")
 
 		for idx, token in enumerate(devices):
 			if idx == 0:

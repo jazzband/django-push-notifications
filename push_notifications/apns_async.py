@@ -1,18 +1,22 @@
 import asyncio
 import time
-
 from dataclasses import asdict, dataclass
-from typing import Awaitable, Callable, Dict, Optional, Union, Any, Tuple, List
+from datetime import datetime
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Tuple, Union
 
 from aioapns import APNs, ConnectionError, NotificationRequest
 from aioapns.common import NotificationResult
 
 from . import models
 from .conf import get_manager
-from .exceptions import APNSServerError, APNSError
+from .exceptions import APNSServerError
+
 
 ErrFunc = Optional[Callable[[NotificationRequest, NotificationResult], Awaitable[None]]]
 """function to proces errors from aioapns send_message"""
+
+SUCCESS = "Success"
+"""the result reported for a registration_id that APNS accepted"""
 
 
 class NotSet:
@@ -34,6 +38,42 @@ class TokenCredentials(Credentials):
 @dataclass
 class CertificateCredentials(Credentials):
 	client_cert: str
+
+
+@dataclass(frozen=True)
+class DeliveryError:
+	"""
+	A single registration_id that did not accept its notification.
+
+	error_type is the APNS rejection reason ("BadDeviceToken") or the connection failure reported by aioapns ("CommunicationError").
+	error_message holds the same reason for APNS rejections and the exception text for connection failures.
+	"""
+
+	registration_id: str
+	error_type: str
+	error_message: str
+	timestamp: Optional[datetime] = None
+
+
+@dataclass(frozen=True)
+class BulkNotificationResult:
+	registration_ids: List[str]
+	errors: List[DeliveryError]
+
+	@property
+	def has_errors(self) -> bool:
+		return bool(self.errors)
+
+	@property
+	def results(self) -> Dict[str, str]:
+		failed = {error.registration_id: error.error_type for error in self.errors}
+		return {
+			registration_id: failed.get(registration_id, SUCCESS)
+			for registration_id in self.registration_ids
+		}
+
+	def result_for(self, registration_id: str) -> str | None:
+		return self.results.get(registration_id)
 
 
 @dataclass
@@ -263,7 +303,7 @@ def apns_send_message(
 					 It allows the app to display custom actions with the notification.
 	:param content_available: If True the `content-available` flag will be set to 1, allowing the app to be woken up in the background
 	"""
-	results = apns_send_bulk_message(
+	bulk_result = apns_send_bulk_message(
 		registration_ids=[registration_id],
 		alert=alert,
 		application_id=application_id,
@@ -283,11 +323,10 @@ def apns_send_message(
 		err_func=err_func,
 	)
 
-	for result in results.values():
-		if result == "Success":
-			return {"results": [result]}
-		else:
-			return {"results": [{"error": result}]}
+	result = bulk_result.result_for(registration_id)
+	if result == SUCCESS:
+		return {"results": [result]}
+	return {"results": [{"error": result}]}
 
 
 def apns_send_bulk_message(
@@ -308,7 +347,7 @@ def apns_send_bulk_message(
 	mutable_content: Optional[bool] = False,
 	category: Optional[str] = None,
 	err_func: Optional[ErrFunc] = None,
-) -> Dict[str, str]:
+) -> BulkNotificationResult:
 	"""
 	Sends an APNS notification to one or more registration_ids.
 	The registration_ids argument needs to be a list.
@@ -332,7 +371,6 @@ def apns_send_bulk_message(
 	"""
 	try:
 		topic = get_manager().get_apns_topic(application_id)
-		results: Dict[str, str] = {}
 		inactive_tokens = []
 
 		responses = asyncio.run(
@@ -357,31 +395,35 @@ def apns_send_bulk_message(
 			)
 		)
 
-		results = {}
-		errors = []
+		errors: List[DeliveryError] = []
 		for registration_id, result in responses:
-			results[registration_id] = (
-				"Success" if result.is_successful else result.description
+			if result.is_successful:
+				continue
+
+			errors.append(
+				DeliveryError(
+					registration_id=registration_id,
+					error_type=result.description,
+					error_message=result.description,
+					timestamp=datetime.now(),
+				)
 			)
-			if not result.is_successful:
-				errors.append(result.description)
-				if result.description in [
-					"Unregistered",
-					"BadDeviceToken",
-					"DeviceTokenNotForTopic",
-				]:
-					inactive_tokens.append(registration_id)
+			if result.description in [
+				"Unregistered",
+				"BadDeviceToken",
+				"DeviceTokenNotForTopic",
+			]:
+				inactive_tokens.append(registration_id)
 
 		if len(inactive_tokens) > 0:
 			models.APNSDevice.objects.filter(
 				registration_id__in=inactive_tokens
 			).update(active=False)
 
-		if len(errors) > 0:
-			msg = "One or more errors failed with errors: {}".format(", ".join(errors))
-			raise APNSError(msg)
-
-		return results
+		return BulkNotificationResult(
+			registration_ids=[rid for rid, _ in responses],
+			errors=errors,
+		)
 
 	except ConnectionError as e:
 		raise APNSServerError(status=e.__class__.__name__)

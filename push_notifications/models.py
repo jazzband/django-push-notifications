@@ -155,6 +155,9 @@ class APNSDeviceQuerySet(models.query.QuerySet):
 					res += [r]
 				elif hasattr(r, "__getitem__"):
 					res += r
+				else:
+					# apns_async returns a BulkNotificationResult
+					res += [r.results]
 			return res
 
 
