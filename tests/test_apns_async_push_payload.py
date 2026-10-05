@@ -5,10 +5,15 @@ from unittest import mock
 import pytest
 from django.test import TestCase
 
+from push_notifications.models import APNSDevice
+
 
 try:
 	from aioapns.common import NotificationResult
-	from push_notifications.apns_async import TokenCredentials, apns_send_message, apns_send_bulk_message, CertificateCredentials, BulkNotificationResult
+	from push_notifications.apns_async import (
+		apns_send_bulk_message, apns_send_message, BulkNotificationResult,
+		CertificateCredentials, TokenCredentials,
+	)
 except ModuleNotFoundError:
 	# skipping because apns2 is not supported on python 3.10
 	# it uses hyper that imports from collections which were changed in 3.10
@@ -159,21 +164,21 @@ class APNSAsyncPushPayloadTest(TestCase):
 	@mock.patch("aioapns.client.APNsCertConnectionPool", autospec=True)
 	def test_aioapns_err_func(self, mock_cert_pool):
 		mock_cert_pool.return_value.send_notification = mock.AsyncMock()
-		result =  NotificationResult(
-			"123", "400"
-		)
+		result = NotificationResult("123", "400", description="BadDeviceToken")
 		mock_cert_pool.return_value.send_notification.return_value = result
 		err_func = mock.AsyncMock()
-		with pytest.raises(Exception):
-			apns_send_message(
-				"123",
-				"sample",
-				creds=CertificateCredentials(
-					client_cert="dummy/path.pem",
-				),
-				topic="default",
-				err_func=err_func,
-			)
+
+		response = apns_send_message(
+			"123",
+			"sample",
+			creds=CertificateCredentials(
+				client_cert="dummy/path.pem",
+			),
+			topic="default",
+			err_func=err_func,
+		)
+
+		self.assertEqual(response, {"results": [{"error": "BadDeviceToken"}]})
 		mock_cert_pool.assert_called_once()
 		mock_cert_pool.return_value.send_notification.assert_called_once()
 		mock_cert_pool.return_value.send_notification.assert_awaited_once()
@@ -278,149 +283,99 @@ class APNSAsyncPushPayloadTest(TestCase):
 		assert "content-available" not in req.message["aps"]
 
 
+class APNSAsyncBulkMessageErrorHandlingTest(TestCase):
+	def _bulk_send(self, mock_apns, responses):
+		registration_ids = ["token{}".format(idx) for idx in range(1, len(responses) + 1)]
+		mock_apns.return_value.send_notification.side_effect = [
+			NotificationResult(
+				notification_id=registration_id,
+				status=status,
+				description=description,
+			)
+			for registration_id, (status, description) in zip(registration_ids, responses)
+		]
+		return apns_send_bulk_message(
+			registration_ids=registration_ids,
+			alert="Hello world",
+			creds=TokenCredentials(key="aaa", key_id="bbb", team_id="ccc"),
+		)
 
-class APNSAsyncErrorHandlingTests(TestCase):
+	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
+	def test_reports_per_registration_id_errors_without_raising(self, mock_apns):
+		scenarios = [
+			(
+				"all delivered",
+				[("200", None), ("200", None)],
+				{"token1": "Success", "token2": "Success"},
+				[],
+			),
+			(
+				"one rejected token",
+				[("200", None), ("400", "BadDeviceToken")],
+				{"token1": "Success", "token2": "BadDeviceToken"},
+				[("token2", "BadDeviceToken")],
+			),
+			(
+				"several failures",
+				[
+					("400", "Unregistered"),
+					("400", "DeviceTokenNotForTopic"),
+					("failed", "TimeoutError"),
+				],
+				{
+					"token1": "Unregistered",
+					"token2": "DeviceTokenNotForTopic",
+					"token3": "TimeoutError",
+				},
+				[
+					("token1", "Unregistered"),
+					("token2", "DeviceTokenNotForTopic"),
+					("token3", "TimeoutError"),
+				],
+			),
+		]
 
-    @mock.patch("push_notifications.apns_async.asyncio.run")
-    @mock.patch("push_notifications.apns_async.get_manager")
-    def test_returns_bulk_notification_result(self, mock_manager, mock_asyncio_run):
-        mock_manager.return_value.get_apns_topic.return_value = "com.example.app"
+		for name, responses, expected_results, expected_errors in scenarios:
+			with self.subTest(name):
+				result = self._bulk_send(mock_apns, responses)
 
-        mock_asyncio_run.return_value = [
-            ("token1", NotificationResult("123", "200")),
-        ]
+				self.assertIsInstance(result, BulkNotificationResult)
+				self.assertEqual(result.results, expected_results)
+				self.assertEqual(result.has_errors, bool(expected_errors))
+				self.assertEqual(
+					result.errors,
+					[
+						{
+							"registration_id": registration_id,
+							"error_type": error_type,
+							"error_message": error_type,
+							"timestamp": mock.ANY,
+						}
+						for registration_id, error_type in expected_errors
+					],
+				)
 
-        result = apns_send_bulk_message(
-            registration_ids=["token1"],
-            alert="Test",
-            creds=TokenCredentials(key="aaa", key_id="bbb", team_id="ccc"),
-        )
+	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
+	def test_deactivates_only_permanently_rejected_registration_ids(self, mock_apns):
+		for registration_id in ["token1", "token2", "token3"]:
+			APNSDevice.objects.create(registration_id=registration_id)
 
-        self.assertIsInstance(result, BulkNotificationResult)
-        self.assertIsInstance(result.results, dict)
-        self.assertIsInstance(result.errors, list)
+		scenarios = [
+			("unregistered", ["Unregistered", "DeviceTokenNotForTopic"], False, False),
+			("bad device token", ["BadDeviceToken", "TimeoutError"], False, True),
+			("transient error", ["PayloadTooLarge", "CommunicationError"], True, True),
+		]
 
-    @mock.patch("push_notifications.apns_async.asyncio.run")
-    @mock.patch("push_notifications.apns_async.get_manager")
-    def test_all_success_returns_empty_errors(self, mock_manager, mock_asyncio_run):
-        # successful notifications return empty errors list
+		for name, descriptions, token2_active, token3_active in scenarios:
+			with self.subTest(name):
+				APNSDevice.objects.update(active=True)
+				self._bulk_send(mock_apns, [("200", None)] + [("400", d) for d in descriptions])
 
-        mock_manager.return_value.get_apns_topic.return_value = "com.example.app"
-
-        mock_asyncio_run.return_value = [
-            ("token1", NotificationResult("123", "200")),
-            ("token2", NotificationResult("124", "200")),
-        ]
-
-        result = apns_send_bulk_message(
-            registration_ids=["token1", "token2"],
-            alert="Test",
-            creds=TokenCredentials(key="aaa", key_id="bbb", team_id="ccc"),
-        )
-
-        self.assertEqual(len(result.errors), 0)
-        self.assertFalse(result.has_errors)
-        self.assertEqual(result.results["token1"], "Success")
-        self.assertEqual(result.results["token2"], "Success")
-
-    @mock.patch("push_notifications.apns_async.asyncio.run")
-    @mock.patch("push_notifications.apns_async.get_manager")
-    def test_partial_failure_returns_error_objects(self, mock_manager, mock_asyncio_run):
-        mock_manager.return_value.get_apns_topic.return_value = "com.example.app"
-
-        mock_asyncio_run.return_value = [
-            ("token1", NotificationResult("123", "200")),
-            ("token2", NotificationResult("124", "400", description="BadDeviceToken")),
-        ]
-
-        result = apns_send_bulk_message(
-            registration_ids=["token1", "token2"],
-            alert="Test",
-            creds=TokenCredentials(key="aaa", key_id="bbb", team_id="ccc"),
-        )
-
-        self.assertEqual(result.results["token1"], "Success")
-        self.assertEqual(result.results["token2"], "BadDeviceToken")
-
-        self.assertEqual(len(result.errors), 1)
-        self.assertTrue(result.has_errors)
-
-        error = result.errors[0]
-        self.assertEqual(error["registration_id"], "token2")
-        self.assertEqual(error["error_type"], "BadDeviceToken")
-        self.assertEqual(error["error_message"], "BadDeviceToken")
-        self.assertIn("timestamp", error)
-
-    @mock.patch("push_notifications.apns_async.asyncio.run")
-    @mock.patch("push_notifications.apns_async.get_manager")
-    def test_multiple_errors_all_captured(self, mock_manager, mock_asyncio_run):
-        mock_manager.return_value.get_apns_topic.return_value = "com.example.app"
-
-        mock_asyncio_run.return_value = [
-            ("token1", NotificationResult("123", "400", description="Unregistered")),
-            ("token2", NotificationResult("124", "400", description="BadDeviceToken")),
-            ("token3", NotificationResult("125", "400", description="TimeoutError")),
-        ]
-
-        result = apns_send_bulk_message(
-            registration_ids=["token1", "token2", "token3"],
-            alert="Test",
-            creds=TokenCredentials(key="aaa", key_id="bbb", team_id="ccc"),
-        )
-
-        self.assertEqual(len(result.errors), 3)
-        self.assertTrue(result.has_errors)
-
-        error_types = [e["error_type"] for e in result.errors]
-        self.assertIn("Unregistered", error_types)
-        self.assertIn("BadDeviceToken", error_types)
-        self.assertIn("TimeoutError", error_types)
-
-    @mock.patch("push_notifications.apns_async.models.APNSDevice.objects.filter")
-    @mock.patch("push_notifications.apns_async.asyncio.run")
-    @mock.patch("push_notifications.apns_async.get_manager")
-    def test_unregistered_tokens_marked_inactive(self, mock_manager, mock_asyncio_run, mock_filter):
-        mock_manager.return_value.get_apns_topic.return_value = "com.example.app"
-        mock_update = mock.Mock()
-        mock_filter.return_value.update = mock_update
-
-        mock_asyncio_run.return_value = [
-            ("token1", NotificationResult("123", "200")),
-            ("token2", NotificationResult("124", "400", description="Unregistered")),
-            ("token3", NotificationResult("125", "400", description="BadDeviceToken")),
-        ]
-
-        _ = apns_send_bulk_message(
-            registration_ids=["token1", "token2", "token3"],
-            alert="Test",
-            creds=TokenCredentials(key="aaa", key_id="bbb", team_id="ccc"),
-        )
-
-        mock_filter.assert_called_once()
-        call_args = mock_filter.call_args[1]
-        self.assertIn("token2", call_args["registration_id__in"])
-        self.assertIn("token3", call_args["registration_id__in"])
-        mock_update.assert_called_once_with(active=False)
-
-    @mock.patch("push_notifications.apns_async.asyncio.run")
-    @mock.patch("push_notifications.apns_async.get_manager")
-    def test_does_not_raise_exception_on_errors(self, mock_manager, mock_asyncio_run):
-        # Test that errors don't raise exceptions - they're returned in the result
-        mock_manager.return_value.get_apns_topic.return_value = "com.example.app"
-
-        mock_asyncio_run.return_value = [
-            ("token1", NotificationResult("123", "400", description="Unregistered")),
-        ]
-
-        try:
-            result = apns_send_bulk_message(
-                registration_ids=["token1"],
-                alert="Test",
-                creds=TokenCredentials(key="aaa", key_id="bbb", team_id="ccc"),
-            )
-            exception_raised = False
-        except Exception:
-            exception_raised = True
-
-        self.assertFalse(exception_raised, "apns_send_bulk_message should not raise exceptions on errors")
-        self.assertTrue(result.has_errors)
+				self.assertEqual(
+					dict(APNSDevice.objects.values_list("registration_id", "active")),
+					{
+						"token1": True,
+						"token2": token2_active,
+						"token3": token3_active,
+					},
+				)

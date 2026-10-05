@@ -290,7 +290,7 @@ def apns_send_message(
 		err_func=err_func,
 	)
 
-	for result in results.values():
+	for result in results.results.values():
 		if result == "Success":
 			return {"results": [result]}
 		else:
