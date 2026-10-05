@@ -156,7 +156,7 @@ class Alert:
 
 def _create_notification_request_from_args(
 	registration_id: str,
-	alert: Union[str, Alert],
+	alert: Optional[Union[str, Alert]],
 	badge: Optional[int] = None,
 	sound: Optional[str] = None,
 	extra: Optional[Dict[str, Any]] = None,
@@ -169,13 +169,13 @@ def _create_notification_request_from_args(
 	message_kwargs: Dict[str, Any] = {},
 	notification_request_kwargs: Dict[str, Any] = {},
 ) -> NotificationRequest:
-	if alert is None:
-		alert = Alert(body="")
-
 	if loc_key:
-		if isinstance(alert, str):
-			alert = Alert(body=alert)
-		alert.loc_key = loc_key
+		if alert is None:
+			alert = Alert(loc_key=loc_key)
+		else:
+			if isinstance(alert, str):
+				alert = Alert(body=alert)
+			alert.loc_key = loc_key
 
 	if isinstance(alert, Alert):
 		alert = alert.asDict()
@@ -193,16 +193,19 @@ def _create_notification_request_from_args(
 	if extra is None:
 		extra = {}
 
+	aps: Dict[str, Any] = {
+		"badge": badge,
+		"sound": sound,
+		"thread-id": thread_id,
+		**aps_kwargs,
+	}
+	if alert is not None:
+		aps["alert"] = alert
+
 	request = NotificationRequest(
 		device_token=registration_id,
 		message={
-			"aps": {
-				"alert": alert,
-				"badge": badge,
-				"sound": sound,
-				"thread-id": thread_id,
-				**aps_kwargs,
-			},
+			"aps": aps,
 			**extra,
 			**message_kwargs,
 		},
@@ -260,7 +263,7 @@ def _get_credentials(application_id: Optional[str] = None) -> Credentials:
 
 def apns_send_message(
 	registration_id: str,
-	alert: Union[str, Alert],
+	alert: Optional[Union[str, Alert]],
 	application_id: Optional[str] = None,
 	creds: Optional[Credentials] = None,
 	topic: Optional[str] = None,
@@ -328,7 +331,7 @@ def apns_send_message(
 
 def apns_send_bulk_message(
 	registration_ids: list[str],
-	alert: Union[str, Alert],
+	alert: Optional[Union[str, Alert]],
 	application_id: Optional[str] = None,
 	creds: Optional[Credentials] = None,
 	topic: Optional[str] = None,
@@ -428,7 +431,7 @@ def apns_send_bulk_message(
 
 async def _send_bulk_request(
 	registration_ids: list[str],
-	alert: Union[str, Alert],
+	alert: Optional[Union[str, Alert]],
 	application_id: Optional[str] = None,
 	creds: Optional[Credentials] = None,
 	topic: Optional[str] = None,
