@@ -1,4 +1,5 @@
 import os
+from unittest import mock
 
 from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase
@@ -154,6 +155,33 @@ class AppConfigTestCase(TestCase):
 
 		assert app_config["USE_SANDBOX"] is False
 		assert app_config["USE_ALTERNATIVE_PORT"] is False
+
+	@mock.patch.object(AppConfig, "_validate_apns_certificate")
+	def test_get_apns_error_timeout(self, mock_validate_certificate):
+		"""APNS_ERROR_TIMEOUT defaults to 5 seconds and can be set per application."""
+
+		PUSH_SETTINGS = {
+			"APPLICATIONS": {
+				"my_apns_app": {
+					"PLATFORM": "APNS",
+					"CERTIFICATE": "/path/to/apns/certificate.pem",
+				}
+			}
+		}
+		manager = AppConfig(PUSH_SETTINGS)
+		self.assertEqual(manager.get_apns_error_timeout("my_apns_app"), 5)
+
+		PUSH_SETTINGS = {
+			"APPLICATIONS": {
+				"my_apns_app": {
+					"PLATFORM": "APNS",
+					"CERTIFICATE": "/path/to/apns/certificate.pem",
+					"ERROR_TIMEOUT": 10,
+				}
+			}
+		}
+		manager = AppConfig(PUSH_SETTINGS)
+		self.assertEqual(manager.get_apns_error_timeout("my_apns_app"), 10)
 
 	def test_get_allowed_settings_fcm(self):
 		"""Verify the settings allowed for FCM platform."""

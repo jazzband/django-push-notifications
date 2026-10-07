@@ -283,6 +283,31 @@ class APNSAsyncPushPayloadTest(TestCase):
 
 		assert "content-available" not in req.message["aps"]
 
+	@override_settings()
+	@mock.patch("push_notifications.apns_async.asyncio.wait_for")
+	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
+	def test_send_uses_configured_timeout(self, mock_apns, mock_wait_for):
+		async def await_result(awaitable, timeout=None):
+			return await awaitable
+
+		mock_wait_for.side_effect = await_result
+
+		registration_id = (
+			"3a1f7c9e2b4d6f8a0c2e4b6d8f0a1c3e"
+			"5b7d9f1a3c5e7b9d1f3a5c7e9b1d3f5a"
+		)
+		creds = TokenCredentials(key="aaa", key_id="bbb", team_id="ccc")
+
+		# with default value of 5 seconds
+		apns_send_message(registration_id, "Hello world", creds=creds)
+		self.assertEqual(mock_wait_for.call_args.kwargs["timeout"], 5)
+
+		# configured to 10 seconds
+		settings.PUSH_NOTIFICATIONS_SETTINGS.update({"APNS_ERROR_TIMEOUT": 10})
+
+		apns_send_message(registration_id, "Hello world", creds=creds)
+		self.assertEqual(mock_wait_for.call_args.kwargs["timeout"], 10)
+
 
 class APNSAsyncBulkMessageErrorHandlingTest(TestCase):
 	REGISTRATION_IDS = [
@@ -434,126 +459,3 @@ class APNSAsyncBulkMessageErrorHandlingTest(TestCase):
 				}
 			],
 		)
-class APNSErrorTimeoutTests(TestCase):
-
-	@mock.patch("push_notifications.apns_async.asyncio.wait_for")
-	@mock.patch("push_notifications.apns_async.APNS", autospec=True)
-	@override_settings(
-		PUSH_NOTIFICATION_SETTINGS={
-			'APNS_ERROR_TIMEOUT': 15
-		}
-	)
-	def test_test_timeout_value_passed_to_wait_for(self, mock_apns, mock_wait_for):
-		mock_wait_for.return_value = mock.AsyncMock(
-				return_value=NotificationResult("123", "200")
-		)
-		apns_send_message(
-			"123",
-			"Test message",
-			creds=TokenCredentials(
-				key="aaa",
-				key_id="bbb",
-				team_id="ccc",
-			),
-		)
-
-		mock_wait_for.assert_called_once()
-		_, kwargs = mock_wait_for.call_args
-		assert kwargs["timeout"] == 15
-
-	@mock.patch("push_notifications.apns_async.asyncio.wait_for")
-	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
-	def test_default_timeout_is_5_seconds(self, mock_apns, mock_wait_for):
-		mock_wait_for.return_value = mock.AsyncMock(
-			return_value=NotificationResult("123", "200")
-		)
-
-		apns_send_message(
-			"123",
-			"Test message",
-			creds=TokenCredentials(
-				key="aaa",
-				key_id="bbb",
-				team_id="ccc",
-			),
-		)
-
-		mock_wait_for.assert_called_once()
-		_, kwargs = mock_wait_for.call_args
-		assert kwargs["timeout"] == 5
-
-	@mock.patch("push_notifications.apns_async.asyncio.wait_for")
-	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
-	@override_settings(
-		PUSH_NOTIFICATIONS_SETTINGS={
-			'APNS_ERROR_TIMEOUT': 1
-		}
-	)
-	def test_short_timeout_value_is_respected(self, mock_apns, mock_wait_for):
-		mock_wait_for.return_value = mock.AsyncMock(
-			return_value=NotificationResult("123", "200")
-		)
-
-		apns_send_message(
-			"123",
-			"Test message",
-			creds=TokenCredentials(
-				key="aaa",
-				key_id="bbb",
-				team_id="ccc",
-			),
-		)
-
-		mock_wait_for.assert_called_once()
-		_, kwargs = mock_wait_for.call_args
-		assert kwargs["timeout"] == 1
-
-	@mock.patch("push_notifications.apns_async.asyncio.wait_for")
-	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
-	@override_settings(
-		PUSH_NOTIFICATIONS_SETTINGS={
-			'APNS_ERROR_TIMEOUT': 30
-		}
-	)
-	def test_long_timeout_value_is_respected(self, mock_apns, mock_wait_for):
-		mock_wait_for.return_value = mock.AsyncMock(
-			return_value=NotificationResult("123", "200")
-		)
-
-		apns_send_message(
-			"123",
-			"Test message",
-			creds=TokenCredentials(
-				key="aaa",
-				key_id="bbb",
-				team_id="ccc",
-			),
-		)
-
-		mock_wait_for.assert_called_once()
-		_, kwargs = mock_wait_for.call_args
-		assert kwargs["timeout"] == 30
-
-	@mock.patch("push_notifications.apns_async.asyncio.wait_for")
-	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
-	@override_settings(
-		PUSH_NOTIFICATIONS_SETTINGS={}
-	)
-	def test_empty_settings_uses_default_timeout(self, mock_apns, mock_wait_for):
-		mock_wait_for.return_value = mock.AsyncMock(
-			return_value=NotificationResult("123", "200")
-		)
-
-		apns_send_message(
-			"123",
-			"Test message",
-			creds=TokenCredentials(
-				key="aaa",
-				key_id="bbb",
-				team_id="ccc",
-			),
-		)
-
-		mock_wait_for.assert_called_once()
-		_, kwargs = mock_wait_for.call_args
-		assert kwargs["timeout"] == 5
