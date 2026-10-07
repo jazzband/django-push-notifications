@@ -43,7 +43,7 @@ APNS_SETTINGS_CERT_CREDS = "CERTIFICATE"
 APNS_AUTH_CREDS_REQUIRED = ["AUTH_KEY_PATH", "AUTH_KEY_ID", "TEAM_ID"]
 APNS_AUTH_CREDS_OPTIONAL = ["CERTIFICATE", "ENCRYPTION_ALGORITHM", "TOKEN_LIFETIME"]
 
-APNS_OPTIONAL_SETTINGS = ["USE_SANDBOX", "USE_ALTERNATIVE_PORT", "TOPIC"]
+APNS_OPTIONAL_SETTINGS = ["USE_SANDBOX", "USE_ALTERNATIVE_PORT", "TOPIC", "ERROR_TIMEOUT"]
 
 FCM_REQUIRED_SETTINGS = []
 FCM_OPTIONAL_SETTINGS = ["MAX_RECIPIENTS", "FIREBASE_APP"]
@@ -165,6 +165,7 @@ class AppConfig(BaseConfig):
 		application_config.setdefault("USE_SANDBOX", False)
 		application_config.setdefault("USE_ALTERNATIVE_PORT", False)
 		application_config.setdefault("TOPIC", None)
+		application_config.setdefault("ERROR_TIMEOUT", 5)
 
 	def _validate_apns_certificate(self, certfile: str) -> None:
 		"""Validate the APNS certificate at startup."""
@@ -379,7 +380,6 @@ class AppConfig(BaseConfig):
 
 	def get_apns_topic(self, application_id: Optional[str] = None) -> Optional[str]:
 		return self._get_application_settings(application_id, "APNS", "TOPIC")
-
 
 	def get_apns_error_timeout(self, application_id: Optional[str] = None) -> int:
 		return self._get_application_settings(application_id, "APNS", "ERROR_TIMEOUT")

@@ -6,7 +6,6 @@ from typing import Any, Awaitable, Callable, Dict, List, Optional, Tuple, Union
 
 from aioapns import APNs, ConnectionError, NotificationRequest
 from aioapns.common import NotificationResult
-from push_notifications import settings
 
 from . import models
 from .conf import get_manager
@@ -369,10 +368,8 @@ def apns_send_bulk_message(
 					 Notification Content Extension or UNNotificationCategory configuration.
 					 It allows the app to display custom actions with the notification.
 	:param content_available: If True the `content-available` flag will be set to 1, allowing the app to be woken up in the background
-	:param timeout: Timeout in seconds for each notification send operation
 	"""
-	if not timeout:
-		timeout = get_manager().get_apns_error_timeout(application_id)
+	timeout = get_manager().get_apns_error_timeout(application_id)
 
 	try:
 		topic = get_manager().get_apns_topic(application_id)
