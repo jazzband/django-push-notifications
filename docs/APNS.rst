@@ -56,27 +56,3 @@ If the certificate and key are valid, the connection will open and remain open. 
 the connection will be closed and an error potentially displayed.
 
 To test if the certificate works in sandbox mode, simply replace the `gateway` with `gateway.sandbox.push.apple.com:2195`.
-
-Setting the notification interruption level
--------------------------------------------
-
-iOS 15+ allows each notification to declare how prominently it should be presented through the
-``interruption-level`` key of the ``aps`` dictionary. Pass one of the
-``push_notifications.enums.InterruptionLevelType`` values as ``interruption_level`` to
-``send_message`` (or ``apns_send_message`` / ``apns_send_bulk_message``):
-
-.. code-block:: python
-
-	from push_notifications.enums import InterruptionLevelType
-	from push_notifications.models import APNSDevice
-
-	device = APNSDevice.objects.get(registration_id=apns_token)
-	device.send_message("You've got mail", interruption_level=InterruptionLevelType.TIME_SENSITIVE)
-
-The available levels are ``PASSIVE``, ``ACTIVE`` (the default), ``TIME_SENSITIVE`` and
-``CRITICAL``; the plain string values (``"passive"``, ``"active"``, ``"time-sensitive"`` and
-``"critical"``) are accepted as well. ``TIME_SENSITIVE`` requires the Time Sensitive
-Notifications capability, and ``CRITICAL`` requires Apple's pre-approved Critical Alerts
-entitlement. An invalid value raises ``ValueError``.
-
-Reference: `Apple's interruption level documentation <https://developer.apple.com/documentation/usernotifications/unnotificationinterruptionlevel>`_.

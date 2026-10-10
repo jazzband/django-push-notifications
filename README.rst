@@ -282,8 +282,8 @@ whole batch:
 ``result.errors`` gives you the registration_ids that need cleaning up. Only transport level
 failures, such as ``APNSServerError``, are raised.
 
-iOS notification interruption levels
-------------------------------------
+Setting the notification interruption level
+-------------------------------------------
 
 iOS 15+ allows a notification to declare how it is presented via the
 ``interruption-level`` key of the ``aps`` dictionary. Pass one of the
