@@ -4,9 +4,14 @@ from unittest import mock
 import pytest
 from django.test import TestCase
 
+
 try:
 	from apns2.client import NotificationPriority
-	from push_notifications.apns import _apns_send
+
+	from push_notifications.apns import (
+		_apns_prepare, _apns_send, apns_send_bulk_message, apns_send_message
+	)
+	from push_notifications.enums import InterruptionLevelType
 	from push_notifications.exceptions import APNSUnsupportedPriority
 except (AttributeError, ModuleNotFoundError):
 	# skipping because apns2 is not supported on python 3.10
@@ -113,3 +118,44 @@ class APNSPushPayloadTest(TestCase):
 				with mock.patch("apns2.client.APNsClient.send_notification") as s:
 					self.assertRaises(APNSUnsupportedPriority, _apns_send, "123", "_" * 2049, priority=24)
 				s.assert_has_calls([])
+
+	def test_interruption_level(self):
+		cases = [
+			(InterruptionLevelType.ACTIVE, "active"),
+			(InterruptionLevelType.PASSIVE, "passive"),
+			(InterruptionLevelType.TIME_SENSITIVE, "time-sensitive"),
+			(InterruptionLevelType.CRITICAL, "critical"),
+			("time-sensitive", "time-sensitive"),
+			("passive", "passive"),
+		]
+		for level, expected in cases:
+			with self.subTest(level=level):
+				payload = _apns_prepare(
+					"123", "interruption level just arrived", interruption_level=level
+				).dict()
+				self.assertEqual(payload["aps"]["interruption-level"], expected)
+
+	def test_interruption_level_edge_cases(self):
+		payload = _apns_prepare("123", "Happy django's day!").dict()
+		self.assertNotIn("interruption-level", payload["aps"])
+
+		for invalid in ("invalid", 42):
+			with self.subTest(invalid=invalid):
+				with self.assertRaises(ValueError):
+					_apns_prepare("123", "sample", interruption_level=invalid)
+
+		with mock.patch("push_notifications.apns._apns_send", return_value={}) as s:
+			apns_send_message(
+				"123", "Vibes and Customer Service Week 2026.",
+				interruption_level=InterruptionLevelType.PASSIVE,
+			)
+			apns_send_bulk_message(
+				["123", "456"], "Happy django's day!",
+				interruption_level=InterruptionLevelType.CRITICAL,
+			)
+		self.assertEqual(
+			s.call_args_list[0][1]["interruption_level"], "passive"
+		)
+		self.assertEqual(
+			s.call_args_list[1][1]["interruption_level"], "critical"
+		)

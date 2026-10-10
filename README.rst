@@ -143,6 +143,7 @@ FCM/GCM and APNS services have slightly different semantics. The app tries to of
 .. code-block:: python
 
 	from push_notifications.models import APNSDevice, GCMDevice
+	from push_notifications.enums import InterruptionLevelType
 
 	device = GCMDevice.objects.get(registration_id=gcm_reg_id)
 	# The first argument will be sent as "message" to the intent extras Bundle
@@ -172,6 +173,7 @@ FCM/GCM and APNS services have slightly different semantics. The app tries to of
 	# alert with title and body.
 	device.send_message(message={"title" : "Game Request", "body" : "Bob wants to play poker"}, extra={"foo": "bar"})
 	device.send_message("Hello again", thread_id="123", extra={"foo": "bar"}) # set thread-id to allow iOS to merge notifications
+	device.send_message("You've got mail", interruption_level=InterruptionLevelType.TIME_SENSITIVE) # set the iOS interruption level (see below)
 
 .. note::
 	APNS does not support sending payloads that exceed 2048 bytes (increased from 256 in 2014).
@@ -279,6 +281,30 @@ whole batch:
 
 ``result.errors`` gives you the registration_ids that need cleaning up. Only transport level
 failures, such as ``APNSServerError``, are raised.
+
+Setting the notification interruption level
+-------------------------------------------
+
+iOS 15+ allows a notification to declare how it is presented via the
+``interruption-level`` key of the ``aps`` dictionary. Pass one of the
+``push_notifications.enums.InterruptionLevelType`` values as ``interruption_level``:
+
+.. code-block:: python
+
+	from push_notifications.enums import InterruptionLevelType
+
+	device.send_message("You've got mail", interruption_level=InterruptionLevelType.TIME_SENSITIVE)
+
+The available levels map directly to `Apple's interruption levels <https://developer.apple.com/documentation/usernotifications/unnotificationinterruptionlevel>`_:
+
+- ``InterruptionLevelType.PASSIVE`` (``"passive"``) - added quietly to the notification list without lighting up the screen or playing a sound.
+- ``InterruptionLevelType.ACTIVE`` (``"active"``) - the default; presented immediately but does not bypass Focus modes.
+- ``InterruptionLevelType.TIME_SENSITIVE`` (``"time-sensitive"``) - presented immediately and allowed to break through Focus modes. Requires the Time Sensitive Notifications capability in your app.
+- ``InterruptionLevelType.CRITICAL`` (``"critical"``) - presented immediately and allowed to bypass Focus modes and the ringer switch. Requires Apple's pre-approved Critical Alerts entitlement.
+
+The plain string value is also accepted, for example ``interruption_level="time-sensitive"``.
+An invalid value raises ``ValueError``.
+The parameter is supported by both the ``apns`` and ``apns-async`` backends.
 
 Firebase
 ----------------------------------

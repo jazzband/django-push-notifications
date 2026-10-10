@@ -13,7 +13,34 @@ from apns2 import payload as apns2_payload
 
 from . import models
 from .conf import get_manager
+from .enums import InterruptionLevelType
 from .exceptions import APNSUnsupportedPriority, APNSServerError
+
+
+class _Payload(apns2_payload.Payload):
+	def __init__(
+		self,
+		interruption_level: Optional[InterruptionLevelType] = None,
+		**kwargs: Any
+	) -> None:
+		super().__init__(**kwargs)
+		self.interruption_level = interruption_level
+
+	@property
+	def interruption_level(self) -> Optional[str]:
+		return self._interruption_level
+
+	@interruption_level.setter
+	def interruption_level(self, value: Optional[InterruptionLevelType]) -> None:
+		if value is not None:
+			value = InterruptionLevelType(value).value
+		self._interruption_level = value
+
+	def dict(self) -> Dict[str, Any]:
+		result = super().dict()
+		if self.interruption_level is not None:
+			result["aps"]["interruption-level"] = self.interruption_level
+		return result
 
 
 def _apns_create_socket(creds: Optional[apns2_credentials.Credentials] = None, application_id: Optional[str] = None) -> apns2_client.APNsClient:
@@ -52,7 +79,8 @@ def _apns_prepare(
 	extra: Dict[str, Any] = {},
 	mutable_content: bool = False,
 	thread_id: Optional[str] = None,
-	url_args: Optional[list] = None
+	url_args: Optional[list] = None,
+	interruption_level: Optional[InterruptionLevelType] = None
 ) -> apns2_payload.Payload:
 	if action_loc_key or loc_key or loc_args:
 		apns2_alert = apns2_payload.PayloadAlert(
@@ -64,10 +92,11 @@ def _apns_prepare(
 	if callable(badge):
 		badge = badge(token)
 
-	return apns2_payload.Payload(
+	return _Payload(
 		alert=apns2_alert, badge=badge, sound=sound, category=category,
 		url_args=url_args, custom=extra, thread_id=thread_id,
-		content_available=content_available, mutable_content=mutable_content)
+		content_available=content_available, mutable_content=mutable_content,
+		interruption_level=interruption_level)
 
 
 def _apns_send(
@@ -119,6 +148,7 @@ def apns_send_message(
 	alert: Optional[str] = None,
 	application_id: Optional[str] = None,
 	creds: Optional[apns2_credentials.Credentials] = None,
+	interruption_level: Optional[InterruptionLevelType] = None,
 	**kwargs: Any
 ) -> None:
 	"""
@@ -135,7 +165,7 @@ def apns_send_message(
 	try:
 		_apns_send(
 			registration_id, alert, application_id=application_id,
-			creds=creds, **kwargs
+			creds=creds, interruption_level=interruption_level, **kwargs
 		)
 	except apns2_errors.APNsException as apns2_exception:
 		if isinstance(apns2_exception, apns2_errors.Unregistered):
@@ -149,6 +179,7 @@ def apns_send_bulk_message(
 	alert: Optional[str] = None,
 	application_id: Optional[str] = None,
 	creds: Optional[apns2_credentials.Credentials] = None,
+	interruption_level: Optional[InterruptionLevelType] = None,
 	**kwargs: Any
 ) -> Optional[Dict[str, str]]:
 	"""
@@ -162,7 +193,7 @@ def apns_send_bulk_message(
 
 	results = _apns_send(
 		registration_ids, alert, batch=True, application_id=application_id,
-		creds=creds, **kwargs
+		creds=creds, interruption_level=interruption_level, **kwargs
 	)
 	inactive_tokens = [token for token, result in results.items() if result == "Unregistered"]
 	models.APNSDevice.objects.filter(registration_id__in=inactive_tokens).update(active=False)
