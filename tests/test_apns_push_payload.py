@@ -154,8 +154,8 @@ class APNSPushPayloadTest(TestCase):
 				interruption_level=InterruptionLevelType.CRITICAL,
 			)
 		self.assertEqual(
-			s.call_args_list[0].kwargs["interruption_level"], InterruptionLevelType.PASSIVE
+			s.call_args_list[0][1]["interruption_level"], "passive"
 		)
 		self.assertEqual(
-			s.call_args_list[1].kwargs["interruption_level"], InterruptionLevelType.CRITICAL
+			s.call_args_list[1][1]["interruption_level"], "critical"
 		)
