@@ -15,6 +15,7 @@ try:
 		apns_send_bulk_message, apns_send_message, BulkNotificationResult,
 		CertificateCredentials, DeliveryError, SUCCESS, TokenCredentials,
 	)
+	from push_notifications.enums import InterruptionLevelType
 except ModuleNotFoundError:
 	# skipping because apns2 is not supported on python 3.10
 	# it uses hyper that imports from collections which were changed in 3.10
@@ -232,6 +233,57 @@ class APNSAsyncPushPayloadTest(TestCase):
 	# 				self.assertRaises(APNSUnsupportedPriority, _apns_send, "123",
 	# 				 "_" * 2049, priority=24)
 	# 			s.assert_has_calls([])
+
+	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
+	def test_interruption_level(self, mock_apns):
+		creds = TokenCredentials(key="aaa", key_id="bbb", team_id="ccc")
+		for level in (
+			InterruptionLevelType.ACTIVE,
+			InterruptionLevelType.PASSIVE,
+			InterruptionLevelType.TIME_SENSITIVE,
+			InterruptionLevelType.CRITICAL,
+			"active",
+			"time-sensitive",
+		):
+			with self.subTest(level=level):
+				apns_send_message(
+					"123",
+					"Happy Customer Service Week!",
+					interruption_level=level,
+					creds=creds,
+				)
+				req = mock_apns.return_value.send_notification.call_args[0][0]
+				self.assertEqual(
+					req.message["aps"]["interruption-level"],
+					InterruptionLevelType(level).value,
+				)
+
+	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
+	def test_interruption_level_edge_cases(self, mock_apns):
+		creds = TokenCredentials(key="aaa", key_id="bbb", team_id="ccc")
+		apns_send_message("123", "Happy django's day!", creds=creds)
+		req = mock_apns.return_value.send_notification.call_args[0][0]
+		self.assertNotIn("interruption-level", req.message["aps"])
+
+		for invalid in ("invalid", 42):
+			with self.subTest(invalid=invalid):
+				with self.assertRaises(ValueError):
+					apns_send_message(
+						"123",
+						"sample",
+						interruption_level=invalid,
+						creds=creds,
+					)
+		mock_apns.return_value.send_notification.assert_called_once()
+
+		apns_send_bulk_message(
+			["123", "456"],
+			"It's a Wrap - Customer Service Week 2026",
+			interruption_level="critical",
+			creds=creds,
+		)
+		for call in mock_apns.return_value.send_notification.call_args_list[1:]:
+			self.assertEqual(call.args[0].message["aps"]["interruption-level"], "critical")
 
 	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
 	def test_push_payload_with_content_available_bool_true(self, mock_apns):
