@@ -130,9 +130,10 @@ class DeviceAdmin(admin.ModelAdmin):
 
 class GCMDeviceAdmin(DeviceAdmin):
 	list_display = (
-		"__str__", "device_id", "user", "active", "date_created", "cloud_message_type"
+		"__str__", "user", "active", "date_created", "cloud_message_type"
 	)
 	list_filter = ("active", "cloud_message_type")
+	search_fields = ("registration_id", "user__username", "user__email")
 
 	def send_messages(self, request: HttpRequest, queryset: QuerySet, bulk: bool = False) -> None:
 		"""
