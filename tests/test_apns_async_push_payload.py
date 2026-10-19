@@ -52,6 +52,20 @@ class APNSAsyncPushPayloadTest(TestCase):
 		self.assertEqual(req.time_to_live, 3)
 
 	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
+	def test_push_payload_with_badge_callback(self, mock_apns):
+		for value in (0, None):
+			with self.subTest(badge=value):
+				badge = mock.Mock(return_value=value)
+				apns_send_message(
+					"123", "Hello world", badge=badge,
+					creds=TokenCredentials(key="aaa", key_id="bbb", team_id="ccc"),
+				)
+
+				request = mock_apns.return_value.send_notification.call_args.args[0]
+				self.assertEqual(request.message["aps"]["badge"], value)
+				badge.assert_called_once_with("123")
+
+	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
 	def test_push_payload_with_thread_id(self, mock_apns):
 		apns_send_message(
 			"123",

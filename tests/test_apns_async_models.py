@@ -49,6 +49,32 @@ class APNSModelTestCase(TestCase):
 		self.assertAlmostEqual(req1.time_to_live, 3, places=-1)
 		self.assertAlmostEqual(req2.time_to_live, 3, places=-1)
 
+	@override_settings()
+	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
+	def test_apns_send_bulk_message_with_badge_callback(self, mock_apns):
+		self._create_devices(["abc", "def"])
+		settings.PUSH_NOTIFICATIONS_SETTINGS.update(
+			{"APNS_CERTIFICATE": "/path/to/apns/certificate.pem"}
+		)
+		expected = dict(APNSDevice.objects.values_list("registration_id", "pk"))
+		# Badge callbacks may query Django models, as in the documented example.
+		badge = mock.Mock(side_effect=lambda token: APNSDevice.objects.get(
+			registration_id=token
+		).pk)
+
+		APNSDevice.objects.all().send_message("Hello world", badge=badge)
+
+		requests = [
+			call.args[0] for call in mock_apns.return_value.send_notification.call_args_list
+		]
+		self.assertEqual(
+			{request.device_token: request.message["aps"]["badge"] for request in requests},
+			expected,
+		)
+		self.assertEqual(badge.call_count, 2)
+		badge.assert_any_call("abc")
+		badge.assert_any_call("def")
+
 	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
 	def test_apns_send_message_extra(self, mock_apns):
 		self._create_devices(["abc"])
