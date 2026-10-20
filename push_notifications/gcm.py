@@ -22,6 +22,73 @@ FCM_NOTIFICATIONS_PAYLOAD_KEYS = [
 ]
 
 
+def _build_android_notification(notification_data: Dict[str, Any]) -> Optional[messaging.AndroidNotification]:
+	if not notification_data or not isinstance(notification_data, dict):
+		return None
+
+	notification_payload = notification_data.copy()
+	notification_payload["channel_id"] = notification_payload.pop("android_channel_id", None)
+	notification_payload["notification_count"] = notification_payload.pop("badge", None)
+	return messaging.AndroidNotification(**notification_payload)
+
+
+def _build_android_config(android_data: Dict[str, Any]) -> Optional[messaging.AndroidConfig]:
+	if not android_data or not isinstance(android_data, dict):
+		return None
+
+	android_data = android_data.copy()
+	android_notification = _build_android_notification(android_data.pop("notification", None) or {})
+	return messaging.AndroidConfig(
+		collapse_key=android_data.pop("collapse_key", None),
+		priority=android_data.pop("priority", None),
+		ttl=android_data.pop("ttl", None) or android_data.pop("time_to_live", None),
+		restricted_package_name=android_data.pop("restricted_package_name", None),
+		data=android_data.pop("data", None),
+		notification=android_notification,
+	)
+
+
+def _build_apns_config(apns_data: Dict[str, Any]) -> Optional[messaging.APNSConfig]:
+	if not apns_data or not isinstance(apns_data, dict):
+		return None
+
+	apns_data = apns_data.copy()
+	payload_data = apns_data.pop("payload", None) or {}
+	if not isinstance(payload_data, dict):
+		payload_data = {}
+	aps_data = payload_data.pop("aps", None) or apns_data.pop("aps", None) or {}
+	if isinstance(aps_data, dict):
+		aps = messaging.Aps(**aps_data)
+	else:
+		aps = aps_data
+	custom_payload = payload_data or apns_data.pop("custom_data", None) or {}
+
+	if hasattr(messaging, "APNSPayload"):
+		payload = messaging.APNSPayload(aps=aps, custom_data=custom_payload or None)
+	else:
+		payload = None
+
+	headers = apns_data.pop("headers", None)
+	apns_config_kwargs: Dict[str, Any] = {"headers": headers}
+	if payload is not None:
+		apns_config_kwargs["payload"] = payload
+	return messaging.APNSConfig(**apns_config_kwargs)
+
+
+def _build_webpush_config(webpush_data: Dict[str, Any]) -> Optional[messaging.WebpushConfig]:
+	if not webpush_data or not isinstance(webpush_data, dict):
+		return None
+
+	webpush_data = webpush_data.copy()
+	notification_data = webpush_data.pop("notification", None) or {}
+	webpush_notification = messaging.WebpushNotification(**notification_data) if notification_data else None
+	return messaging.WebpushConfig(
+		headers=webpush_data.pop("headers", None),
+		notification=webpush_notification,
+		data=webpush_data.pop("data", None),
+	)
+
+
 def dict_to_fcm_message(data: Dict[str, Any], dry_run: bool = False, **kwargs: Any) -> messaging.Message:
 	"""
 	Constructs a messaging.Message from the old dictionary.
@@ -41,6 +108,34 @@ def dict_to_fcm_message(data: Dict[str, Any], dry_run: bool = False, **kwargs: A
 	if "dry_run" in data and data.pop("dry_run", False) or dry_run:
 		return None
 
+	nested_message = data.pop("message", None) if isinstance(data.get("message"), dict) else None
+	if nested_message is not None:
+		message_data = nested_message.copy()
+		notification = message_data.pop("notification", None)
+		android = _build_android_config(message_data.pop("android", None) or {})
+		apns = _build_apns_config(message_data.pop("apns", None) or {})
+		webpush = _build_webpush_config(message_data.pop("webpush", None) or {})
+		topic = message_data.pop("topic", None)
+		token = message_data.pop("token", None)
+		condition = message_data.pop("condition", None)
+		data_payload = message_data.pop("data", None)
+		if data_payload is not None and not isinstance(data_payload, dict):
+			data_payload = None
+		message_kwargs: Dict[str, Any] = {
+			"data": data_payload,
+			"notification": messaging.Notification(**notification)
+			if isinstance(notification, dict)
+			else notification if isinstance(notification, messaging.Notification) else None,
+			"android": android,
+			"apns": apns,
+			"webpush": webpush,
+			"topic": topic,
+			"token": token,
+			"condition": condition,
+		}
+		message_kwargs = {key: value for key, value in message_kwargs.items() if value is not None}
+		return messaging.Message(**message_kwargs)
+
 	android_notification = None
 
 	notification_payload = {}
@@ -59,6 +154,12 @@ def dict_to_fcm_message(data: Dict[str, Any], dry_run: bool = False, **kwargs: A
 		notification_payload["notification_count"] = notification_payload.pop("badge", None)
 		android_notification = messaging.AndroidNotification(**notification_payload)
 
+	# set correct receiver
+	to: str = data.pop("to", None) or kwargs.get("to", None)
+	condition = data.pop("condition", None) or kwargs.get("condition", None)
+	notification_key = data.pop(
+		"notification_key", None) or kwargs.get("notification_key", None)
+
 	android_config = messaging.AndroidConfig(
 		collapse_key=data.pop("collapse_key", None) or kwargs.get("collapse_key", None),
 		priority=data.pop("priority", None) or kwargs.get("priority", None),
@@ -70,12 +171,6 @@ def dict_to_fcm_message(data: Dict[str, Any], dry_run: bool = False, **kwargs: A
 	)
 
 	message = messaging.Message(data=data, android=android_config)
-
-	# set correct receiver
-	to: str = data.pop("to", None) or kwargs.get("to", None)
-	condition = data.pop("condition", None) or kwargs.get("condition", None)
-	notification_key = data.pop(
-		"notification_key", None) or kwargs.get("notification_key", None)
 
 	# topic is set with /topic/ prefix, message can handle this format as well
 	if to and to.startswith("/topic/"):
