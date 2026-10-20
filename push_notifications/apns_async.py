@@ -267,7 +267,7 @@ def apns_send_message(
 	application_id: Optional[str] = None,
 	creds: Optional[Credentials] = None,
 	topic: Optional[str] = None,
-	badge: Optional[int] = None,
+	badge: Optional[Union[int, Callable[[str], Optional[int]]]] = None,
 	sound: Optional[str] = None,
 	content_available: Optional[bool] = None,
 	extra: Dict[str, Any] = {},
@@ -335,7 +335,7 @@ def apns_send_bulk_message(
 	application_id: Optional[str] = None,
 	creds: Optional[Credentials] = None,
 	topic: Optional[str] = None,
-	badge: Optional[int] = None,
+	badge: Optional[Union[int, Callable[[str], Optional[int]]]] = None,
 	sound: Optional[str] = None,
 	content_available: Optional[bool] = None,
 	extra: Optional[dict] = None,
@@ -369,6 +369,9 @@ def apns_send_bulk_message(
 					 It allows the app to display custom actions with the notification.
 	:param content_available: If True the `content-available` flag will be set to 1, allowing the app to be woken up in the background
 	"""
+	# Resolve callbacks before entering asyncio so they can query Django models.
+	badges = [badge(token) if callable(badge) else badge for token in registration_ids]
+
 	timeout = get_manager().get_apns_error_timeout(application_id)
 
 	try:
@@ -382,7 +385,7 @@ def apns_send_bulk_message(
 				application_id=application_id,
 				creds=creds,
 				topic=topic,
-				badge=badge,
+				badges=badges,
 				sound=sound,
 				content_available=content_available,
 				extra=extra,
@@ -435,11 +438,11 @@ def apns_send_bulk_message(
 async def _send_bulk_request(
 	registration_ids: list[str],
 	timeout: int,
+	badges: List[Optional[int]],
 	alert: Optional[Union[str, Alert]],
 	application_id: Optional[str] = None,
 	creds: Optional[Credentials] = None,
 	topic: Optional[str] = None,
-	badge: Optional[int] = None,
 	sound: Optional[str] = None,
 	content_available: Optional[bool] = None,
 	extra: Optional[dict] = None,
@@ -478,7 +481,7 @@ async def _send_bulk_request(
 			collapse_id=collapse_id,
 			aps_kwargs=aps_kwargs,
 		)
-		for registration_id in registration_ids
+		for registration_id, badge in zip(registration_ids, badges)
 	]
 
 	send_requests = [_send_request(client, request, timeout) for request in requests]

@@ -254,7 +254,9 @@ Sending messages in bulk makes use of the bulk mechanics offered by GCM and APNS
 bulk notifications instead of single ones.
 
 It's also possible to pass badge parameter as a function which accepts token parameter in order to set different badge
-value per user. Assuming User model has a method get_badge returning badge count for a user:
+value per user. This works with both APNS backends; callbacks are evaluated before
+async delivery starts, so they can query Django models. Assuming User model has a
+method get_badge returning badge count for a user:
 
 .. code-block:: python
 
