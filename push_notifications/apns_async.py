@@ -9,6 +9,7 @@ from aioapns.common import NotificationResult
 
 from . import models
 from .conf import get_manager
+from .enums import InterruptionLevelType
 from .exceptions import APNSServerError
 
 
@@ -279,6 +280,7 @@ def apns_send_message(
 	mutable_content: bool = False,
 	category: Optional[str] = None,
 	err_func: Optional[ErrFunc] = None,
+	interruption_level: Optional[InterruptionLevelType] = None,
 ) -> Dict[str, List[Union[str, Dict[str, str]]]]:
 	"""
 	Sends an APNS notification to a single registration_id.
@@ -302,6 +304,9 @@ def apns_send_message(
 					 Notification Content Extension or UNNotificationCategory configuration.
 					 It allows the app to display custom actions with the notification.
 	:param content_available: If True the `content-available` flag will be set to 1, allowing the app to be woken up in the background
+	:param interruption_level: The iOS interruption level for the notification. Accepts an
+						``InterruptionLevelType`` member or its string value (``passive``,
+						``active``, ``time-sensitive`` or ``critical``).
 	"""
 	bulk_result = apns_send_bulk_message(
 		registration_ids=[registration_id],
@@ -320,6 +325,7 @@ def apns_send_message(
 		collapse_id=collapse_id,
 		mutable_content=mutable_content,
 		category=category,
+		interruption_level=interruption_level,
 		err_func=err_func,
 	)
 
@@ -347,6 +353,7 @@ def apns_send_bulk_message(
 	mutable_content: Optional[bool] = False,
 	category: Optional[str] = None,
 	err_func: Optional[ErrFunc] = None,
+	interruption_level: Optional[InterruptionLevelType] = None,
 ) -> BulkNotificationResult:
 	"""
 	Sends an APNS notification to one or more registration_ids.
@@ -368,6 +375,9 @@ def apns_send_bulk_message(
 					 Notification Content Extension or UNNotificationCategory configuration.
 					 It allows the app to display custom actions with the notification.
 	:param content_available: If True the `content-available` flag will be set to 1, allowing the app to be woken up in the background
+	:param interruption_level: The iOS interruption level for the notification. Accepts an
+						``InterruptionLevelType`` member or its string value (``passive``,
+						``active``, ``time-sensitive`` or ``critical``).
 	"""
 	# Resolve callbacks before entering asyncio so they can query Django models.
 	badges = [badge(token) if callable(badge) else badge for token in registration_ids]
@@ -396,6 +406,7 @@ def apns_send_bulk_message(
 				collapse_id=collapse_id,
 				mutable_content=mutable_content,
 				category=category,
+				interruption_level=interruption_level,
 				err_func=err_func,
 				timeout=timeout,
 			)
@@ -454,6 +465,7 @@ async def _send_bulk_request(
 	mutable_content: Optional[bool] = False,
 	category: Optional[str] = None,
 	err_func: Optional[ErrFunc] = None,
+	interruption_level: Optional[InterruptionLevelType] = None,
 ) -> List[Tuple[str, NotificationResult]]:
 	client = _create_client(
 		creds=creds, application_id=application_id, topic=topic, err_func=err_func
@@ -466,6 +478,10 @@ async def _send_bulk_request(
 		aps_kwargs["category"] = category
 	if content_available:
 		aps_kwargs["content-available"] = 1
+	if interruption_level is not None:
+		aps_kwargs["interruption-level"] = InterruptionLevelType(
+			interruption_level
+		).value
 
 	requests = [
 		_create_notification_request_from_args(
