@@ -279,8 +279,8 @@ def apns_send_message(
 	collapse_id: Optional[str] = None,
 	mutable_content: bool = False,
 	category: Optional[str] = None,
-	interruption_level: Optional[InterruptionLevelType] = None,
 	err_func: Optional[ErrFunc] = None,
+	interruption_level: Optional[InterruptionLevelType] = None,
 ) -> Dict[str, List[Union[str, Dict[str, str]]]]:
 	"""
 	Sends an APNS notification to a single registration_id.
@@ -352,8 +352,8 @@ def apns_send_bulk_message(
 	collapse_id: Optional[str] = None,
 	mutable_content: Optional[bool] = False,
 	category: Optional[str] = None,
-	interruption_level: Optional[InterruptionLevelType] = None,
 	err_func: Optional[ErrFunc] = None,
+	interruption_level: Optional[InterruptionLevelType] = None,
 ) -> BulkNotificationResult:
 	"""
 	Sends an APNS notification to one or more registration_ids.
@@ -461,8 +461,8 @@ async def _send_bulk_request(
 	collapse_id: Optional[str] = None,
 	mutable_content: Optional[bool] = False,
 	category: Optional[str] = None,
-	interruption_level: Optional[InterruptionLevelType] = None,
 	err_func: Optional[ErrFunc] = None,
+	interruption_level: Optional[InterruptionLevelType] = None,
 ) -> List[Tuple[str, NotificationResult]]:
 	client = _create_client(
 		creds=creds, application_id=application_id, topic=topic, err_func=err_func
