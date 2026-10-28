@@ -167,6 +167,12 @@ def send_message(
 	max_recipients = get_manager().get_max_recipients(application_id)
 	app = get_manager().get_firebase_app(application_id) if application_id else None
 
+	# topic passed as a keyword argument, as shown in older docs
+	to = kwargs.get("to")
+	if registration_ids is None and to and to.startswith("/topics/") and message.topic is None:
+		message = copy(message)
+		message.topic = to
+
 	# Checks for valid recipient
 	if registration_ids is None and message.topic is None and message.condition is None:
 		return
