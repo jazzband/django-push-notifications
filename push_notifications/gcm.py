@@ -139,8 +139,11 @@ def _deactivate_devices_with_error_results(
 
 
 def _prepare_message(message: messaging.Message, token: str) -> messaging.Message:
+	message = copy(message)
 	message.token = token
-	return copy(message)
+	# a message can't have both a token and a topic
+	message.topic = None
+	return message
 
 
 def send_message(
