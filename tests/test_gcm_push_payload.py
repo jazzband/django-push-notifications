@@ -66,6 +66,29 @@ class GCMPushPayloadTest(TestCase):
 			self.assertEqual( message_two.token,"123")
 			self.assertEqual( message_two.android.notification.body, "Hello world")
 
+	def test_fcm_push_payload_topic(self):
+		with mock.patch("firebase_admin.messaging.send_each", return_value=FCM_SUCCESS) as p:
+			message = dict_to_fcm_message({"message": "Hello world"}, to="/topics/news")
+
+			send_message(None, message)
+
+			self.assertEqual(p.call_count, 1)
+			messages = p.call_args[0][0]
+			self.assertEqual(len(messages), 1)
+			self.assertEqual(messages[0].topic, "/topics/news")
+			self.assertIsNone(messages[0].token)
+
+	def test_fcm_push_payload_condition(self):
+		with mock.patch("firebase_admin.messaging.send_each", return_value=FCM_SUCCESS) as p:
+			message = dict_to_fcm_message({"message": "Hello world"}, condition="'news' in topics")
+
+			send_message(None, message)
+
+			self.assertEqual(p.call_count, 1)
+			messages = p.call_args[0][0]
+			self.assertEqual(len(messages), 1)
+			self.assertEqual(messages[0].condition, "'news' in topics")
+
 	def test_push_payload_with_app_id(self):
 		with self.assertRaises(ImproperlyConfigured) as ic:
 			send_message("abc", {"message": "Hello world"}, application_id="test")

@@ -77,8 +77,8 @@ def dict_to_fcm_message(data: Dict[str, Any], dry_run: bool = False, **kwargs: A
 	notification_key = data.pop(
 		"notification_key", None) or kwargs.get("notification_key", None)
 
-	# topic is set with /topic/ prefix, message can handle this format as well
-	if to and to.startswith("/topic/"):
+	# topic is set with /topics/ prefix, message can handle this format as well
+	if to and to.startswith("/topics/"):
 		message.topic = to
 	else:
 		message.token = notification_key or to
@@ -184,6 +184,8 @@ def send_message(
 			ret.extend(responses)
 		_deactivate_devices_with_error_results(registration_ids, ret)
 		return messaging.BatchResponse(ret)
+	elif message.topic or message.condition:
+		return messaging.send_each([message], dry_run=dry_run, app=app)
 	else:
 		return messaging.BatchResponse([])
 
