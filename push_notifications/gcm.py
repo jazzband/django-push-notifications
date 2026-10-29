@@ -77,8 +77,8 @@ def dict_to_fcm_message(data: Dict[str, Any], dry_run: bool = False, **kwargs: A
 	notification_key = data.pop(
 		"notification_key", None) or kwargs.get("notification_key", None)
 
-	# topic is set with /topic/ prefix, message can handle this format as well
-	if to and to.startswith("/topic/"):
+	# topic is set with /topics/ prefix, message can handle this format as well
+	if to and to.startswith("/topics/"):
 		message.topic = to
 	else:
 		message.token = notification_key or to
@@ -139,8 +139,11 @@ def _deactivate_devices_with_error_results(
 
 
 def _prepare_message(message: messaging.Message, token: str) -> messaging.Message:
+	message = copy(message)
 	message.token = token
-	return copy(message)
+	# a message can't have both a token and a topic
+	message.topic = None
+	return message
 
 
 def send_message(
@@ -164,6 +167,12 @@ def send_message(
 	max_recipients = get_manager().get_max_recipients(application_id)
 	app = get_manager().get_firebase_app(application_id) if application_id else None
 
+	# topic passed as a keyword argument, as shown in older docs
+	to = kwargs.get("to")
+	if registration_ids is None and to and to.startswith("/topics/") and message.topic is None:
+		message = copy(message)
+		message.topic = to
+
 	# Checks for valid recipient
 	if registration_ids is None and message.topic is None and message.condition is None:
 		return
@@ -184,6 +193,8 @@ def send_message(
 			ret.extend(responses)
 		_deactivate_devices_with_error_results(registration_ids, ret)
 		return messaging.BatchResponse(ret)
+	elif message.topic or message.condition:
+		return messaging.send_each([message], dry_run=dry_run, app=app)
 	else:
 		return messaging.BatchResponse([])
 

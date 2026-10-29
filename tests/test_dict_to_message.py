@@ -92,11 +92,11 @@ class DictToMessageTest(TestCase):
 	def test_receiver_mapping_topic(self):
 		payload = {
 			"message": "Hello World",
-			"to": "/topic/...",
+			"to": "/topics/...",
 		}
 
 		message = dict_to_fcm_message(payload)
-		assert message.topic == "/topic/..."
+		assert message.topic == "/topics/..."
 		assert message.token is None
 
 	def test_receiver_mapping_token(self):
