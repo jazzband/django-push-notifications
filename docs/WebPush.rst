@@ -1,6 +1,3 @@
-WebPush
-========
-
 At a high-level, the key steps for implementing web push notifications after installing django-push-notifications[WP] are:
  - Configure the VAPID keys, a private and public key for signing your push requests.
  - Add client side logic to ask the user for permission to send push notifications and then sending returned client identifier information to a django view to create a WebPushDevice.
@@ -83,7 +80,7 @@ Then format as Application Server Key:
 
 
 Client Side logic to ask user for permission and subscribe to WebPush
----------------------------------------------------------------------
+------------------------------
 The example subscribeUser function is best called in response to a user action, such as a button click. Some browsers will deny the request otherwise.
 
 .. code-block:: javascript
@@ -166,7 +163,7 @@ The example subscribeUser function is best called in response to a user action, 
 	}
 
 Server Side logic to create webpush
------------------------------------
+------------------------------
 It is up to you how to add a view in your django application that can handle a POST of p256dh, auth, registration_id and create a WebPushDevice with those values assoicated with the appropriate user.
 For example you could use rest_framework
 
@@ -199,7 +196,7 @@ Or a generic function view (add your own boilerplate for errors and protections)
 
 
 Service Worker to show messages
--------------------------------
+------------------------------
 You will need a service worker registered with your web app that can handle the notifications, for example
 
 .. code-block:: javascript
