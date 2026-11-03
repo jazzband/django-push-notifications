@@ -5,29 +5,6 @@
 This is a [Jazzband](https://jazzband.co/) project. By contributing you agree to abide by the [Contributor Code of Conduct](https://jazzband.co/about/conduct) and follow the [guidelines](https://jazzband.co/about/guidelines).
 
 
-## Documentation
-
-Documentation is built with Sphinx. From the repository root, using Python 3.12 or newer:
-
-```bash
-python -m pip install -r docs/requirements.txt
-python -m sphinx -W --keep-going -b html docs docs/_build/html
-```
-
-Open `docs/_build/html/index.html` to preview the documentation. The usage guide
-includes `README.rst`, so update the README for installation, settings, and usage
-changes. Provider guides live in `docs/FCM.rst`, `docs/APNS.rst`, and
-`docs/WebPush.rst`.
-
-Read the Docs uses the build configuration in `.readthedocs.yaml`.
-To enable hosting, import this repository at <https://app.readthedocs.org/>,
-select `master` as the default branch, and verify the first build succeeds.
-For the Django Commons transfer, invite `djangocommons@gmail.com` as a maintainer
-in the Read the Docs project's user settings. After the repository transfer,
-update the project's repository URL and verify the GitHub integration still
-triggers builds.
-
-
 ## Coding style
 This project follows the [HearthSim Styleguide](https://hearthsim.info/styleguide/).
 

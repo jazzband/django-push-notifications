@@ -26,6 +26,3 @@ coverage.xml
 .vscode/*
 
 dist/
-
-# documentation
-docs/_build/
