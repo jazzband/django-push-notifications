@@ -3,7 +3,6 @@ from unittest import mock
 from django.test import TestCase
 from django.utils import timezone
 from firebase_admin import messaging
-from firebase_admin.exceptions import InvalidArgumentError
 from firebase_admin.messaging import BatchResponse, Message, SendResponse
 
 from push_notifications.gcm import dict_to_fcm_message, send_bulk_message
@@ -378,7 +377,7 @@ class GCMModelTestCase(TestCase):
 		errors = [
 			messaging.UnregisteredError("error"),
 			messaging.SenderIdMismatchError("error"),
-			InvalidArgumentError("Invalid registration"),
+			responses.FCM_INVALID_TOKEN,
 		]
 
 		for index, error in enumerate(errors):
@@ -391,6 +390,20 @@ class GCMModelTestCase(TestCase):
 				device = GCMDevice.objects.get(registration_id=devices[index])
 				device.send_message("Hello World!")
 				self.assertFalse(GCMDevice.objects.get(registration_id=devices[index]).active)
+
+	def test_fcm_send_message_with_payload_error_keeps_device_active(self):
+		device = GCMDevice.objects.create(registration_id="abc", cloud_message_type="FCM")
+
+		# a payload error, and an error that doesn't say which field is invalid
+		for error in (responses.FCM_INVALID_PAYLOAD, responses.FCM_INVALID_ARGUMENT):
+			with self.subTest(error=str(error)):
+				return_value = BatchResponse(
+					[SendResponse(resp={"name": "..."}, exception=error)]
+				)
+				with mock.patch("firebase_admin.messaging.send_each", return_value=return_value):
+					device.send_message(None, extra={"from": "x"})
+
+				self.assertTrue(GCMDevice.objects.get(registration_id="abc").active)
 
 	def test_fcm_send_message_to_single_device_with_error_mismatch(self):
 		device = GCMDevice.objects.create(registration_id="abc", cloud_message_type="FCM")
@@ -414,7 +427,7 @@ class GCMModelTestCase(TestCase):
 			SendResponse(resp={"name": "..."}, exception=messaging.UnregisteredError("error")),
 			SendResponse(resp={"name": "..."}, exception=messaging.SenderIdMismatchError("error")),
 			SendResponse(resp={"name": "..."}, exception=OSError()),
-			SendResponse(resp={"name": "..."}, exception=InvalidArgumentError("Invalid registration")),
+			SendResponse(resp={"name": "..."}, exception=responses.FCM_INVALID_TOKEN),
 		])
 		with mock.patch(
 			"firebase_admin.messaging.send_each", return_value=return_value

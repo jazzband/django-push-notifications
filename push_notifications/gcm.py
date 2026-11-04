@@ -110,9 +110,19 @@ def _validate_exception_for_deactivation(exc: Union[FirebaseError]) -> bool:
 		return False
 	if isinstance(exc, str):
 		return exc in fcm_error_list_str
-	return (
-		isinstance(exc, InvalidArgumentError) and exc.cause == "Invalid registration"
-	) or (type(exc) in fcm_error_list)
+	if isinstance(exc, InvalidArgumentError):
+		# FCM also returns INVALID_ARGUMENT for payload errors, so only
+		# deactivate when it names the token as the invalid field
+		try:
+			details = exc.http_response.json()["error"]["details"]
+			return any(
+				violation.get("field") == "message.token"
+				for detail in details
+				for violation in detail.get("fieldViolations", [])
+			)
+		except (AttributeError, KeyError, TypeError, ValueError):
+			return False
+	return type(exc) in fcm_error_list
 
 
 def _deactivate_devices_with_error_results(
