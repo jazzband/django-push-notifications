@@ -225,7 +225,7 @@ class AppConfigTestCase(TestCase):
 		manager = AppConfig(PUSH_SETTINGS)
 		app_config = manager._settings["APPLICATIONS"]["my_fcm_app"]
 
-		assert app_config["MAX_RECIPIENTS"] == 1000
+		assert app_config["MAX_RECIPIENTS"] == 500
 		assert app_config["FIREBASE_APP"] is None
 
 	def test_get_allowed_settings_wns(self):

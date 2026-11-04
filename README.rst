@@ -120,7 +120,7 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 **FCM/GCM settings**
 
 - ``FIREBASE_APP``: Firebase app instance that is used to send the push notification. If not provided, the app will be using the default app instance that you've instantiated with ``firebase_admin.initialize_app()``.
-- ``FCM_MAX_RECIPIENTS``: The maximum amount of recipients that can be contained per bulk message. If the ``registration_ids`` list is larger than that number, multiple bulk messages will be sent. Defaults to 1000 (the maximum amount supported by FCM).
+- ``FCM_MAX_RECIPIENTS``: The maximum amount of recipients that can be contained per bulk message. If the ``registration_ids`` list is larger than that number, multiple bulk messages will be sent. Defaults to 500, the most firebase-admin's ``send_each()`` accepts in one call.
 
 **WNS settings**
 

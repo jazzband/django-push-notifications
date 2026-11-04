@@ -197,7 +197,7 @@ class AppConfig(BaseConfig):
 		)
 
 		application_config.setdefault("FIREBASE_APP", None)
-		application_config.setdefault("MAX_RECIPIENTS", 1000)
+		application_config.setdefault("MAX_RECIPIENTS", 500)
 
 	def _validate_wns_config(
 		self, application_id: str, application_config: Dict[str, Any]

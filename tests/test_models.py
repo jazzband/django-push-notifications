@@ -241,6 +241,21 @@ class GCMModelTestCase(TestCase):
 			self.assertEqual(message_one.android.notification.body, "Hello world")
 			self.assertEqual(message_two.android.notification.body, "Hello world")
 
+	def test_fcm_bulk_send_respects_send_each_limit(self):
+		GCMDevice.objects.bulk_create(
+			GCMDevice(registration_id=f"tok{i}", cloud_message_type="FCM") for i in range(501)
+		)
+
+		def send_each(messages, **kwargs):
+			return BatchResponse(
+				[SendResponse(resp={"name": "abc"}, exception=None) for _ in messages]
+			)
+
+		with mock.patch("firebase_admin.messaging.send_each", side_effect=send_each) as p:
+			GCMDevice.objects.all().send_message("Hello world")
+
+		self.assertEqual([len(c[0][0]) for c in p.call_args_list], [500, 1])
+
 	def test_fcm_send_message_to_multiple_devices_fcm_message(self):
 		self._create_fcm_devices(["abc", "abc1"])
 
