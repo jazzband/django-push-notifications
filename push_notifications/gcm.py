@@ -99,7 +99,6 @@ def _chunks(lst: List[Any], n: int) -> Generator[List[Any], None, None]:
 fcm_error_list = [
 	messaging.UnregisteredError,
 	messaging.SenderIdMismatchError,
-	InvalidArgumentError,
 ]
 
 fcm_error_list_str = [x.code for x in fcm_error_list]
