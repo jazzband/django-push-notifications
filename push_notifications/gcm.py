@@ -9,7 +9,9 @@ from copy import copy
 from typing import List, Union, Dict, Any, Generator, Optional
 
 from firebase_admin import messaging
-from firebase_admin.exceptions import FirebaseError, InvalidArgumentError
+from firebase_admin.exceptions import (
+	NOT_FOUND, PERMISSION_DENIED, FirebaseError, InvalidArgumentError
+)
 
 from .conf import get_manager
 
@@ -101,7 +103,7 @@ fcm_error_list = [
 	messaging.SenderIdMismatchError,
 ]
 
-fcm_error_list_str = [x.code for x in fcm_error_list]
+fcm_error_list_str = [NOT_FOUND, PERMISSION_DENIED]
 
 
 def _validate_exception_for_deactivation(exc: Union[FirebaseError]) -> bool:
