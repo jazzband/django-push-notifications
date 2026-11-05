@@ -30,6 +30,12 @@ class DictToMessageTest(TestCase):
 		assert message.android.priority == "high"
 		assert message.android.restricted_package_name == "restricted.package.name"
 
+	def test_data_only_in_message(self):
+		message = dict_to_fcm_message({"foo": "bar"})
+
+		assert message.data == {"foo": "bar"}
+		assert message.android.data is None
+
 	def test_payload_keys(self):
 		"""
 		old FCM_NOTIFICATIONS_PAYLOAD_KEYS payload is mapped to message object correctly
