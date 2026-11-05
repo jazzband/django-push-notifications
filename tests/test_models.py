@@ -394,7 +394,6 @@ class GCMModelTestCase(TestCase):
 	def test_fcm_send_message_with_payload_error_keeps_device_active(self):
 		device = GCMDevice.objects.create(registration_id="abc", cloud_message_type="FCM")
 
-		# a payload error, and an error that doesn't say which field is invalid
 		for error in (responses.FCM_INVALID_PAYLOAD, responses.FCM_INVALID_ARGUMENT):
 			with self.subTest(error=str(error)):
 				return_value = BatchResponse(

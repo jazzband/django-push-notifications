@@ -13,7 +13,6 @@ FCM_SUCCESS_MULTIPLE = BatchResponse([
 
 
 def fcm_invalid_argument(field, description):
-	"""An INVALID_ARGUMENT error shaped like FCM's response, naming the invalid field."""
 	response = mock.Mock()
 	response.json.return_value = {"error": {"details": [{
 		"@type": "type.googleapis.com/google.rpc.BadRequest",
