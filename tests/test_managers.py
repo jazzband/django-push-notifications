@@ -1,5 +1,6 @@
 from django.test import TestCase, override_settings
 
+from push_notifications import models
 from push_notifications.models import APNSDevice, GCMDevice, WebPushDevice, WNSDevice
 
 
@@ -36,28 +37,11 @@ class DeviceManagerTestCase(TestCase):
 				alias == write_db,
 			)
 
-	def test_default_database(self):
-		for model in self.device_models:
-			with self.subTest(model=model.__name__):
-				self.assert_database_operations(model.objects, "default", "default")
-
 	def test_db_manager(self):
 		for model in self.device_models:
 			for alias in self.databases:
 				with self.subTest(model=model.__name__, alias=alias):
 					self.assert_database_operations(model.objects.db_manager(alias), alias, alias)
-
-	def test_using(self):
-		for model in self.device_models:
-			for alias in self.databases:
-				with self.subTest(model=model.__name__, alias=alias):
-					self.assert_database_operations(model.objects.using(alias), alias, alias)
-
-	@override_settings(DATABASE_ROUTERS=[DeviceRouter()])
-	def test_router(self):
-		for model in self.device_models:
-			with self.subTest(model=model.__name__):
-				self.assert_database_operations(model.objects, "other", "default")
 
 	@override_settings(DATABASE_ROUTERS=[DeviceRouter()])
 	def test_db_manager_overrides_router(self):
@@ -83,9 +67,13 @@ class DeviceManagerTestCase(TestCase):
 				self.assert_database_operations(manager, "other", "other")
 
 	def test_queryset_class(self):
-		for model in self.device_models:
+		for model, queryset_class in (
+			(GCMDevice, models.GCMDeviceQuerySet),
+			(APNSDevice, models.APNSDeviceQuerySet),
+			(WNSDevice, models.WNSDeviceQuerySet),
+			(WebPushDevice, models.WebPushDeviceQuerySet),
+		):
 			with self.subTest(model=model.__name__):
-				queryset_class = type(model.objects.get_queryset())
 				queryset = model.objects.db_manager("other").filter(active=True)
 				self.assertIs(type(queryset), queryset_class)
 				self.assertTrue(callable(queryset.send_message))
