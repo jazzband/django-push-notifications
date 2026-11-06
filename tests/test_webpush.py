@@ -4,6 +4,7 @@ from django.test import TestCase
 from pywebpush import WebPushException
 
 from push_notifications.exceptions import WebPushError
+from push_notifications.models import WebPushDevice
 from push_notifications.webpush import (
 	get_subscription_info, webpush_send_message
 )
@@ -68,6 +69,16 @@ class WebPushSendMessageTestCase(TestCase):
 	def test_webpush_send_message_failure(self, webpush_mock):
 		results = webpush_send_message(self.mock_device, "message")
 		self.assertEqual(results["failure"], 1)
+
+	@mock.patch("push_notifications.webpush.webpush", return_value=mock_success_response)
+	def test_webpush_queryset_send_message_passes_kwargs(self, webpush_mock):
+		WebPushDevice.objects.create(
+			registration_id=self.endpoint, p256dh="p256dhtest", auth="authtest"
+		)
+
+		WebPushDevice.objects.all().send_message("message", ttl=60)
+
+		self.assertEqual(webpush_mock.call_args[1]["ttl"], 60)
 
 	@mock.patch(
         "push_notifications.webpush.webpush",
