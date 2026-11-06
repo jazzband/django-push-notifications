@@ -217,3 +217,55 @@ class APNSModelTestCase(TestCase):
 		self.assertIsNone(reg_2.time_to_live, "No time to live should be specified")
 		self.assertIsNone(reg_2.priority, "No priority should be specified")
 		self.assertIsNone(reg_2.collapse_key, "No collapse key should be specified")
+
+
+class MultiDatabaseAPNSDeactivationTestCase(TestCase):
+	databases = "__all__"
+
+	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
+	def test_apns_single_device_deactivation_respects_database(self, mock_apns):
+		APNSDevice.objects.using("default").create(
+			registration_id="apns_tok1", active=True
+		)
+		other_device = APNSDevice.objects.using("other").create(
+			registration_id="apns_tok1", active=True
+		)
+
+		mock_apns.return_value.send_notification.return_value = NotificationResult(
+			status="400",
+			notification_id="apns_tok1",
+			description="Unregistered",
+		)
+		other_device.send_message("Hello")
+
+		self.assertTrue(
+			APNSDevice.objects.using("default").get(registration_id="apns_tok1").active
+		)
+		self.assertFalse(
+			APNSDevice.objects.using("other").get(registration_id="apns_tok1").active
+		)
+
+	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
+	def test_apns_queryset_deactivation_respects_database(self, mock_apns):
+		APNSDevice.objects.using("default").create(
+			registration_id="apns_tok2", active=True
+		)
+		APNSDevice.objects.using("other").create(
+			registration_id="apns_tok2", active=True
+		)
+
+		mock_apns.return_value.send_notification.return_value = NotificationResult(
+			status="400",
+			notification_id="apns_tok2",
+			description="Unregistered",
+		)
+		APNSDevice.objects.using("other").filter(
+			registration_id="apns_tok2"
+		).send_message("Hello")
+
+		self.assertTrue(
+			APNSDevice.objects.using("default").get(registration_id="apns_tok2").active
+		)
+		self.assertFalse(
+			APNSDevice.objects.using("other").get(registration_id="apns_tok2").active
+		)
