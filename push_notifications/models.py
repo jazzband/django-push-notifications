@@ -248,7 +248,7 @@ class WebPushDeviceQuerySet(models.query.QuerySet):
 		devices = self.filter(active=True).order_by("application_id").distinct()
 		res: List[Any] = []
 		for device in devices:
-			res.append(device.send_message(message))
+			res.append(device.send_message(message, **kwargs))
 
 		return res
 
