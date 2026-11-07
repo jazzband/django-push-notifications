@@ -1,4 +1,5 @@
 ## 2.0.0 (unreleased)
+* Switched to trusted publisher release process with Django Commons
 * BACKWARDS-INCOMPATIBLE: Drop support for Django Rest Framework < 3.7
 * BACKWARDS-INCOMPATIBLE: NotificationError is now moved from `__init__.py` to `exceptions.py`
     * Import with `from push_notifications.exceptions import NotificationError`
