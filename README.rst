@@ -1,16 +1,12 @@
 django-push-notifications
 =========================
 
-.. image:: https://jazzband.co/static/img/badge.svg
-   :target: https://jazzband.co/
-   :alt: Jazzband
-
-.. image:: https://github.com/jazzband/django-push-notifications/workflows/Test/badge.svg
-   :target: https://github.com/jazzband/django-push-notifications/actions
+.. image:: https://github.com/django-commons/django-push-notifications/workflows/Test/badge.svg
+   :target: https://github.com/django-commons/django-push-notifications/actions
    :alt: GitHub Actions
 
-.. image:: https://codecov.io/gh/jazzband/django-push-notifications/branch/master/graph/badge.svg?token=PcC594rhI4
-   :target: https://codecov.io/gh/jazzband/django-push-notifications
+.. image:: https://codecov.io/gh/django-commons/django-push-notifications/branch/master/graph/badge.svg?token=PcC594rhI4
+   :target: https://codecov.io/gh/django-commons/django-push-notifications
    :alt: Code coverage
 
 A minimal Django app that implements Device models that can send messages through APNS, FCM/GCM, WNS and WebPush.
@@ -75,17 +71,17 @@ Edit your settings.py file:
 	}
 
 .. note::
-	To migrate from legacy FCM APIs to HTTP v1, see `docs/FCM <https://github.com/jazzband/django-push-notifications/blob/master/docs/FCM.rst>`_.
+	To migrate from legacy FCM APIs to HTTP v1, see `docs/FCM <https://github.com/django-commons/django-push-notifications/blob/master/docs/FCM.rst>`_.
 
 .. note::
-	If you need to support multiple mobile applications from a single Django application, see `Multiple Application Support <https://github.com/jazzband/django-push-notifications/wiki/Multiple-Application-Support>`_ for details.
+	If you need to support multiple mobile applications from a single Django application, see `Multiple Application Support <https://github.com/django-commons/django-push-notifications/wiki/Multiple-Application-Support>`_ for details.
 
 .. note::
 	If you are planning on running your project with ``APNS_USE_SANDBOX=True``, then make sure you have set the
 	*development* certificate as your ``APNS_CERTIFICATE``. Otherwise the app will not be able to connect to the correct host. See settings_ for details.
 
 
-For more information about how to generate certificates, see `docs/APNS <https://github.com/jazzband/django-push-notifications/blob/master/docs/APNS.rst>`_.
+For more information about how to generate certificates, see `docs/APNS <https://github.com/django-commons/django-push-notifications/blob/master/docs/APNS.rst>`_.
 
 You can learn more about APNS certificates `here <https://developer.apple.com/library/archive/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/APNSOverview.html>`_.
 
@@ -108,7 +104,7 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 
 **APNS settings**
 
-- ``APNS_CERTIFICATE``: Absolute path to your APNS certificate file. Certificates with passphrases are not supported. If iOS application was build with "Release" flag, you need to use production certificate, otherwise debug. Read more about `Generation of an APNS PEM file <https://github.com/jazzband/django-push-notifications/blob/master/docs/APNS.rst>`_.
+- ``APNS_CERTIFICATE``: Absolute path to your APNS certificate file. Certificates with passphrases are not supported. If iOS application was build with "Release" flag, you need to use production certificate, otherwise debug. Read more about `Generation of an APNS PEM file <https://github.com/django-commons/django-push-notifications/blob/master/docs/APNS.rst>`_.
 - ``APNS_AUTH_KEY_PATH``: Absolute path to your APNS signing key file for `Token-Based Authentication <https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/establishing_a_token-based_connection_to_apns>`_ . Use this instead of ``APNS_CERTIFICATE`` if you are using ``.p8`` signing key certificate.
 - ``APNS_AUTH_KEY_ID``: The 10-character Key ID you obtained from your Apple developer account
 - ``APNS_TEAM_ID``: 10-character Team ID you use for developing your company’s apps for iOS.
@@ -133,7 +129,7 @@ For WNS, you need both the ``WNS_PACKAGE_SECURITY_KEY`` and the ``WNS_SECRET_KEY
 - ``WP_CLAIMS``: Dictionary with default value for the sub, (subject), sent to the webpush service, This would be used by the service if they needed to reach out to you (the sender). Could be a url or mailto e.g. {'sub': "mailto:development@example.com"}.
 - ``WP_ERROR_TIMEOUT``: The timeout on WebPush POSTs. (Optional, default value is 1 second)
 
-For more information about how to configure WebPush, see `docs/WebPush <https://github.com/jazzband/django-push-notifications/blob/master/docs/WebPush.rst>`_.
+For more information about how to configure WebPush, see `docs/WebPush <https://github.com/django-commons/django-push-notifications/blob/master/docs/WebPush.rst>`_.
 
 
 Sending messages

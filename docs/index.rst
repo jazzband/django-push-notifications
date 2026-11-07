@@ -15,5 +15,5 @@ A Django app for sending push notifications through APNS, FCM/GCM, WNS and WebPu
 Contributing
 ------------
 
-See the `contribution guide <https://github.com/jazzband/django-push-notifications/blob/master/CONTRIBUTING.md>`_
-and `Code of Conduct <https://github.com/jazzband/django-push-notifications/blob/master/CODE_OF_CONDUCT.md>`_.
+See the `contribution guide <https://github.com/django-commons/django-push-notifications/blob/master/CONTRIBUTING.md>`_
+and `Code of Conduct <https://github.com/django-commons/django-push-notifications/blob/master/CODE_OF_CONDUCT.md>`_.
