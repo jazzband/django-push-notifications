@@ -129,6 +129,7 @@ def _validate_exception_for_deactivation(exc: Union[FirebaseError]) -> bool:
 def _deactivate_devices_with_error_results(
 	registration_ids: List[str],
 	results: List[Union[messaging.SendResponse, messaging.ErrorInfo]],
+	using: Optional[str] = None,
 ) -> List[str]:
 	if not results:
 		return []
@@ -145,7 +146,10 @@ def _deactivate_devices_with_error_results(
 			if _validate_exception_for_deactivation(x.reason)
 		]
 	from .models import GCMDevice
-	GCMDevice.objects.filter(registration_id__in=deactivated_ids).update(active=False)
+	manager = GCMDevice.objects
+	if using:
+		manager = manager.using(using)
+	manager.filter(registration_id__in=deactivated_ids).update(active=False)
 	return deactivated_ids
 
 
@@ -202,7 +206,7 @@ def send_message(
 			]
 			responses = messaging.send_each(messages, dry_run=dry_run, app=app).responses
 			ret.extend(responses)
-		_deactivate_devices_with_error_results(registration_ids, ret)
+		_deactivate_devices_with_error_results(registration_ids, ret, using=kwargs.get("using"))
 		return messaging.BatchResponse(ret)
 	elif message.topic or message.condition:
 		return messaging.send_each([message], dry_run=dry_run, app=app)

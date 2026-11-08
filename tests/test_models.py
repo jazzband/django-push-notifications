@@ -495,3 +495,41 @@ class GCMModelTestCase(TestCase):
 		self.assertIsNotNone(device.pk)
 		self.assertIsNotNone(device.date_created)
 		self.assertEqual(device.date_created.date(), timezone.now().date())
+
+
+class MultiDatabaseDeactivationTestCase(TestCase):
+	databases = "__all__"
+
+	def test_fcm_single_device_deactivation_respects_database(self):
+		GCMDevice.objects.using("default").create(
+			registration_id="tok1", active=True, cloud_message_type="FCM"
+		)
+		other_device = GCMDevice.objects.using("other").create(
+			registration_id="tok1", active=True, cloud_message_type="FCM"
+		)
+
+		return_value = BatchResponse([
+			SendResponse(resp={"name": "..."}, exception=messaging.UnregisteredError("error"))
+		])
+		with mock.patch("firebase_admin.messaging.send_each", return_value=return_value):
+			other_device.send_message("Hello")
+
+		self.assertTrue(GCMDevice.objects.using("default").get(registration_id="tok1").active)
+		self.assertFalse(GCMDevice.objects.using("other").get(registration_id="tok1").active)
+
+	def test_fcm_queryset_deactivation_respects_database(self):
+		GCMDevice.objects.using("default").create(
+			registration_id="tok2", active=True, cloud_message_type="FCM"
+		)
+		GCMDevice.objects.using("other").create(
+			registration_id="tok2", active=True, cloud_message_type="FCM"
+		)
+
+		return_value = BatchResponse([
+			SendResponse(resp={"name": "..."}, exception=messaging.UnregisteredError("error"))
+		])
+		with mock.patch("firebase_admin.messaging.send_each", return_value=return_value):
+			GCMDevice.objects.using("other").filter(registration_id="tok2").send_message("Hello")
+
+		self.assertTrue(GCMDevice.objects.using("default").get(registration_id="tok2").active)
+		self.assertFalse(GCMDevice.objects.using("other").get(registration_id="tok2").active)
