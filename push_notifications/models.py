@@ -53,7 +53,7 @@ class Device(models.Model):
 
 class GCMDeviceManager(models.Manager):
 	def get_queryset(self) -> "GCMDeviceQuerySet":
-		return GCMDeviceQuerySet(self.model)
+		return GCMDeviceQuerySet(self.model, using=self._db, hints=self._hints)
 
 
 class GCMDeviceQuerySet(models.query.QuerySet):
@@ -129,7 +129,7 @@ class GCMDevice(Device):
 
 class APNSDeviceManager(models.Manager):
 	def get_queryset(self) -> "APNSDeviceQuerySet":
-		return APNSDeviceQuerySet(self.model)
+		return APNSDeviceQuerySet(self.model, using=self._db, hints=self._hints)
 
 
 class APNSDeviceQuerySet(models.query.QuerySet):
@@ -193,7 +193,7 @@ class APNSDevice(Device):
 
 class WNSDeviceManager(models.Manager):
 	def get_queryset(self) -> "WNSDeviceQuerySet":
-		return WNSDeviceQuerySet(self.model)
+		return WNSDeviceQuerySet(self.model, using=self._db, hints=self._hints)
 
 
 class WNSDeviceQuerySet(models.query.QuerySet):
@@ -240,7 +240,7 @@ class WNSDevice(Device):
 
 class WebPushDeviceManager(models.Manager):
 	def get_queryset(self) -> "WebPushDeviceQuerySet":
-		return WebPushDeviceQuerySet(self.model)
+		return WebPushDeviceQuerySet(self.model, using=self._db, hints=self._hints)
 
 
 class WebPushDeviceQuerySet(models.query.QuerySet):
