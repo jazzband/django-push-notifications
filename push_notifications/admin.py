@@ -57,25 +57,21 @@ class DeviceAdmin(admin.ModelAdmin):
 
 		if bulk:
 			success = 0
-			for batch in ret:
-				for response in batch:
-					# Some providers return a list per chunk.
-					entries = response if isinstance(response, list) else [response]
-					for entry in entries:
-						if isinstance(entry, str):
-							success += 1  # WNS returns response text.
-						elif "results" in entry:
-							success += entry.get("success", 0)
-							errors.extend(
-								force_str(item["error"])
-								for item in entry["results"] if "error" in item
-							)
+			for response in ret[0] if ret else []:
+				if isinstance(response, str):
+					success += 1  # WNS returns response text.
+				elif "results" in response:
+					success += response.get("success", 0)
+					errors.extend(
+						force_str(item["error"])
+						for item in response["results"] if "error" in item
+					)
+				else:
+					for value in response.values():
+						if force_str(value).lower() == "success":
+							success += 1
 						else:
-							for value in entry.values():
-								if force_str(value).lower() == "success":
-									success += 1
-								else:
-									errors.append(force_str(value))
+							errors.append(force_str(value))
 			if errors:
 				self.message_user(
 					request, _("Some messages could not be processed: %r" % (", ".join(errors))),

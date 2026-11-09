@@ -1,4 +1,5 @@
-from unittest import mock
+import sys
+from unittest import mock, skipIf
 
 from django.contrib import messages
 from django.contrib.admin import AdminSite
@@ -36,8 +37,8 @@ class WebPushDeviceAdminTestCase(TestCase):
 		with mock.patch("push_notifications.webpush.webpush_send_message", side_effect=send):
 			admin.send_messages(HttpRequest(), WebPushDevice.objects.order_by("id"), bulk=True)
 
-		self.assertEqual(admin.message_user.call_args_list[0].kwargs["level"], messages.ERROR)
-		self.assertIn("expired", str(admin.message_user.call_args_list[0].args[1]))
+		self.assertEqual(admin.message_user.call_args_list[0][1]["level"], messages.ERROR)
+		self.assertIn("expired", str(admin.message_user.call_args_list[0][0][1]))
 
 
 class WNSDeviceAdminTestCase(TestCase):
@@ -50,7 +51,7 @@ class WNSDeviceAdminTestCase(TestCase):
 			admin.send_messages(HttpRequest(), WNSDevice.objects.all(), bulk=True)
 
 		admin.message_user.assert_called_once()
-		self.assertNotEqual(admin.message_user.call_args.kwargs.get("level"), messages.ERROR)
+		self.assertNotEqual(admin.message_user.call_args[1].get("level"), messages.ERROR)
 
 	def test_bulk_action_reports_wns_failure(self):
 		WNSDevice.objects.create(registration_id="urn:expired", application_id="app")
@@ -64,11 +65,12 @@ class WNSDeviceAdminTestCase(TestCase):
 			admin.send_messages(HttpRequest(), WNSDevice.objects.all(), bulk=True)
 
 		admin.message_user.assert_called_once()
-		self.assertEqual(admin.message_user.call_args.kwargs["level"], messages.ERROR)
-		self.assertIn("HTTP 410", str(admin.message_user.call_args.args[1]))
+		self.assertEqual(admin.message_user.call_args[1]["level"], messages.ERROR)
+		self.assertIn("HTTP 410", str(admin.message_user.call_args[0][1]))
 
 
 class APNSDeviceAdminTestCase(TestCase):
+	@skipIf(sys.version_info < (3, 10), "aioapns is unavailable on Python < 3.10")
 	def test_bulk_action_reports_failures_from_later_application_group(self):
 		APNSDevice.objects.create(registration_id="first", application_id="a")
 		APNSDevice.objects.create(registration_id="second", application_id="b")
@@ -84,8 +86,8 @@ class APNSDeviceAdminTestCase(TestCase):
 		):
 			admin.send_messages(HttpRequest(), APNSDevice.objects.all(), bulk=True)
 
-		self.assertIn("Unregistered", str(admin.message_user.call_args_list[0].args[1]))
-		self.assertEqual(admin.message_user.call_args_list[0].kwargs["level"], messages.ERROR)
+		self.assertIn("Unregistered", str(admin.message_user.call_args_list[0][0][1]))
+		self.assertEqual(admin.message_user.call_args_list[0][1]["level"], messages.ERROR)
 
 
 class GCMDeviceAdminTestCase(TestCase):
