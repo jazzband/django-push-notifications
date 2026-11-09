@@ -1,13 +1,14 @@
 from django.apps import apps
 from django.contrib import admin, messages
+from django.db.models import QuerySet
+from django.http import HttpRequest
 from django.utils.encoding import force_str
 from django.utils.translation import gettext_lazy as _
-from django.http import HttpRequest
-from django.db.models import QuerySet
 
 from .exceptions import APNSServerError, GCMError, WebPushError
 from .models import APNSDevice, GCMDevice, WebPushDevice, WNSDevice
 from .settings import PUSH_NOTIFICATIONS_SETTINGS as SETTINGS
+from .wns import WNSError
 
 
 User = apps.get_model(*SETTINGS["USER_MODEL"].split("."))
@@ -24,7 +25,9 @@ class DeviceAdmin(admin.ModelAdmin):
 	else:
 		search_fields = ("name", "device_id", "")
 
-	def send_messages(self, request: HttpRequest, queryset: QuerySet, bulk: bool = False) -> None:
+	def send_messages(
+		self, request: HttpRequest, queryset: QuerySet, bulk: bool = False
+	) -> None:
 		"""
 		Provides error handling for DeviceAdmin send_message and send_bulk_message methods.
 		"""
@@ -46,65 +49,61 @@ class DeviceAdmin(admin.ModelAdmin):
 				errors.append(e.status)
 			except WebPushError as e:
 				errors.append(force_str(e))
+			except WNSError as e:
+				errors.append(force_str(e))
 
 			if bulk:
 				break
 
+		if bulk:
+			success = 0
+			for batch in ret:
+				for response in batch:
+					# Some providers return a list per chunk.
+					entries = response if isinstance(response, list) else [response]
+					for entry in entries:
+						if isinstance(entry, str):
+							success += 1  # WNS returns response text.
+						elif "results" in entry:
+							success += entry.get("success", 0)
+							errors.extend(
+								force_str(item["error"])
+								for item in entry["results"] if "error" in item
+							)
+						else:
+							for value in entry.values():
+								if force_str(value).lower() == "success":
+									success += 1
+								else:
+									errors.append(force_str(value))
+			if errors:
+				self.message_user(
+					request, _("Some messages could not be processed: %r" % (", ".join(errors))),
+					level=messages.ERROR
+				)
+			if success:
+				msg = (
+					_("Some messages were sent: %s" % (ret)) if errors
+					else _("All messages were sent: %s" % (ret))
+				)
+				self.message_user(request, msg)
+			return
+
 		# Because NotRegistered and InvalidRegistration do not throw GCMError
 		# catch them here to display error msg.
-		if not bulk:
-			for r in ret:
-				if "error" in r["results"][0]:
-					errors.append(r["results"][0]["error"])
-		else:
-			if "results" in ret[0][0]:
-				try:
-					errors = [r["error"] for r in ret[0][0]["results"] if "error" in r]
-				except TypeError:
-					for entry in ret[0][0]:
-						errors = errors + [r["error"] for r in entry["results"] if "error" in r]
-				except IndexError:
-					pass
-			else:
-				# different format, e.g.:
-				# [{'some_token1': 'Success',
-				#  'some_token2': 'BadDeviceToken'}]
-				for key, value in ret[0][0].items():
-					if value.lower() != "success":
-						errors.append(value)
+		for r in ret:
+			if "error" in r["results"][0]:
+				errors.append(r["results"][0]["error"])
 		if errors:
 			self.message_user(
 				request, _("Some messages could not be processed: %r" % (", ".join(errors))),
 				level=messages.ERROR
 			)
-		if ret:
-			if bulk:
-				# When the queryset exceeds the max_recipients value, the
-				# send_message method returns a list of dicts, one per chunk
-				if "results" in ret[0][0]:
-					try:
-						success = ret[0][0]["success"]
-					except TypeError:
-						success = 0
-						for entry in ret[0][0]:
-							success = success + entry["success"]
-					if success == 0:
-						return
-				else:
-					# different format, e.g.:
-					# [{'some_token1': 'Success',
-					#  'some_token2': 'BadDeviceToken'}]
-					success = []
-					for key, value in ret[0][0].items():
-						if value.lower() == "success":
-							success.append(key)
-
-			elif len(errors) == len(ret):
-				return
-			if errors:
-				msg = _("Some messages were sent: %s" % (ret))
-			else:
-				msg = _("All messages were sent: %s" % (ret))
+		if ret and len(errors) != len(ret):
+			msg = (
+				_("Some messages were sent: %s" % (ret)) if errors
+				else _("All messages were sent: %s" % (ret))
+			)
 			self.message_user(request, msg)
 
 	def send_message(self, request: HttpRequest, queryset: QuerySet) -> None:
@@ -134,7 +133,9 @@ class GCMDeviceAdmin(DeviceAdmin):
 	)
 	list_filter = ("active", "cloud_message_type")
 
-	def send_messages(self, request: HttpRequest, queryset: QuerySet, bulk: bool = False) -> None:
+	def send_messages(
+		self, request: HttpRequest, queryset: QuerySet, bulk: bool = False
+	) -> None:
 		"""
 		Provides error handling for DeviceAdmin send_message and send_bulk_message methods.
 		"""
