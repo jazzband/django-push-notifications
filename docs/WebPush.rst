@@ -6,7 +6,7 @@ At a high-level, the key steps for implementing web push notifications after ins
  - Add client side logic to ask the user for permission to send push notifications and then sending returned client identifier information to a django view to create a WebPushDevice.
  - Use a service worker to receive messages that have been pushed to the device and displaying them as notifications.
 
-These are in addition to the instalation steps for django-push-notifications[WP]
+These are in addition to the installation steps for django-push-notifications[WP]
 
 Configure the VAPID keys
 ------------------------------
@@ -167,7 +167,7 @@ The example subscribeUser function is best called in response to a user action, 
 
 Server Side logic to create webpush
 -----------------------------------
-It is up to you how to add a view in your django application that can handle a POST of p256dh, auth, registration_id and create a WebPushDevice with those values assoicated with the appropriate user.
+It is up to you how to add a view in your django application that can handle a POST of p256dh, auth, registration_id and create a WebPushDevice with those values associated with the appropriate user.
 For example you could use rest_framework
 
 .. code-block:: python
@@ -240,7 +240,7 @@ You will need a service worker registered with your web app that can handle the 
 	    var message_tag = "";
 	  }
 	  self.registration.showNotification(getTitle(title), getNotificationOptions(message, message_tag));
-	  // Optional: Comunicating with our js application. Send a signal
+	  // Optional: Communicating with our js application. Send a signal
 	  self.clients.matchAll({includeUncontrolled: true, type: 'window'}).then(function (clients) {
 	    clients.forEach(function (client) {
 	      client.postMessage({
