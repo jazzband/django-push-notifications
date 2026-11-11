@@ -322,7 +322,7 @@ When using FCM, ``django-push-notifications`` will automatically use the `notifi
 	# Send a notification message with additional payload
 	fcm_device.send_message("This is a enriched message", extra={"title": "Notification title", "icon": "icon_ressource"})
 
-	# Send a notification message with additionnal payload (alternative syntax)
+	# Send a notification message with additional payload (alternative syntax)
 	fcm_device.send_message("This is a enriched message", title="Notification title", badge=6)
 
 	# Send a silent notification message with badge - *only working with iOS*:
@@ -337,7 +337,7 @@ When using FCM, ``django-push-notifications`` will automatically use the `notifi
 	# Send a notification with badge for iOS and android:
 	fcm_device.send_message(
 		messaging.Message(
-			notification=messaging.Notification(title="otification title", body="This is a enriched message"),
+			notification=messaging.Notification(title="notification title", body="This is a enriched message"),
 			apns=messaging.APNSConfig(payload=messaging.APNSPayload(aps=messaging.Aps(badge=6))), # ios
 		),
 		badge=6, # android
@@ -367,7 +367,7 @@ Note: pass ``None`` as the first argument of ``send_message`` when sending messa
 
 	from push_notifications.gcm import send_message, dict_to_fcm_message
 
-	# Create message object from dictonary. You can also directly create a messaging.Message object.
+	# Create message object from dictionary. You can also directly create a messaging.Message object.
 	message = dict_to_fcm_message({"body": "Hello members of my_topic!"}, to="/topics/my_topic")
 	# First param is "None" because no Registration_id is needed, the message will be sent to all devices subscribed to the topic.
 	send_message(None, message)
