@@ -67,7 +67,6 @@ def dict_to_fcm_message(data: Dict[str, Any], dry_run: bool = False, **kwargs: A
 		ttl=data.pop("time_to_live", None) or kwargs.get("time_to_live", None),
 		restricted_package_name=data.pop("restricted_package_name", None) or kwargs.get(
 			"restricted_package_name", None),
-		data=data,
 		notification=android_notification
 	)
 
