@@ -177,6 +177,15 @@ class APNSAsyncPushPayloadTest(TestCase):
 		self.assertEqual(req.message["aps"]["alert"], "sample")
 		self.assertEqual(req.collapse_key, "456789")
 
+	@mock.patch("push_notifications.apns_async.APNs", autospec=True)
+	def test_topic(self, mock_apns):
+		apns_send_message(
+			"123", "sample", topic="com.example.app.voip",
+			creds=TokenCredentials(key="aaa", key_id="bbb", team_id="ccc"),
+		)
+
+		self.assertEqual(mock_apns.call_args.kwargs["topic"], "com.example.app.voip")
+
 	@mock.patch("aioapns.client.APNsCertConnectionPool", autospec=True)
 	def test_aioapns_err_func(self, mock_cert_pool):
 		mock_cert_pool.return_value.send_notification = mock.AsyncMock()

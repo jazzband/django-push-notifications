@@ -385,7 +385,6 @@ def apns_send_bulk_message(
 	timeout = get_manager().get_apns_error_timeout(application_id)
 
 	try:
-		topic = get_manager().get_apns_topic(application_id)
 		inactive_tokens = []
 
 		responses = asyncio.run(
